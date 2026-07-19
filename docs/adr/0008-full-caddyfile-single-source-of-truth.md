@@ -1,0 +1,3 @@
+# Full Caddyfile as a single declarative source of truth
+
+pyinfra templates the entire Caddyfile on the Pi Zero, including the auto-wake proxy routes for workload services (Immich, AI agents, etc.), even though those workload stacks themselves are out of pyinfra's scope. We considered splitting the Caddyfile into a pyinfra-owned base file plus a separately, hand-edited routes file so new workload services could be added without touching the pyinfra repo — and rejected it. A hand-edited file on the device is state pyinfra doesn't know about, and a future full Deploy could silently clobber it. The cost of this choice is friction: adding a new workload service means editing the pyinfra repo and re-running a Deploy, not just editing config on the Pi.

@@ -4,6 +4,8 @@ Domain glossary for the control plane that lets the user wake, monitor, and susp
 
 ## Language
 
+### Control plane
+
 **Control UI**:
 The browser-facing app on the Pi Zero that shows server reachability and offers Wake/Suspend actions. The only user-facing surface in the system.
 _Avoid_: Panel, dashboard, frontend
@@ -34,3 +36,17 @@ _Avoid_: shutdown, sleep, power off
 **Identity header**:
 The `Tailscale-User-Login` header injected by `tailscale serve` in front of both the Pi and the server. The entire authentication mechanism for both apps — tailnet membership is also the entire authorization boundary, with no separate allow-list.
 _Avoid_: auth token, login header
+
+### Provisioning
+
+**Deploy**:
+A single run of pyinfra against the inventory that converges the Pi and the server to their declared state. Run manually, on demand, from the dev machine — never automatic or scheduled.
+_Avoid_: playbook run, apply
+
+**Concern**:
+A single-responsibility pyinfra deploy file scoped to one piece of infrastructure or one app (e.g. Tailscale, Caddy, the Control Pi API). The unit a Deploy can be targeted or dry-run against in isolation.
+_Avoid_: role, task, module
+
+**Host group**:
+A pyinfra inventory grouping of devices by responsibility — `pi` and `server`. Determines which Concerns apply to which device.
+_Avoid_: role (in the Ansible sense)
