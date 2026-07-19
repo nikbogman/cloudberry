@@ -17,8 +17,9 @@ export interface MountOptions {
 }
 
 /** Renders the Control UI into `container`, starts polling the Control
- * server API's health check, and wires the Wake button to the Control Pi
- * API. Returns a cleanup function that stops polling. */
+ * server API's health check, and wires the Wake button (Control Pi API)
+ * and the Suspend button (Control server API). Returns a cleanup function
+ * that stops polling. */
 export function mountControlUi(container: HTMLElement, options: MountOptions): () => void {
   const { serverApiBaseUrl, piApiBaseUrl = '', intervalMs = DEFAULT_POLL_INTERVAL_MS } = options
 
@@ -26,14 +27,17 @@ export function mountControlUi(container: HTMLElement, options: MountOptions): (
     <h1>Homelab Control</h1>
     <p id="reachability-status" data-state="checking">${STATUS_LABELS.checking}</p>
     <button id="wake-button" type="button">Wake</button>
+    <button id="suspend-button" type="button">Suspend</button>
   `
   const statusElement = container.querySelector<HTMLParagraphElement>('#reachability-status')!
   const wakeButton = container.querySelector<HTMLButtonElement>('#wake-button')!
+  const suspendButton = container.querySelector<HTMLButtonElement>('#suspend-button')!
 
   const setState = (state: ReachabilityState) => {
     statusElement.textContent = STATUS_LABELS[state]
     statusElement.dataset.state = state
     wakeButton.disabled = state === 'reachable'
+    suspendButton.disabled = state === 'unreachable'
   }
 
   const poll = async () => {
@@ -50,6 +54,12 @@ export function mountControlUi(container: HTMLElement, options: MountOptions): (
     // not surfaced in the UI. Swallow rejections so a network error here
     // can't surface as an unhandled promise rejection.
     void fetch(`${piApiBaseUrl}/wake`, { method: 'POST' }).catch(() => {})
+  })
+
+  suspendButton.addEventListener('click', () => {
+    // Fire-and-forget, same rationale as the Wake button above. Suspend
+    // lives on the Control server API (not the Pi API) — unlike Wake.
+    void fetch(`${serverApiBaseUrl}/suspend`, { method: 'POST' }).catch(() => {})
   })
 
   void poll()

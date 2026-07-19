@@ -1,4 +1,6 @@
 import importlib
+import subprocess
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -24,6 +26,23 @@ def test_wsgi_builds_a_working_app_from_environment(wsgi_module):
 
     assert response.status_code == 200
     assert response.get_json() == {"reachable": True}
+
+
+def test_wsgi_wires_suspend_to_the_real_systemctl_suspend_command(wsgi_module, monkeypatch):
+    # A real "systemctl suspend" must never run in a test: unlike WoL's
+    # harmless UDP broadcast (control_pi_api), an actual suspend call would
+    # not be harmless if a sandboxed test environment could honor it. Patch
+    # the one real side effect instead so this test still exercises the
+    # real subprocess.run call the wiring makes.
+    run_mock = MagicMock()
+    monkeypatch.setattr(subprocess, "run", run_mock)
+
+    client = wsgi_module.app.test_client()
+    response = client.post("/suspend", headers={IDENTITY_HEADER: "nicola@example.com"})
+
+    assert response.status_code == 200
+    assert response.get_json() == {"suspend": "succeeded"}
+    run_mock.assert_called_once_with(("systemctl", "suspend"), check=True)
 
 
 def test_wsgi_raises_clearly_when_required_env_vars_are_missing(monkeypatch):

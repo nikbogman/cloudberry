@@ -1,15 +1,19 @@
-"""Control server API: exposes a Reachable health check (Suspend lands in ticket 04).
+"""Control server API: exposes a Reachable health check and a Suspend action.
 
 Runs on the main server behind its own `tailscale serve` instance, a
 distinct origin from the Control UI (ADR-0001) — hence the CORS allow-list.
 """
 
+import subprocess
+
 from flask import Flask, Response, jsonify
 from flask_cors import CORS
 
 from control_plane_shared.alloy import AlloyLogger
-from control_plane_shared.auth import require_tailnet_identity
+from control_plane_shared.auth import get_caller_identity, require_tailnet_identity
 from control_plane_shared.bind_safety import assert_tailnet_only_bind
+
+from control_server_api.suspend import SystemSuspender
 
 
 class ReachabilityTracker:
@@ -37,7 +41,9 @@ class ReachabilityTracker:
         alloy.send_event(event_type="reachability_changed", outcome="reachable", identity=None)
 
 
-def create_app(*, control_ui_origin: str, alloy_logger: AlloyLogger, bind_host: str) -> Flask:
+def create_app(
+    *, control_ui_origin: str, alloy_logger: AlloyLogger, system_suspender: SystemSuspender, bind_host: str
+) -> Flask:
     assert_tailnet_only_bind(bind_host)
 
     app = Flask(__name__)
@@ -50,5 +56,20 @@ def create_app(*, control_ui_origin: str, alloy_logger: AlloyLogger, bind_host: 
     def health() -> tuple[Response, int]:
         reachability.note_reachable(alloy_logger)
         return jsonify({"reachable": True}), 200
+
+    @app.post("/suspend")
+    @require_tailnet_identity
+    def suspend() -> tuple[Response, int]:
+        identity = get_caller_identity()
+        alloy_logger.send_event(event_type="suspend_requested", outcome="requested", identity=identity)
+
+        try:
+            system_suspender.suspend()
+        except (subprocess.CalledProcessError, OSError):
+            alloy_logger.send_event(event_type="suspend_failed", outcome="failed", identity=identity)
+            return jsonify({"suspend": "failed"}), 500
+
+        alloy_logger.send_event(event_type="suspend_succeeded", outcome="succeeded", identity=identity)
+        return jsonify({"suspend": "succeeded"}), 200
 
     return app

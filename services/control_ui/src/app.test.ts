@@ -12,6 +12,10 @@ function wakeButton(): HTMLButtonElement {
   return document.querySelector('#wake-button')!
 }
 
+function suspendButton(): HTMLButtonElement {
+  return document.querySelector('#suspend-button')!
+}
+
 function stubFetch(status: number): ReturnType<typeof vi.fn> {
   const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status }))
   vi.stubGlobal('fetch', fetchMock)
@@ -146,5 +150,44 @@ describe('mountControlUi', () => {
     wakeButton().click()
 
     expect(fetchMock).toHaveBeenCalledWith('/wake', { method: 'POST' })
+  })
+
+  it('enables the suspend button before the first poll resolves', () => {
+    vi.stubGlobal('fetch', vi.fn(() => new Promise(() => {})))
+
+    unmount = mountControlUi(container, { serverApiBaseUrl: SERVER_API_BASE_URL })
+
+    expect(suspendButton().disabled).toBe(false)
+  })
+
+  it('enables the suspend button once the server is reachable', async () => {
+    stubFetch(200)
+
+    unmount = mountControlUi(container, { serverApiBaseUrl: SERVER_API_BASE_URL })
+    await vi.waitFor(() => expect(statusElement().dataset.state).toBe('reachable'))
+
+    expect(suspendButton().disabled).toBe(false)
+  })
+
+  it('disables the suspend button once the server goes unreachable', async () => {
+    const fetchMock = stubFetch(200)
+    unmount = mountControlUi(container, { serverApiBaseUrl: SERVER_API_BASE_URL, intervalMs: 10_000 })
+    await vi.waitFor(() => expect(statusElement().dataset.state).toBe('reachable'))
+    expect(suspendButton().disabled).toBe(false)
+
+    fetchMock.mockResolvedValue(new Response(null, { status: 502 }))
+    await vi.advanceTimersByTimeAsync(10_000)
+    await vi.waitFor(() => expect(statusElement().dataset.state).toBe('unreachable'))
+
+    expect(suspendButton().disabled).toBe(true)
+  })
+
+  it('calls the Control server API when the suspend button is clicked', async () => {
+    const fetchMock = stubFetch(200)
+
+    unmount = mountControlUi(container, { serverApiBaseUrl: SERVER_API_BASE_URL })
+    suspendButton().click()
+
+    expect(fetchMock).toHaveBeenCalledWith(`${SERVER_API_BASE_URL}/suspend`, { method: 'POST' })
   })
 })
