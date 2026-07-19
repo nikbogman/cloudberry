@@ -1,0 +1,28 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  padding: 3rem 1rem;
+}
+
+#reachability-status {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+#reachability-status[data-state='checking'] {
+  color: gray;
+}
+
+#reachability-status[data-state='reachable'] {
+  color: seagreen;
+}
+
+#reachability-status[data-state='unreachable'] {
+  color: firebrick;
+}

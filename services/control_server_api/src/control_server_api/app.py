@@ -1,0 +1,54 @@
+"""Control server API: exposes a Reachable health check (Suspend lands in ticket 04).
+
+Runs on the main server behind its own `tailscale serve` instance, a
+distinct origin from the Control UI (ADR-0001) — hence the CORS allow-list.
+"""
+
+from flask import Flask, Response, jsonify
+from flask_cors import CORS
+
+from control_plane_shared.alloy import AlloyLogger
+from control_plane_shared.auth import require_tailnet_identity
+from control_plane_shared.bind_safety import assert_tailnet_only_bind
+
+
+class ReachabilityTracker:
+    """Logs a `reachability_changed` event the first time this process
+    observes itself as reachable. Both Control APIs are stateless (no DB),
+    but in-memory state for the life of the process is fine here — and it's
+    the only "changed" edge this app can ever witness: it cannot log going
+    *un*reachable, since it's asleep while that's true.
+
+    Trade-off: an ordinary process restart (deploy, crash) emits a fresh
+    event even though the server was never actually unreachable — there's
+    no persisted state to distinguish "just woke from suspend" from "the
+    Flask process was restarted while the machine stayed up". Accepted
+    given the stateless-by-design constraint (no DB/volume to provision or
+    lose); Wake/Suspend events remain the precise audit trail regardless.
+    """
+
+    def __init__(self) -> None:
+        self._has_logged_reachable = False
+
+    def note_reachable(self, alloy: AlloyLogger) -> None:
+        if self._has_logged_reachable:
+            return
+        self._has_logged_reachable = True
+        alloy.send_event(event_type="reachability_changed", outcome="reachable", identity=None)
+
+
+def create_app(*, control_ui_origin: str, alloy_logger: AlloyLogger, bind_host: str) -> Flask:
+    assert_tailnet_only_bind(bind_host)
+
+    app = Flask(__name__)
+    CORS(app, origins=[control_ui_origin])
+
+    reachability = ReachabilityTracker()
+
+    @app.get("/health")
+    @require_tailnet_identity
+    def health() -> tuple[Response, int]:
+        reachability.note_reachable(alloy_logger)
+        return jsonify({"reachable": True}), 200
+
+    return app
