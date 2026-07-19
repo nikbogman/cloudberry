@@ -1,0 +1,194 @@
+# Auto-wake proxy — Caddyfile
+#
+# Component: "Auto-wake proxy" (see CONTEXT.md glossary and the parent spec's
+# Implementation Decisions bullet, .scratch/homelab-control-system/spec.md).
+# Ticket: .scratch/homelab-control-system/issues/05-auto-wake-proxy.md
+#
+# Runs on the Pi Zero. Reverse-proxies every Docker Compose workload on the
+# main server (Immich, AI agents, etc.) and, on any request while the server
+# is asleep, sends it a Wake-on-LAN magic packet and holds/retries the
+# request until the server answers — transparent to the caller, not an
+# error. Per ADR-0005 this is a second, fully independent wake trigger from
+# the Control Pi API's deliberate /wake endpoint (ticket 03): nothing in
+# this file calls, imports, or otherwise depends on the Control UI or
+# Control Pi API, so this path keeps working even if both of those are down
+# (see "Independence from the Control UI/API" below).
+#
+# Plugin required (this is NOT a stock Caddy build — see "Build" below):
+#
+#   github.com/dulli/caddy-wol — registers the `wake_on_lan` HTTP handler
+#   directive used below. Full rationale for choosing this plugin over the
+#   alternative found (github.com/Stoufiler/caddy-jellywol), and for
+#   researching-but-not-adopting github.com/tailscale/caddy-tailscale for
+#   tailnet binding, lives in README.md's "Plugins" section — not repeated
+#   here to avoid two copies of the same argument drifting out of sync.
+#
+# Build (not part of this ticket's scope — pyinfra's future Caddy Concern
+# owns how this actually gets built/installed on the Pi, per ADR-0008 and
+# .scratch/pyinfra-provisioning/spec.md):
+#
+#   xcaddy build --with github.com/dulli/caddy-wol
+#
+# Validated against this exact single-plugin build via `caddy validate`
+# and a live `caddy run` smoke test against a deliberately-unreachable
+# backend — see services/auto_wake_proxy/README.md for how and what was
+# checked, including a control run confirming the file also validates
+# with github.com/tailscale/caddy-tailscale added (it isn't required by
+# any directive here; only relevant if a future change adopts `bind
+# tailscale/<node>` — see README).
+{
+	# Required by caddy-wol: the wake_on_lan handler must run before the
+	# built-in `respond`/`error` handlers it's paired with in handle_errors
+	# below, or its directive order in the compiled routes would be wrong.
+	order wake_on_lan before respond
+
+	# --- ADR-0004 hard requirement: never bound off-tailnet -------------
+	# Every site in this file binds only to this address by default. This
+	# mirrors control_pi_api's and control_server_api's `bind_host` (see
+	# services/shared/src/control_plane_shared/bind_safety.py and each
+	# app's wsgi.py, which default to 127.0.0.1) and is expected to be
+	# exposed to the tailnet the same way those are: by an external
+	# `tailscale serve` instance in front of Caddy, per CONTEXT.md's
+	# description of how the Control UI is served ("by Caddy on the Pi
+	# Zero via `tailscale serve`"). Note that a Control-UI-serving Caddy
+	# config doesn't exist in this repo yet (no ticket has built it) — this
+	# file only adds the workload routes; `default_bind` here just ensures
+	# whatever else eventually shares this Caddy instance inherits the
+	# same loopback-only default rather than each site needing to repeat
+	# it. Override via env var only if this Caddy is bound directly to the
+	# Pi's tailnet-interface IP instead of loopback; never set this to a
+	# wildcard or off-tailnet address.
+	default_bind {$AUTO_WAKE_PROXY_BIND_HOST:127.0.0.1}
+}
+
+# --- Reusable auto-wake route -------------------------------------------
+#
+# One snippet, imported once per workload site block below, so every
+# workload gets identical wake/hold/retry behavior without repeating it.
+# {args[0]} is the upstream address (host:port) for that workload on the
+# main server.
+#
+# Acceptance-criteria mapping (see the ticket's four checkboxes):
+#
+#   AC1 "Caddy's WoL plugin is configured ... reverse-proxying every
+#        current Docker Compose workload" -> this snippet + the `import
+#        auto_wake_route` line in each site block below.
+#   AC2 "A request ... while the server is asleep triggers a WoL packet
+#        automatically, with no interaction with the Control UI or
+#        Control Pi API" -> the `wake_on_lan {$SERVER_MAC_ADDRESS}` line.
+#        Nothing in this file references the Control UI's or Control Pi
+#        API's origins, ports, or endpoints (grep confirms this — see
+#        README's "Independence from the Control UI/API" check).
+#   AC3 "The triggering request is held/retried until the server
+#        responds, and then succeeds" -> the *second* reverse_proxy call
+#        inside handle_errors, with `lb_try_duration 120s`: Caddy keeps
+#        retrying the same original request against the same upstream for
+#        up to 2 minutes (long enough to cover a typical suspend-to-RAM
+#        resume) before giving up, and returns whatever that upstream
+#        eventually answers rather than the original 502.
+#   AC4 "This path ... functions independently even if the Control
+#        UI/Control Pi API are down" -> structurally true by construction:
+#        this file contains no upstream, header, or directive referencing
+#        either of those services (see README for how this was verified).
+(auto_wake_route) {
+	# First attempt: short, cheap check of whether the server is already
+	# up. lb_try_duration here is intentionally short — this is just
+	# "is it awake right now", not the hold/retry window (that's below).
+	reverse_proxy {args[0]} {
+		lb_try_duration 3s
+		lb_try_interval 500ms
+	}
+
+	# reverse_proxy above writes a 502 when it can't reach the upstream at
+	# all (connection refused/timeout — the suspended-server case) after
+	# exhausting the short retry window. This is Caddy's own fabricated
+	# error for "no reachable backend", not a real HTTP response — it
+	# *does* reach handle_errors. Confirmed empirically (see README) that
+	# this stays narrowly scoped to true connection failures: a live
+	# upstream that itself answers with a genuine 502 (an app-level error,
+	# not "asleep") gets proxied straight through as an ordinary response
+	# and does NOT enter this handle_errors block — no spurious WoL packet,
+	# no needless hold. That's the general Caddy behavior the docs describe
+	# ("certain directives ... which may write a response with an HTTP
+	# status classified as an error will not trigger the error routes")
+	# working in our favor here, verified with a live backend that
+	# returned its own 502 and was passed through unmodified.
+	handle_errors {
+		@server_asleep expression {err.status_code} == 502
+		handle @server_asleep {
+			# AC2: the automatic, Control-UI/Control-Pi-API-independent
+			# wake trigger. caddy-wol internally throttles repeat packets
+			# to at most one per host per 10 minutes, so concurrent
+			# requests during the same wake cycle don't flood the network.
+			wake_on_lan {$SERVER_MAC_ADDRESS} {$WOL_BROADCAST_ADDRESS:255.255.255.255:9}
+
+			# AC3: hold/retry the *same original request* against the
+			# same upstream, now with a much longer window, so the caller
+			# gets a real response instead of an error while the server
+			# wakes from suspend-to-RAM. 120s is a bound, not a promise —
+			# an HTTP request can't be held open forever. If a resume ever
+			# takes longer, this attempt gives up and returns a real 502,
+			# but the WoL packet has already been sent (and stays throttled
+			# for 10 more minutes per host by caddy-wol), so simply
+			# reloading catches the now-awake server on the fast path above
+			# without re-triggering a second wake.
+			reverse_proxy {args[0]} {
+				lb_try_duration 120s
+				lb_try_interval 1s
+			}
+		}
+	}
+}
+
+# --- Workload routes ------------------------------------------------------
+#
+# EXAMPLE / PLACEHOLDER ROUTES. There are no docker-compose.yml files for
+# Immich or "AI agents" anywhere in this repo yet (confirmed by search
+# before writing this file) — the parent spec names them only as
+# illustrative examples of "every current Docker Compose workload on the
+# main server" (spec.md Solution section). The local port numbers below are
+# placeholders to be replaced with real values once those workload stacks
+# exist; do not treat them as verified facts about a real deployment.
+#
+# {$MAIN_SERVER_HOST} is a single placeholder for the main server's
+# tailnet address/hostname (e.g. a MagicDNS name like
+# main-server.<tailnet>.ts.net) — every workload lives on the same
+# physical server, so they share this one placeholder and differ only by
+# upstream port.
+#
+# Site addresses here are bare `:port` (plain HTTP on the loopback address
+# from default_bind above) rather than a public-looking hostname. That's
+# deliberate: a hostname-shaped site address would make Caddy try to
+# provision its own ACME/TLS certificate for it, which is wrong for this
+# topology — tailnet-facing HTTPS and each workload's public hostname are
+# `tailscale serve`'s job (one `tailscale serve` port mapping per route
+# below), exactly as CONTEXT.md documents for the Control UI. Wiring the
+# actual `tailscale serve` mappings for these ports is a pyinfra Caddy
+# Concern task, out of this ticket's scope (see the Build note above).
+
+# Immich (self-hosted photo/video management). Immich's own docker-compose
+# distribution maps its web UI to host port 2283 by default
+# (https://docs.immich.app/overview/quick-start/) — used here as a
+# plausible illustrative upstream port, not a value verified against this
+# repo's (nonexistent) deployment. :8443 (this Caddy site's own listening
+# port, to be given a `tailscale serve` mapping) is likewise illustrative.
+:{$IMMICH_ROUTE_PORT:8443} {
+	import auto_wake_route {$MAIN_SERVER_HOST}:2283
+}
+
+# "AI agents" workload stack named in the parent spec with no further
+# detail and no docker-compose file in this repo — both the upstream port
+# (8080) and this site's own listening port (8444) are generic,
+# clearly-invented placeholders only, to be replaced once that stack is
+# actually designed and built.
+:{$AGENTS_ROUTE_PORT:8444} {
+	import auto_wake_route {$MAIN_SERVER_HOST}:8080
+}
+
+# Add one site block per additional Docker Compose workload as they're
+# built, each a single `import auto_wake_route <host>:<port>` line plus a
+# corresponding `tailscale serve` mapping for its listening port. Per
+# ADR-0008, once pyinfra's Caddy Concern exists, this whole file (Control
+# UI static-file serving plus these workload routes) becomes the single
+# declarative source of truth templated onto the Pi — no hand-edited copy
+# on the device itself.
