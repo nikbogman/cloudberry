@@ -9,34 +9,48 @@ const STATUS_LABELS: Record<ReachabilityState, string> = {
 const DEFAULT_POLL_INTERVAL_MS = 12_000
 
 export interface MountOptions {
-  baseUrl: string
+  /** Control server API origin — a distinct origin from the Control UI (ADR-0001). */
+  serverApiBaseUrl: string
+  /** Control Pi API origin — same-origin as the Control UI by default, so '' (relative) works. */
+  piApiBaseUrl?: string
   intervalMs?: number
 }
 
-/** Renders the Control UI into `container` and starts polling the Control
- * server API's health check. Returns a cleanup function that stops polling. */
+/** Renders the Control UI into `container`, starts polling the Control
+ * server API's health check, and wires the Wake button to the Control Pi
+ * API. Returns a cleanup function that stops polling. */
 export function mountControlUi(container: HTMLElement, options: MountOptions): () => void {
-  const { baseUrl, intervalMs = DEFAULT_POLL_INTERVAL_MS } = options
+  const { serverApiBaseUrl, piApiBaseUrl = '', intervalMs = DEFAULT_POLL_INTERVAL_MS } = options
 
   container.innerHTML = `
     <h1>Homelab Control</h1>
     <p id="reachability-status" data-state="checking">${STATUS_LABELS.checking}</p>
+    <button id="wake-button" type="button">Wake</button>
   `
   const statusElement = container.querySelector<HTMLParagraphElement>('#reachability-status')!
+  const wakeButton = container.querySelector<HTMLButtonElement>('#wake-button')!
 
   const setState = (state: ReachabilityState) => {
     statusElement.textContent = STATUS_LABELS[state]
     statusElement.dataset.state = state
+    wakeButton.disabled = state === 'reachable'
   }
 
   const poll = async () => {
     try {
-      const response = await fetch(`${baseUrl}/health`)
+      const response = await fetch(`${serverApiBaseUrl}/health`)
       setState(response.ok ? 'reachable' : 'unreachable')
     } catch {
       setState('unreachable')
     }
   }
+
+  wakeButton.addEventListener('click', () => {
+    // Fire-and-forget: outcome is reported via the audit log (ticket 01),
+    // not surfaced in the UI. Swallow rejections so a network error here
+    // can't surface as an unhandled promise rejection.
+    void fetch(`${piApiBaseUrl}/wake`, { method: 'POST' }).catch(() => {})
+  })
 
   void poll()
   const timerId = window.setInterval(poll, intervalMs)
