@@ -9,4 +9,4 @@
 - [ ] A shared helper performs: `git clone`/pull of this repo on the target device, checked out to a specific ref
 - [ ] The same helper installs/enables a systemd unit and starts the service
 - [ ] The helper restarts the service when a Deploy changes the pulled code or the unit file, and leaves it alone otherwise
-- [ ] The helper is parameterized (ref, unit name, working directory, start command) rather than hardcoded to one app, and is demoed against a throwaway app/unit before either real Control API Concern adopts it
+- [ ] The helper is parameterized (ref, unit name, working directory, start command) rather than hardcoded to one app, and is demoed against a throwaway app/unit before either real Control API Deploy file adopts it

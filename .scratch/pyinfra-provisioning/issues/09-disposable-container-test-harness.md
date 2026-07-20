@@ -6,6 +6,6 @@
 
 **Status:** ready-for-agent
 
-- [ ] Running `deploy.py` against the `test` Host group applies every Concern against disposable containers standing in for `pi`/`server`, and real execution errors (bad package names, invalid templates, wrong command syntax) surface here rather than on a physical device
+- [ ] Running `deploy.py` against the `test` Host group applies every Deploy file against disposable containers standing in for `pi`/`server`, and real execution errors (bad package names, invalid templates, wrong command syntax) surface here rather than on a physical device
 - [ ] A documented procedure runs a Deploy a second time immediately after the first — against `test` and against the real `pi`/`server` groups — and treats zero pending operations as the pass condition
-- [ ] The three-tier approach (`--check`, disposable containers, idempotency) is written down as the precedent future Concerns should follow, since this repo has no prior infrastructure-testing pattern to draw on
+- [ ] The three-tier approach (`--check`, disposable containers, idempotency) is written down as the precedent future Deploy files should follow, since this repo has no prior infrastructure-testing pattern to draw on

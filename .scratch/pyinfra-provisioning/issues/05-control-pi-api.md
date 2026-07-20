@@ -1,4 +1,4 @@
-# 05 — Control Pi API Concern (+ Control UI static delivery)
+# 05 — Control Pi API deploy file (+ Control UI static delivery)
 
 **What to build:** `deploy_control_pi_api.py` — deploys the Control Pi API to `pi` via the shared helper (ticket 04), running as an enabled systemd service. Also delivers the Control UI: built on the dev machine (Vite build, per ADR-0006) and only the static `dist/` output copied to `pi` — the Pi never runs npm/Node.
 

@@ -43,10 +43,10 @@ _Avoid_: auth token, login header
 A single run of pyinfra against the inventory that converges the Pi and the server to their declared state. Run manually, on demand, from the dev machine — never automatic or scheduled.
 _Avoid_: playbook run, apply
 
-**Concern**:
-A single-responsibility pyinfra deploy file scoped to one piece of infrastructure or one app (e.g. Tailscale, Caddy, the Control Pi API). The unit a Deploy can be targeted or dry-run against in isolation.
-_Avoid_: role, task, module
+**Deploy file**:
+A single-responsibility pyinfra file scoped to one piece of infrastructure or one app (e.g. Tailscale, Caddy, the Control Pi API). The unit a Deploy can be targeted or dry-run against in isolation. A piece reused across Deploy files (e.g. the git-pull-plus-systemd-unit pattern shared by both Control APIs) is written as an `@deploy`-decorated deploy function and imported where needed.
+_Avoid_: Concern, role, task, module
 
 **Host group**:
-A pyinfra inventory grouping of devices by responsibility — `pi` and `server`. Determines which Concerns apply to which device.
+A pyinfra inventory grouping of devices by responsibility — `pi` and `server`. Determines which Deploy files apply to which device.
 _Avoid_: role (in the Ansible sense)

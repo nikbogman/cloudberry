@@ -1,4 +1,4 @@
-# 07 — Caddy Concern
+# 07 — Caddy deploy file
 
 **What to build:** `deploy_caddy.py` — templates the entire Caddyfile on `pi` from a declarative source in this repo (ADR-0008), including the auto-wake-proxy routes for every current workload service (Immich, AI agents), the route(s) serving the Control UI's static output, and the route to the Control server API. No hand-edited Caddy config is ever left on the device.
 
@@ -10,5 +10,5 @@
 - [ ] The templated Caddyfile includes the auto-wake-proxy route for every current workload service (Immich, AI agents)
 - [ ] The templated Caddyfile routes to the Control UI's static build output and to the Control server API
 - [ ] Adding a new workload service's route requires only editing this repo and redeploying — never a direct edit on `pi`
-- [ ] The Concern is targetable/dry-runnable in isolation against `pi`
+- [ ] The Deploy file is targetable/dry-runnable in isolation against `pi`
 - [ ] Re-running against an already-converged `pi` reports zero pending operations

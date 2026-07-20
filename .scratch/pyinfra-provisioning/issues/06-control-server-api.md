@@ -1,4 +1,4 @@
-# 06 — Control server API Concern
+# 06 — Control server API deploy file
 
 **What to build:** `deploy_control_server_api.py` — deploys the Control server API to `server` via the shared helper (ticket 04), running as an enabled systemd service. Structurally similar to ticket 05 but a distinct application on a distinct Host group, per the repo layout decision.
 
