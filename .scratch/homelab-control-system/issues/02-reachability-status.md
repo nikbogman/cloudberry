@@ -4,11 +4,15 @@
 
 **Blocked by:** 01 — Control-plane auth & logging scaffold
 
-**Status:** ready-for-agent
+**Status:** ready-for-human
 
-- [ ] Control server API health-check endpoint reports Reachable status, protected by the identity-header check from ticket 01, tested via Flask's test client
-- [ ] Control server API asserts it is not bound off-tailnet (using ticket 01's helper)
-- [ ] Control UI polls the health-check endpoint on a 10-15s interval while the page is open, mocking only the `fetch` call in tests
-- [ ] Control UI displays current Reachable/Unreachable status and updates automatically as polling results change, with no page refresh needed
-- [ ] Control server API's CORS allow-list permits the Control UI's origin (per ADR-0001); no CORS entry needed on the Pi side
-- [ ] Reachability state changes are logged via the Grafana Alloy client from ticket 01
+- [x] Control server API health-check endpoint reports Reachable status, protected by the identity-header check from ticket 01, tested via Flask's test client
+- [x] Control server API asserts it is not bound off-tailnet (using ticket 01's helper)
+- [x] Control UI polls the health-check endpoint on a 10-15s interval while the page is open, mocking only the `fetch` call in tests
+- [x] Control UI displays current Reachable/Unreachable status and updates automatically as polling results change, with no page refresh needed
+- [x] Control server API's CORS allow-list permits the Control UI's origin (per ADR-0001); no CORS entry needed on the Pi side
+- [x] Reachability state changes are logged via the Grafana Alloy client from ticket 01
+
+## Comments
+
+Implemented in `services/control_server_api` and `services/control_ui`, commit `35a9cff`.

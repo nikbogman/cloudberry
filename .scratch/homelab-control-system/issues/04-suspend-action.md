@@ -4,11 +4,15 @@
 
 **Blocked by:** 02 — Reachability status (health check + UI display)
 
-**Status:** ready-for-agent
+**Status:** ready-for-human
 
-- [ ] Control server API exposes an endpoint that triggers suspend-to-RAM, protected by the identity-header check from ticket 01
-- [ ] Tests exercise the HTTP boundary via Flask's test client, mocking only the suspend system call/subprocess
-- [ ] Control UI's Suspend button is disabled whenever the latest known state is Unreachable, and enabled otherwise
-- [ ] Pressing Suspend calls the Control server API and does not implement its own no-op guard beyond what the UI's enable/disable state already provides — the API always attempts the action and reports the outcome
-- [ ] Suspend requested / succeeded / failed events are logged via the Grafana Alloy client from ticket 01, tagged with the caller's identity from the header
-- [ ] No full-shutdown (ACPI S5) code path exists anywhere in this endpoint
+- [x] Control server API exposes an endpoint that triggers suspend-to-RAM, protected by the identity-header check from ticket 01
+- [x] Tests exercise the HTTP boundary via Flask's test client, mocking only the suspend system call/subprocess
+- [x] Control UI's Suspend button is disabled whenever the latest known state is Unreachable, and enabled otherwise
+- [x] Pressing Suspend calls the Control server API and does not implement its own no-op guard beyond what the UI's enable/disable state already provides — the API always attempts the action and reports the outcome
+- [x] Suspend requested / succeeded / failed events are logged via the Grafana Alloy client from ticket 01, tagged with the caller's identity from the header
+- [x] No full-shutdown (ACPI S5) code path exists anywhere in this endpoint
+
+## Comments
+
+Implemented in `services/control_server_api` and `services/control_ui`, commit `982cdb0`.

@@ -4,9 +4,13 @@
 
 **Blocked by:** None — can start immediately
 
-**Status:** ready-for-agent
+**Status:** ready-for-human
 
-- [ ] A decorator/middleware rejects requests missing or carrying an invalid `Tailscale-User-Login` header, tested at the HTTP boundary with Flask's test client
-- [ ] A reusable assertion (used at app startup) confirms the process is not bound to any off-tailnet address, and fails loudly if it is
-- [ ] A Grafana Alloy logging client can ship a structured event (event type, outcome, caller identity) — the actual Alloy transport is the one seam that may be mocked in tests
-- [ ] Both helpers are documented well enough that tickets 02–04 can import and use them without re-deriving the auth/logging pattern
+- [x] A decorator/middleware rejects requests missing or carrying an invalid `Tailscale-User-Login` header, tested at the HTTP boundary with Flask's test client
+- [x] A reusable assertion (used at app startup) confirms the process is not bound to any off-tailnet address, and fails loudly if it is
+- [x] A Grafana Alloy logging client can ship a structured event (event type, outcome, caller identity) — the actual Alloy transport is the one seam that may be mocked in tests
+- [x] Both helpers are documented well enough that tickets 02–04 can import and use them without re-deriving the auth/logging pattern
+
+## Comments
+
+Implemented in `services/shared` (`control_plane_shared`), commit `93f399a`.

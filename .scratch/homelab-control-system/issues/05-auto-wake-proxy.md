@@ -4,9 +4,13 @@
 
 **Blocked by:** None — can start immediately (independent of Control UI/API per ADR-0005)
 
-**Status:** ready-for-agent
+**Status:** ready-for-human
 
-- [ ] Caddy's WoL plugin is configured on the Pi Zero, reverse-proxying every current Docker Compose workload on the main server
-- [ ] A request to a workload route while the server is asleep triggers a WoL packet automatically, with no interaction with the Control UI or Control Pi API
-- [ ] The triggering request is held/retried until the server responds, and then succeeds — it does not fail outright while the server wakes
-- [ ] This path is verified to function independently even if the Control UI/Control Pi API are down or unreachable
+- [x] Caddy's WoL plugin is configured on the Pi Zero, reverse-proxying every current Docker Compose workload on the main server
+- [x] A request to a workload route while the server is asleep triggers a WoL packet automatically, with no interaction with the Control UI or Control Pi API
+- [x] The triggering request is held/retried until the server responds, and then succeeds — it does not fail outright while the server wakes
+- [x] This path is verified to function independently even if the Control UI/Control Pi API are down or unreachable
+
+## Comments
+
+Implemented in `services/auto_wake_proxy`, commit `f1e8a75`. No physical Pi/server exists to run this against, so "verified" here means: structural independence confirmed by grep (no reference to the Control UI or either Control API anywhere in the Caddyfile) plus a live `caddy run` smoke test against a mock backend — see `services/auto_wake_proxy/README.md` for what was actually checked.
