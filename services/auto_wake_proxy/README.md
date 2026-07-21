@@ -7,9 +7,16 @@ Unlike `services/shared`, `services/control_pi_api`, `services/control_server_ap
 and `services/control_ui`, this is not a Python/TypeScript application —
 it's a declarative Caddy config artifact. There is one file:
 
-- `Caddyfile` — the source of truth, heavily commented in place. Each
-  section maps directly to one of the ticket's four acceptance criteria;
-  see the comments above the `(auto_wake_route)` snippet for that mapping.
+- `Caddyfile` — the design reference for this component: heavily commented,
+  with each section mapping directly to one of the ticket's four
+  acceptance criteria (see the comments above the `(auto_wake_route)`
+  snippet). **Superseded as the actually-deployed artifact** by
+  `../../pyinfra/templates/Caddyfile.j2` (`../../pyinfra/deploy_caddy.py`,
+  per `.scratch/pyinfra-provisioning/spec.md` and ADR-0008): that
+  templated version is what pyinfra renders onto the Pi, parameterized by
+  a workload list instead of hand-duplicated per site. This file is kept
+  as the plugin-research and verification record below, not hand-edited
+  further — new workload routes go in `deploy_caddy.py`'s `WORKLOADS` list.
 
 ## Plugins (real, researched — not invented)
 
@@ -71,8 +78,9 @@ needed by anything this file actually does — see item 2 below.
 
 Build command for the Caddy binary this Caddyfile actually needs (via
 [`xcaddy`](https://github.com/caddyserver/xcaddy) — this is a build-time
-concern; wiring it into an actual device install is pyinfra's future Caddy
-Concern, out of this ticket's scope per `.scratch/pyinfra-provisioning/spec.md`):
+concern; `pyinfra/deploy_caddy.py` templates the config but deliberately
+does not build/install this binary — see that file's docstring and
+`pyinfra/README.md`'s Known gaps):
 
 ```sh
 xcaddy build --with github.com/dulli/caddy-wol

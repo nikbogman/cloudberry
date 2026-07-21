@@ -38,4 +38,4 @@ SERVER_MAC_ADDRESS=AA:BB:CC:DD:EE:FF ALLOY_PUSH_URL=http://localhost:4318 uv run
 
 ## Deployment
 
-Runs as a systemd unit on the Pi Zero, not Docker — a deliberate exception to how workload services run elsewhere in the homelab ([ADR-0007](../../docs/adr/0007-systemd-not-docker-for-control-apis.md)). Deployed by pulling this repo directly on-device and checking out a specific ref ([ADR-0006](../../docs/adr/0006-git-pull-deploy-with-offdevice-ui-build.md)). The pyinfra automation that will perform this deploy is spec'd (`.scratch/pyinfra-provisioning/spec.md`) but not yet built — deploying today is manual.
+Runs as a systemd unit on the Pi Zero, not Docker — a deliberate exception to how workload services run elsewhere in the homelab ([ADR-0007](../../docs/adr/0007-systemd-not-docker-for-control-apis.md)). Deployed by pulling this repo directly on-device and checking out a specific ref ([ADR-0006](../../docs/adr/0006-git-pull-deploy-with-offdevice-ui-build.md)). Automated by pyinfra's `deploy_control_pi_api.py` (`../../pyinfra/deploy_control_pi_api.py`, per `.scratch/pyinfra-provisioning/spec.md`) — see [`pyinfra/README.md`](../../pyinfra/README.md).

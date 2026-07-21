@@ -1,5 +1,12 @@
 # Auto-wake proxy — Caddyfile
 #
+# SUPERSEDED as the deployed artifact by ../../pyinfra/templates/Caddyfile.j2
+# (../../pyinfra/deploy_caddy.py, per .scratch/pyinfra-provisioning/spec.md
+# and ADR-0008) -- that templated version is what pyinfra actually renders
+# onto the Pi. Kept here as the design reference and plugin-research record
+# (see README.md); new workload routes go in deploy_caddy.py's WORKLOADS
+# list, not this file.
+#
 # Component: "Auto-wake proxy" (see CONTEXT.md glossary and the parent spec's
 # Implementation Decisions bullet, .scratch/homelab-control-system/spec.md).
 # Ticket: .scratch/homelab-control-system/issues/05-auto-wake-proxy.md

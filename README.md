@@ -43,6 +43,7 @@ services/
   control_server_api/     Flask app on the server (Suspend, health)
   shared/                  shared Python library for the two Flask apps
   auto_wake_proxy/         Caddy config for transparent per-workload wake
+pyinfra/                   declarative provisioning (pyinfra) for the Pi and server
 .scratch/                  specs and issues for in-progress/planned features
 ```
 
@@ -50,7 +51,7 @@ services/
 
 The control system itself (Control UI, both Control APIs, the Auto-wake proxy) is built per `.scratch/homelab-control-system/spec.md` — all five of its issues are implemented.
 
-**Declarative provisioning (pyinfra) is spec'd but not yet built** (`.scratch/pyinfra-provisioning/spec.md`). Today, getting these services onto the Pi and the server is a manual process; each service's README documents the intended deploy model (systemd units, git-pull-on-device, dev-machine UI build) that pyinfra will eventually automate.
+**Declarative provisioning (pyinfra) is built** per `.scratch/pyinfra-provisioning/spec.md` — all nine of its issues are implemented in [`pyinfra/`](pyinfra), which converges the Pi and the server to their declared state (Tailscale, Docker, Caddy, both Control APIs, the Control UI's static build) in one command. See [`pyinfra/README.md`](pyinfra/README.md) for usage, configuration, and the three-tier testing procedure. Tiers 2/3 of that procedure (disposable-container and real-device runs) and the Caddy binary's own provisioning still need running against real infrastructure — flagged explicitly in that README's Known gaps, not silently assumed done.
 
 ## Development
 
@@ -61,6 +62,7 @@ Each Python service (`control_pi_api`, `control_server_api`, `shared`) is an ind
 - [services/control_server_api/README.md](services/control_server_api/README.md)
 - [services/control_ui/README.md](services/control_ui/README.md)
 - [services/auto_wake_proxy/README.md](services/auto_wake_proxy/README.md)
+- [pyinfra/README.md](pyinfra/README.md) — also an independent `uv` project, but not an installable package
 
 ## Working with this repo as an agent
 
