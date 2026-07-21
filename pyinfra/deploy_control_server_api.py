@@ -1,18 +1,16 @@
-"""Ticket 06: deploys the Control server API to `server`.
+"""Deploys the Control server API to `server`.
 
-Uses the shared helper (ticket 04) to pull this repo to a specific ref and
-run the Control server API as an enabled systemd service. Structurally
-similar to `deploy_control_pi_api.py` (ticket 05) but a distinct
-application on a distinct Host group, per the repo layout decision in
-`.scratch/pyinfra-provisioning/spec.md`. Targetable in isolation:
+Uses the shared helper to pull this repo to a specific ref and run the
+Control server API as an enabled systemd service. Structurally similar to
+`deploy_control_pi_api.py` but a distinct application on a distinct Host
+group. Targetable in isolation:
 
     pyinfra inventory.py deploy_control_server_api.py --limit server
     pyinfra inventory.py deploy_control_server_api.py --limit server --dry
 
-Required dev-machine environment variables (fail fast if missing, only
-when actually targeting `server`/its `test` stand-in): `CONTROL_UI_ORIGIN`,
-`ALLOY_PUSH_URL` -- the Control server API's own required config
-(`services/control_server_api/README.md`).
+Required dev-machine env vars (fail fast if missing, only when targeting
+`server`/its `test` stand-in): `CONTROL_UI_ORIGIN`, `ALLOY_PUSH_URL` (the
+Control server API's own config).
 """
 
 import os

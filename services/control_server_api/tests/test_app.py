@@ -53,7 +53,7 @@ def test_health_check_reports_reachable_with_valid_identity(client):
 
 
 def test_health_check_requires_no_extra_credentials_beyond_identity_header(client):
-    # No allow-list of specific identities — tailnet membership alone is sufficient (ADR-0004).
+    # No allow-list of specific identities — tailnet membership alone is sufficient.
     response = client.get("/health", headers={IDENTITY_HEADER: "anyone-on-the-tailnet@example.com"})
 
     assert response.status_code == 200
@@ -150,7 +150,7 @@ def test_suspend_returns_500_and_logs_failed_when_suspender_raises_oserror(clien
 
 
 def test_suspend_does_not_guard_against_repeated_requests(client, system_suspender):
-    # The API always attempts the action — the UI's disabled state is the only guard (ticket 04, mirrors ticket 03).
+    # The API always attempts the action — the UI's disabled state is the only guard.
     client.post("/suspend", headers=AUTH_HEADERS)
     client.post("/suspend", headers=AUTH_HEADERS)
 

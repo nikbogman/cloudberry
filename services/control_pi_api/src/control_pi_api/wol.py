@@ -1,7 +1,6 @@
 """Wake-on-LAN: builds and broadcasts the magic packet that wakes the main
-server. The raw socket send is the one external side effect in this app
-(per the spec's testing conventions) — `build_magic_packet` is pure and
-tested directly; `WakeOnLanSender.send` is the seam mocked in app tests.
+server. `build_magic_packet` is pure and tested directly;
+`WakeOnLanSender.send` is the seam mocked in app tests.
 """
 
 import socket
@@ -19,9 +18,7 @@ def build_magic_packet(mac_address: str) -> bytes:
 
 
 class WakeOnLanSender:
-    """Broadcasts a WoL magic packet over UDP on the local L2 segment.
-    Requires the Pi and the server to share a broadcast domain (ADR-0003).
-    """
+    """Broadcasts a WoL magic packet over UDP on the local L2 segment."""
 
     def __init__(self, broadcast_address: str = "255.255.255.255", port: int = WOL_PORT):
         self._broadcast_address = broadcast_address

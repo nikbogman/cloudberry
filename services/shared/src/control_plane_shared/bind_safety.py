@@ -1,7 +1,5 @@
 """Startup assertion that a control-plane app is not reachable off-tailnet.
 
-Per ADR-0004, tailnet membership is the entire authorization boundary — so
-the process must never bind to an address a non-tailnet client could reach.
 Allowed: loopback, and Tailscale's own address ranges (the CGNAT IPv4 range
 it assigns nodes, and its IPv6 ULA range).
 """

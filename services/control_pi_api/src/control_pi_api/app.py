@@ -1,8 +1,7 @@
 """Control Pi API: sends a Wake-on-LAN packet to the main server on request.
 
 Runs on the Pi Zero, path-routed under the same `tailscale serve` app as
-the Control UI — same-origin, so no CORS entry is needed (unlike the
-Control server API, a distinct origin per ADR-0001).
+the Control UI — same-origin, so no CORS entry is needed.
 """
 
 from flask import Flask, Response, jsonify

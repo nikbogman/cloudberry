@@ -1,26 +1,20 @@
-"""Ticket 07: templates the complete Caddyfile on `pi`.
+"""Templates the complete Caddyfile on `pi`.
 
-The single declarative source of truth (ADR-0008) for every route Caddy
-serves on the Pi: the auto-wake-proxy route for each current workload
-service, and the Control UI's static files + Control Pi API path-routing.
-Nothing is ever hand-edited on the device -- adding a new workload means
-adding an entry to `WORKLOADS` below and redeploying. Targetable in
-isolation:
+Single declarative source of truth for every route Caddy serves on the Pi:
+the auto-wake-proxy route for each workload service, plus the Control UI's
+static files and Control Pi API path-routing. Nothing is hand-edited on the
+device -- adding a workload means adding an entry to `WORKLOADS` and
+redeploying. Targetable in isolation:
 
     pyinfra inventory.py deploy_caddy.py --limit pi
     pyinfra inventory.py deploy_caddy.py --limit pi --dry
 
-Blocked by (per the ticket): 02 (tailnet must be joined before Caddy binds
-tailnet-only addresses) and 05 (needs the Control UI static path this
-templates a route for). Does *not* route to the Control server API --
-that would be a Pi-side relay, which ADR-0001 explicitly rejects; see
-`templates/Caddyfile.j2`'s header comment.
+Requires the tailnet already joined (tailnet-only addresses) and the
+Control UI's static path already delivered. Doesn't route to the Control
+server API -- that would be a Pi-side relay, which ADR-0001 rejects.
 
-Building/installing the Caddy binary itself (with the `caddy-wol` plugin
-compiled in via `xcaddy`, `services/auto_wake_proxy/README.md`'s Build
-section) is not this Deploy file's job -- only the config it runs from is
-declared here. Provisioning the binary is a documented manual prerequisite
-until a future ticket covers it.
+Doesn't build/install the Caddy binary itself (with the `caddy-wol` plugin)
+-- only the config. Provisioning the binary is a manual prerequisite for now.
 """
 
 import os

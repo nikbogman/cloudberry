@@ -9,7 +9,7 @@ const STATUS_LABELS: Record<ReachabilityState, string> = {
 const DEFAULT_POLL_INTERVAL_MS = 12_000
 
 export interface MountOptions {
-  /** Control server API origin — a distinct origin from the Control UI (ADR-0001). */
+  /** Control server API origin. */
   serverApiBaseUrl: string
   /** Control Pi API origin — same-origin as the Control UI by default, so '' (relative) works. */
   piApiBaseUrl?: string
@@ -50,9 +50,8 @@ export function mountControlUi(container: HTMLElement, options: MountOptions): (
   }
 
   wakeButton.addEventListener('click', () => {
-    // Fire-and-forget: outcome is reported via the audit log (ticket 01),
-    // not surfaced in the UI. Swallow rejections so a network error here
-    // can't surface as an unhandled promise rejection.
+    // Fire-and-forget; swallow rejections so a network error here can't
+    // surface as an unhandled promise rejection.
     void fetch(`${piApiBaseUrl}/wake`, { method: 'POST' }).catch(() => {})
   })
 

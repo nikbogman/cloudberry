@@ -1,23 +1,16 @@
-"""Ticket 04: shared git-pull + systemd deploy helper.
+"""Shared git-pull + systemd deploy helper.
 
-The pattern common to both Control APIs (repo layout decision in
-`.scratch/pyinfra-provisioning/spec.md`): pull this repo to a target
-device checked out to a specific ref (ADR-0006), install/enable a systemd
-unit (ADR-0007), and restart the service only when the pulled code or the
-unit file actually changed -- never unconditionally on every Deploy.
+The pattern common to both Control APIs: pull this repo to a target device
+at a specific ref, install/enable a systemd unit, and restart only when the
+pulled code or the unit file actually changed -- never unconditionally.
 
 Parameterized (ref, unit name, working directory, start command) rather
-than hardcoded to one app, so `deploy_control_pi_api.py` (ticket 05) and
-`deploy_control_server_api.py` (ticket 06) can each consume it despite
-being different applications on different Host groups. Demoed for real
-against a throwaway app/unit -- see `docs/agents/pyinfra-demo.md` -- before
-either real Control API Deploy file adopted it.
+than hardcoded to one app, so both Control API Deploy files can share it
+despite being different applications on different Host groups.
 
 Restart/reload gating uses each operation's `.will_change` -- the
-prepare-time diff result, safe to read immediately after calling the
-operation (unlike `.did_change()`, which raises until the operation has
-actually executed; see docs/agents/pyinfra.md's Deploy Process notes and
-the pyinfra `OperationMeta` source, `pyinfra/api/operation.py`).
+prepare-time diff result, safe to read immediately (unlike `.did_change()`,
+which raises until the operation has actually executed).
 """
 
 from pyinfra.api import deploy
@@ -44,12 +37,11 @@ def git_systemd_service(
 
     `working_directory` (the unit's `WorkingDirectory=` and where
     `setup_commands` run) defaults to `dest` but can be overridden to a
-    subdirectory of it -- this repo is a monorepo, so `dest` is a full
-    clone while each app actually lives under `dest/services/<app>`.
+    subdirectory -- this repo is a monorepo, so `dest` is a full clone
+    while each app actually lives under `dest/services/<app>`.
 
-    `setup_commands` (e.g. `uv sync`) run only when the pull actually
-    changed something -- there's no point reinstalling dependencies on a
-    Deploy that pulled nothing new.
+    `setup_commands` (e.g. `uv sync`) run only when the pull changed
+    something -- no point reinstalling dependencies otherwise.
     """
 
     working_directory = working_directory or dest

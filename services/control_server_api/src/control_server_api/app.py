@@ -1,7 +1,7 @@
 """Control server API: exposes a Reachable health check and a Suspend action.
 
 Runs on the main server behind its own `tailscale serve` instance, a
-distinct origin from the Control UI (ADR-0001) — hence the CORS allow-list.
+distinct origin from the Control UI — hence the CORS allow-list.
 """
 
 import subprocess
@@ -18,17 +18,17 @@ from control_server_api.suspend import SystemSuspender
 
 class ReachabilityTracker:
     """Logs a `reachability_changed` event the first time this process
-    observes itself as reachable. Both Control APIs are stateless (no DB),
-    but in-memory state for the life of the process is fine here — and it's
-    the only "changed" edge this app can ever witness: it cannot log going
-    *un*reachable, since it's asleep while that's true.
+    observes itself as reachable. In-memory state is fine here (Control
+    APIs are stateless, no DB) — and it's the only "changed" edge this app
+    can ever witness: it can't log going *un*reachable, since it's asleep
+    while that's true.
 
-    Trade-off: an ordinary process restart (deploy, crash) emits a fresh
-    event even though the server was never actually unreachable — there's
-    no persisted state to distinguish "just woke from suspend" from "the
-    Flask process was restarted while the machine stayed up". Accepted
-    given the stateless-by-design constraint (no DB/volume to provision or
-    lose); Wake/Suspend events remain the precise audit trail regardless.
+    Trade-off: a plain process restart (deploy, crash) emits a fresh event
+    even though the server was never actually unreachable — there's no
+    persisted state to tell "just woke from suspend" apart from "the Flask
+    process restarted while the machine stayed up". Accepted since there's
+    no DB/volume to provision or lose; Wake/Suspend events remain the
+    precise audit trail regardless.
     """
 
     def __init__(self) -> None:

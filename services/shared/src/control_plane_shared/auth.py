@@ -1,8 +1,7 @@
 """Tailnet identity-header auth for the control plane's Flask apps.
 
 Both Control APIs sit behind `tailscale serve`, which injects
-`Tailscale-User-Login` for any tailnet-authenticated caller. Tailnet
-membership is the entire authorization boundary (ADR-0004) — this module
+`Tailscale-User-Login` for any tailnet-authenticated caller. This module
 only checks the header is present, not which identity it names.
 """
 

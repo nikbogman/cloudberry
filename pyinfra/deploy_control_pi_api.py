@@ -1,30 +1,26 @@
-"""Ticket 05: deploys the Control Pi API to `pi`, plus delivers the
-Control UI's static build.
+"""Deploys the Control Pi API to `pi`, plus delivers the Control UI's
+static build.
 
-Uses the shared helper (ticket 04) to pull this repo to a specific ref and
-run the Control Pi API as an enabled systemd service. Also builds the
-Control UI on the dev machine (`npm ci && npm run build`, ADR-0006) and
-syncs only its static `dist/` output to `pi` -- the Pi never runs a
-Node/npm toolchain. Targetable in isolation:
+Uses the shared helper to pull this repo to a specific ref and run the
+Control Pi API as an enabled systemd service. Also builds the Control UI
+on the dev machine (`npm ci && npm run build`) and syncs only its static
+`dist/` to `pi` -- the Pi never runs a Node/npm toolchain. Targetable in
+isolation:
 
     pyinfra inventory.py deploy_control_pi_api.py --limit pi
     pyinfra inventory.py deploy_control_pi_api.py --limit pi --dry
 
-Required dev-machine environment variables (fail fast if missing, only
-when actually targeting `pi`/its `test` stand-in -- see `common.has_device_kind`):
-`SERVER_MAC_ADDRESS`, `ALLOY_PUSH_URL` -- the Control Pi API's own required
-config (`services/control_pi_api/README.md`) -- plus `CONTROL_SERVER_API_ORIGIN`,
-baked into the Control UI build as `VITE_CONTROL_SERVER_API_URL`
-(`services/control_ui/README.md`). The UI, not this Pi's Caddy, is what
-"routes to" the Control server API (ADR-0001 rules out a Pi-side relay;
-see `deploy_caddy.py`'s docstring).
+Required dev-machine env vars (fail fast if missing, only when targeting
+`pi`/its `test` stand-in): `SERVER_MAC_ADDRESS`, `ALLOY_PUSH_URL` (the
+Control Pi API's own config) plus `CONTROL_SERVER_API_ORIGIN`, baked into
+the Control UI build as `VITE_CONTROL_SERVER_API_URL`. The UI, not this
+Pi's Caddy, routes to the Control server API (ADR-0001 rules out a Pi-side
+relay).
 
-Note on `--dry`: the Control UI build (`local.shell` below) runs on the
-dev machine unconditionally, including under `--dry` -- pyinfra's dry-run
-guarantee ("nothing mutated") only covers the *remote* operations it
-tracks and diffs (`files.sync` et al.), not a plain local build step. This
-never touches `pi`, so it's consistent with `--dry`'s "preview without
-touching a real device" intent, just worth knowing it's not a no-op.
+Note on `--dry`: the Control UI build (`local.shell` below) always runs,
+even under `--dry` -- pyinfra's dry-run guarantee only covers remote
+operations, not a local build step. It never touches `pi`, but isn't a
+true no-op.
 """
 
 import os
@@ -59,11 +55,9 @@ if has_device_kind("pi"):
         setup_commands=["uv sync"],
     )
 
-    # Control UI (ADR-0006): built on the dev machine, only dist/ shipped.
-    # VITE_CONTROL_SERVER_API_URL is baked in at build time so the browser
-    # calls the Control server API's real origin directly (ADR-0001);
-    # VITE_CONTROL_PI_API_URL is left unset -- relative/same-origin is
-    # correct since the Control Pi API shares this Caddy site.
+    # VITE_CONTROL_SERVER_API_URL bakes in the real origin so the browser
+    # calls the Control server API directly (ADR-0001). VITE_CONTROL_PI_API_URL
+    # is left unset -- same-origin works since the Pi API shares this Caddy site.
     control_server_api_origin = os.environ["CONTROL_SERVER_API_ORIGIN"]
     local.shell(
         f"cd ../services/control_ui && npm ci && VITE_CONTROL_SERVER_API_URL={control_server_api_origin} npm run build",

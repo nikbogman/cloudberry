@@ -1,19 +1,17 @@
-"""Ticket 02: joins a target device to the tailnet.
+"""Joins a target device to the tailnet.
 
 Installs Tailscale from its official apt repo, enables `tailscaled`, then
-runs `tailscale up` with an auth key read from the `TAILSCALE_AUTH_KEY`
-environment variable on the dev machine (ADR-0010) -- the key is never
-written to a file in this repo. Targetable in isolation:
+runs `tailscale up` with an auth key from the `TAILSCALE_AUTH_KEY`
+environment variable on the dev machine -- never written to a file in this
+repo. Targetable in isolation:
 
     pyinfra inventory.py deploy_tailscale.py --limit pi
     pyinfra inventory.py deploy_tailscale.py --limit server --dry
 
-The install steps run for any `pi`/`server`-shaped host, including `test`
-stand-ins, so a bad package name or repo config error surfaces there first
-(ticket 09). The actual `tailscale up` join is restricted to the real
-`pi`/`server` Host groups -- never `test` -- so a disposable-container run
-never enrolls an ephemeral container into the real tailnet with the real
-auth key.
+Install steps run against `test` stand-ins too, so a bad package name
+surfaces there first. The `tailscale up` join is restricted to the real
+`pi`/`server` groups -- never `test` -- so a disposable container never
+enrolls in the real tailnet.
 """
 
 import json
@@ -28,10 +26,9 @@ from common import debian_codename, has_device_kind
 
 class TailscaleBackendState(FactBase):
     """`BackendState` from `tailscale status --json` (e.g. "Running" once
-    joined), or `None` if tailscale isn't installed/joined yet. Read during
-    prepare, before this file's own install operations have executed --
-    the `|| true` keeps a "command not found" on a fresh host from failing
-    the fact gather; it's simply treated as "not joined".
+    joined), or `None` if Tailscale isn't installed/joined yet. `|| true`
+    keeps a "command not found" on a fresh host from failing the fact
+    gather.
     """
 
     def command(self) -> str:

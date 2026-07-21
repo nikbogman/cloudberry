@@ -35,8 +35,7 @@ def test_rejects_off_tailnet_addresses(host):
 
 def create_app(host: str) -> str:
     """Stand-in for a Control API's app factory: refuses to start if `host`
-    would expose it off-tailnet, matching how tickets 02-04 must call this
-    at startup before binding Flask's dev/prod server to a host."""
+    would expose it off-tailnet."""
     assert_tailnet_only_bind(host)
     return f"app configured to bind {host}"
 

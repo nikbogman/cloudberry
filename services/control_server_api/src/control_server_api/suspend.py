@@ -1,9 +1,9 @@
 """Suspend-to-RAM: runs the configured system command as a subprocess. This
-is the one external side effect in this app (per the spec's testing
-conventions) — `SystemSuspender.suspend` is the seam mocked in app tests.
+is the one external side effect in this app — `SystemSuspender.suspend` is
+the seam mocked in app tests.
 
-ADR-0002: suspend-to-RAM only. There is no code path here, or anywhere else
-in this app, that could trigger a full shutdown (ACPI S5).
+No code path here, or anywhere else in this app, can trigger a full
+shutdown (ACPI S5).
 """
 
 import subprocess

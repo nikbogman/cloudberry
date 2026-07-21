@@ -1,8 +1,7 @@
 """Structured event shipping to Grafana Alloy.
 
-Both Control APIs are fully stateless — Alloy is the only place wake,
-suspend, and reachability history lives. A logging failure here must never
-break the caller's actual action, so `send_event` swallows transport errors.
+A logging failure here must never break the caller's actual action, so
+`send_event` swallows transport errors.
 """
 
 import logging

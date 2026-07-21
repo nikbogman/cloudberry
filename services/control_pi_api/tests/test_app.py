@@ -79,7 +79,7 @@ def test_wake_returns_500_and_logs_failed_when_sender_raises(client, alloy, wol_
 
 
 def test_wake_does_not_guard_against_repeated_requests(client, wol_sender):
-    # The API always attempts the action — the UI's disabled state is the only guard (ticket 03).
+    # The API always attempts the action — the UI's disabled state is the only guard.
     client.post("/wake", headers=AUTH_HEADERS)
     client.post("/wake", headers=AUTH_HEADERS)
 

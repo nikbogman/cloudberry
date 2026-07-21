@@ -16,7 +16,7 @@ def test_suspend_runs_the_default_command(monkeypatch):
 
 
 def test_default_command_is_systemctl_suspend_only():
-    # ADR-0002: suspend-to-RAM only — never a full shutdown (ACPI S5).
+    # Suspend-to-RAM only — never a full shutdown (ACPI S5).
     assert tuple(DEFAULT_SUSPEND_COMMAND) == ("systemctl", "suspend")
 
 
@@ -46,7 +46,6 @@ def test_suspend_propagates_oserror_when_command_is_not_found(monkeypatch):
 
 
 def test_constructor_rejects_an_empty_command():
-    # Fails fast at startup rather than mid-request (mirrors control_pi_api's
-    # build_magic_packet validation of a malformed MAC address).
+    # Fails fast at startup rather than mid-request.
     with pytest.raises(ValueError):
         SystemSuspender(command=[])

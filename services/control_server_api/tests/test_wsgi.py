@@ -29,11 +29,9 @@ def test_wsgi_builds_a_working_app_from_environment(wsgi_module):
 
 
 def test_wsgi_wires_suspend_to_the_real_systemctl_suspend_command(wsgi_module, monkeypatch):
-    # A real "systemctl suspend" must never run in a test: unlike WoL's
-    # harmless UDP broadcast (control_pi_api), an actual suspend call would
-    # not be harmless if a sandboxed test environment could honor it. Patch
-    # the one real side effect instead so this test still exercises the
-    # real subprocess.run call the wiring makes.
+    # A real "systemctl suspend" must never run in a test — patch the one
+    # real side effect so this still exercises the actual subprocess.run
+    # call the wiring makes.
     run_mock = MagicMock()
     monkeypatch.setattr(subprocess, "run", run_mock)
 

@@ -1,6 +1,6 @@
 """Real entrypoint: wires `create_app` to environment-provided config so
-this can actually be run (by `flask run`, or a WSGI server under systemd
-per ADR-0007), not just imported for tests.
+this can actually be run (by `flask run`, or a WSGI server under systemd),
+not just imported for tests.
 """
 
 import os
