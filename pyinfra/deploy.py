@@ -5,7 +5,7 @@
     pyinfra inventory.py deploy.py --limit pi  # converge just pi's pieces
 
 Each Deploy file is also independently runnable (e.g. `pyinfra inventory.py
-deploy_caddy.py --limit pi`), gated by `common.has_device_kind`. This file
+deploy_caddy.py --limit pi`), gated by `common.has_device_role`. This file
 just composes them in dependency order: tailnet before Caddy (tailnet-only
 addresses), Control APIs before Caddy (routes to the Control UI's static
 path).

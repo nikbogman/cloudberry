@@ -4,10 +4,11 @@ Two real devices, `pi` and `server`, plus a `test` group of disposable,
 systemd-capable containers standing in for both devices' OS bases. No
 Deploy file hardcodes a host -- they target `pi`/`server`/`test` by name.
 
-Real addresses are read from the environment, not hardcoded, with a
-placeholder MagicDNS-shaped default.
+Real addresses are read from the environment via `settings.InventorySettings`
+(pydantic-settings), not hardcoded, with a placeholder MagicDNS-shaped
+default.
 
-`device_kind` (host data, not a pyinfra group) records which application
+`device_role` (host data, not a pyinfra group) records which application
 logic a host runs -- "pi" or "server" -- independently of whether it's the
 real device or a disposable stand-in. Test hosts aren't added into the
 `pi`/`server` groups themselves, since those groups must stay targetable
@@ -17,20 +18,16 @@ docs/agents/pyinfra.md for why `test` uses the `@ssh` connector rather than
 containers.
 """
 
-import os
+from settings import InventorySettings
+
+settings = InventorySettings()
 
 pi = [
-    (
-        os.environ.get("PI_HOST", "pi-zero.tailnet"),
-        {"ssh_user": os.environ.get("PI_SSH_USER", "pi"), "device_kind": "pi"},
-    ),
+    (settings.pi_host, {"ssh_user": settings.pi_ssh_user, "device_role": "pi"}),
 ]
 
 server = [
-    (
-        os.environ.get("SERVER_HOST", "main-server.tailnet"),
-        {"ssh_user": os.environ.get("SERVER_SSH_USER", "admin"), "device_kind": "server"},
-    ),
+    (settings.server_host, {"ssh_user": settings.server_ssh_user, "device_role": "server"}),
 ]
 
 # Separate inventory identities ("pi-test"/"server-test") with the connect
@@ -40,19 +37,19 @@ test = [
     (
         "pi-test",
         {
-            "ssh_hostname": os.environ.get("PI_TEST_HOST", "localhost"),
-            "ssh_port": int(os.environ.get("PI_TEST_SSH_PORT", "2201")),
-            "ssh_user": os.environ.get("PI_TEST_SSH_USER", "root"),
-            "device_kind": "pi",
+            "ssh_hostname": settings.pi_test_host,
+            "ssh_port": settings.pi_test_ssh_port,
+            "ssh_user": settings.pi_test_ssh_user,
+            "device_role": "pi",
         },
     ),
     (
         "server-test",
         {
-            "ssh_hostname": os.environ.get("SERVER_TEST_HOST", "localhost"),
-            "ssh_port": int(os.environ.get("SERVER_TEST_SSH_PORT", "2202")),
-            "ssh_user": os.environ.get("SERVER_TEST_SSH_USER", "root"),
-            "device_kind": "server",
+            "ssh_hostname": settings.server_test_host,
+            "ssh_port": settings.server_test_ssh_port,
+            "ssh_user": settings.server_test_ssh_user,
+            "device_role": "server",
         },
     ),
 ]

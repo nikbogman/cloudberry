@@ -1,14 +1,10 @@
 {#
-    Ticket 07: the Pi's complete Caddy config, templated by deploy_caddy.py
-    as the single declarative source of truth (ADR-0008) -- nothing is
-    ever hand-edited on the device. This is the templated evolution of
+    The Pi's complete Caddy config, templated by deploy_caddy.py as the
+    single declarative source of truth (ADR-0008) -- nothing is ever
+    hand-edited on the device. This is the templated evolution of
     services/auto_wake_proxy/Caddyfile (built by
     .scratch/homelab-control-system/issues/05-auto-wake-proxy.md): the
-    auto-wake-proxy snippet and per-workload routing logic below are
-    ported from that file, now generated from the `workloads` list in
-    deploy_caddy.py instead of being hand-duplicated per site, so "adding
-    a new workload service's route requires only editing this repo and
-    redeploying" (this ticket's acceptance criteria). See that file's
+    wake_on_lan mechanism below is ported from that file. See that file's
     README (services/auto_wake_proxy/README.md) for the full plugin
     research/rationale and live-verification writeup behind the
     wake_on_lan mechanism -- not repeated here to avoid two copies of the
@@ -18,12 +14,18 @@
     compiled in (see services/auto_wake_proxy/README.md's Build section);
     that build step is not this ticket's concern.
 
+    Per ADR-0011, this file carries no per-workload knowledge -- everything
+    under /server is forwarded, path-stripped, to a single fixed upstream
+    on the main server. Which path reaches which Docker service (Immich,
+    AI agents, etc.) is decided entirely by a reverse proxy running on
+    that server itself, not templated here.
+
     Deliberately does NOT proxy to the Control server API: the browser
     calls it directly at its own tailscale-served origin (ADR-0001, "no
-    Pi-side relay"). The Control UI is built (ticket 05,
-    deploy_control_pi_api.py) with VITE_CONTROL_SERVER_API_URL pointing at
-    that real origin, so the client -- not this Caddy instance -- is what
-    "routes to" the Control server API.
+    Pi-side relay"). The Control UI is built (deploy_control_pi_api.py)
+    with VITE_CONTROL_SERVER_API_URL pointing at that real origin, so the
+    client -- not this Caddy instance -- is what "routes to" the Control
+    server API.
 #}
 {
 	order wake_on_lan before respond
@@ -36,8 +38,8 @@
 }
 
 # --- Reusable auto-wake route -------------------------------------------
-# One snippet, imported once per workload site block below. {args[0]} is
-# the upstream address (host:port) for that workload on the main server.
+# One snippet, imported below. {args[0]} is the upstream address (host:port)
+# to proxy to.
 (auto_wake_route) {
 	reverse_proxy {args[0]} {
 		lb_try_duration 3s
@@ -57,22 +59,18 @@
 	}
 }
 
-# --- Workload routes ------------------------------------------------------
-# One site block per entry in deploy_caddy.py's WORKLOADS list.
-{% for workload in workloads %}
-# {{ workload.name }}
-:{{ workload.route_port }} {
-	import auto_wake_route {{ main_server_host }}:{{ workload.upstream_port }}
-}
-{% endfor %}
-
-# --- Control UI + Control Pi API ------------------------------------------
-# Same-origin, same tailscale serve app (README.md's Control Pi API entry;
-# ADR-0001): static Control UI files at `/`, the Control Pi API's /wake
-# path-routed to its local systemd-run process alongside it.
+# --- Single site: Control UI, Control Pi API, and the main server --------
+# One origin, path-routed. `/wake` reaches the Control Pi API; everything
+# else falls through to the Control UI's static files, except `/server`,
+# which is forwarded (path stripped) to the main server as a single blind
+# upstream (ADR-0011) -- this Caddy has no opinion on what's behind it.
 :{{ control_ui_port }} {
 	handle /wake* {
 		reverse_proxy 127.0.0.1:{{ control_pi_api_port }}
+	}
+
+	handle_path /server* {
+		import auto_wake_route {{ main_server_host }}:{{ server_proxy_port }}
 	}
 
 	handle {

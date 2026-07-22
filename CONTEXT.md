@@ -19,7 +19,7 @@ The backend on the main server that exposes the Suspend action and a reachabilit
 _Avoid_: server API, suspend service
 
 **Auto-wake proxy**:
-Caddy's Wake-on-LAN plugin on the Pi Zero, configured as a reverse proxy in front of every Docker service on the main server (Immich, AI agents, etc.). Sends a Wake-on-LAN packet on any request while the server is asleep and holds the request until the server responds. Operates independently of the Control Pi API — a second, automatic trigger for the same physical wake action, distinct from the deliberate Wake button.
+Caddy's Wake-on-LAN plugin on the Pi Zero, reverse-proxying one fixed path (`/server*`) to a single upstream on the main server — not one route per workload service (Immich, AI agents, etc.); which path reaches which service is entirely the main server's own reverse proxy's concern, invisible to the Pi (ADR-0011). Sends a Wake-on-LAN packet on any request while the server is asleep and holds the request until the server responds. Operates independently of the Control Pi API — a second, automatic trigger for the same physical wake action, distinct from the deliberate Wake button.
 _Avoid_: WoL plugin, wake proxy
 
 **Reachable**:

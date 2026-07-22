@@ -1,10 +1,9 @@
 """Templates the complete Caddyfile on `pi`.
 
 Single declarative source of truth for every route Caddy serves on the Pi:
-the auto-wake-proxy route for each workload service, plus the Control UI's
-static files and Control Pi API path-routing. Nothing is hand-edited on the
-device -- adding a workload means adding an entry to `WORKLOADS` and
-redeploying. Targetable in isolation:
+the Control UI's static files, Control Pi API path-routing, and one blind
+path-routed proxy to the main server. Nothing is hand-edited on the
+device. Targetable in isolation:
 
     pyinfra inventory.py deploy_caddy.py --limit pi
     pyinfra inventory.py deploy_caddy.py --limit pi --dry
@@ -13,31 +12,35 @@ Requires the tailnet already joined (tailnet-only addresses) and the
 Control UI's static path already delivered. Doesn't route to the Control
 server API -- that would be a Pi-side relay, which ADR-0001 rejects.
 
+Per ADR-0011, this Caddy config carries no knowledge of individual
+workload services (Immich, AI agents, etc.) or their container ports --
+everything under `/server*` is forwarded, path-stripped, to a single fixed
+upstream (`server_proxy_port`) on the main server. Which path reaches
+which Docker service is that server's own reverse proxy's job entirely,
+out of pyinfra's scope (same boundary as the Compose stacks themselves)
+and not yet built -- a known gap until it is (see this repo's README).
+
 Doesn't build/install the Caddy binary itself (with the `caddy-wol` plugin)
 -- only the config. Provisioning the binary is a manual prerequisite for now.
 """
 
-import os
-
 from pyinfra.operations import files, systemd
 
-from common import has_device_kind
+from common import has_device_role
+from settings import CaddySettings
 
-WORKLOADS = [
-    {"name": "immich", "route_port": os.environ.get("IMMICH_ROUTE_PORT", "8443"), "upstream_port": 2283},
-    {"name": "ai-agents", "route_port": os.environ.get("AGENTS_ROUTE_PORT", "8444"), "upstream_port": 8080},
-]
+settings = CaddySettings()
 
-if has_device_kind("pi"):
+if has_device_role("pi"):
     caddyfile = files.template(
         name="Template the complete Caddyfile",
         src="templates/Caddyfile.j2",
         dest="/etc/caddy/Caddyfile",
-        workloads=WORKLOADS,
-        main_server_host=os.environ.get("MAIN_SERVER_HOST", "main-server.tailnet"),
+        main_server_host=settings.main_server_host,
+        server_proxy_port=settings.server_proxy_port,
         control_ui_root="/srv/control-ui",
-        control_ui_port=os.environ.get("CONTROL_UI_PORT", "8080"),
-        control_pi_api_port=os.environ.get("CONTROL_PI_API_PORT", "5000"),
+        control_ui_port=settings.control_ui_port,
+        control_pi_api_port=settings.control_pi_api_port,
     )
 
     systemd.service(

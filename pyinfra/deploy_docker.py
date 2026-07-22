@@ -12,26 +12,59 @@ Docker workloads.
 
 pyinfra has no built-in "install Docker engine" operation, so this composes
 Docker's official apt-repo instructions
-(https://docs.docker.com/engine/install/debian/) from the generic
-apt/systemd operations.
+(https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository,
+also covering https://docs.docker.com/engine/install/debian/ -- `server`
+runs Ubuntu Server, so the repo path is read from the host's actual distro
+ID rather than hardcoded) from the generic apt/systemd operations.
+
+Docker's current docs pin the repo to `Architectures: $(dpkg
+--print-architecture)` rather than leaving it unbounded, since one
+`deb`/DEB822 entry serves every architecture Docker publishes -- the same
+`arch=` option on the classic one-line format pyinfra's `apt.repo`
+understands. Read from the host itself (a custom fact, since pyinfra has
+no built-in one keyed to `dpkg`'s naming -- `server.Arch` wraps `uname -m`,
+which uses different names, e.g. "x86_64" instead of "amd64") so this stays
+correct against whatever architecture `server`/`server-test` actually run,
+without hardcoding one.
 """
 
+from pyinfra import host
+from pyinfra.api import FactBase
 from pyinfra.operations import apt, systemd
 
-from common import debian_codename, has_device_kind
+from common import has_device_role, linux_codename, linux_distro_id
 
-if has_device_kind("server"):
-    codename = debian_codename()
+
+class DpkgArchitecture(FactBase):
+    """Native apt architecture (e.g. "amd64", "arm64") per `dpkg
+    --print-architecture` -- the naming Docker's apt repo `arch=`/DEB822
+    `Architectures:` fields expect, distinct from `uname -m`'s naming.
+    """
+
+    def command(self) -> str:
+        return "dpkg --print-architecture"
+
+    def process(self, output: list[str]) -> str:
+        return "\n".join(output).strip()
+
+
+if has_device_role("server"):
+    codename = linux_codename()
+    distro_id = linux_distro_id()
+    arch = host.get_fact(DpkgArchitecture)
 
     apt.key(
         name="Add Docker's apt signing key",
-        src="https://download.docker.com/linux/debian/gpg",
+        src=f"https://download.docker.com/linux/{distro_id}/gpg",
         dest="docker.gpg",
     )
 
     apt.repo(
         name="Add the Docker apt repo",
-        src=f"deb [signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian {codename} stable",
+        src=(
+            f"deb [arch={arch} signed-by=/etc/apt/keyrings/docker.gpg] "
+            f"https://download.docker.com/linux/{distro_id} {codename} stable"
+        ),
         filename="docker",
     )
 

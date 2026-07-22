@@ -13,31 +13,33 @@ Required dev-machine env vars (fail fast if missing, only when targeting
 Control server API's own config).
 """
 
-import os
-
-from common import has_device_kind
+from common import has_device_role
 from control_api_deploy import git_systemd_service
+from settings import ControlServerApiSecrets, ControlServerApiSettings, DeploySourceSettings
 
-REPO_URL = os.environ.get("HOMELAB_REPO_URL", "git@github.com:nikbogman/homelab.git")
-REF = os.environ.get("DEPLOY_REF", "main")
+source = DeploySourceSettings()
+api_settings = ControlServerApiSettings()
 CLONE_DEST = "/srv/homelab"
 APP_DIR = f"{CLONE_DEST}/services/control_server_api"
-BIND_HOST = os.environ.get("CONTROL_SERVER_API_HOST", "127.0.0.1")
-BIND_PORT = os.environ.get("CONTROL_SERVER_API_PORT", "5000")
 
-if has_device_kind("server"):
+if has_device_role("server"):
+    secrets = ControlServerApiSecrets()
+
     git_systemd_service(
-        repo_url=REPO_URL,
-        ref=REF,
+        repo_url=source.homelab_repo_url,
+        ref=source.deploy_ref,
         dest=CLONE_DEST,
         working_directory=APP_DIR,
         unit_name="control-server-api.service",
         description="Control server API -- exposes Suspend and the reachability health check",
-        start_command=f"uv run flask --app control_server_api.wsgi run --host {BIND_HOST} --port {BIND_PORT}",
+        start_command=(
+            f"uv run flask --app control_server_api.wsgi run "
+            f"--host {api_settings.control_server_api_host} --port {api_settings.control_server_api_port}"
+        ),
         environment={
-            "CONTROL_UI_ORIGIN": os.environ["CONTROL_UI_ORIGIN"],
-            "ALLOY_PUSH_URL": os.environ["ALLOY_PUSH_URL"],
-            "CONTROL_SERVER_API_HOST": BIND_HOST,
+            "CONTROL_UI_ORIGIN": secrets.control_ui_origin,
+            "ALLOY_PUSH_URL": secrets.alloy_push_url,
+            "CONTROL_SERVER_API_HOST": api_settings.control_server_api_host,
         },
         setup_commands=["uv sync"],
     )

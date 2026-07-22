@@ -15,7 +15,8 @@ implementation notes and citations live in
 ```
 pyinfra/
   inventory.py                    # pi / server / test Host groups (ticket 01)
-  common.py                       # shared debian_codename()/has_device_kind() helpers
+  common.py                       # shared linux_codename()/linux_distro_id()/has_device_role() helpers
+  settings.py                     # pydantic-settings classes -- typed env var config
   deploy_tailscale.py             # ticket 02
   deploy_docker.py                # ticket 03
   control_api_deploy.py           # shared git+systemd @deploy helper (ticket 04)
@@ -55,27 +56,71 @@ uv sync
 
 Nothing operator-specific is hardcoded (ticket 01) — real addresses,
 secrets, and deployment refs are all read from the dev machine's
-environment at Deploy time (ADR-0010).
+environment at Deploy time (ADR-0010), via typed
+[`pydantic-settings`](https://docs.pydantic.dev/latest/concepts/pydantic_settings/)
+classes in `settings.py` rather than each Deploy file parsing
+`os.environ` by hand. Ports and similar fields are coerced to their real
+type (e.g. `int`); a class with a required field (no default, e.g.
+`TailscaleSettings.tailscale_auth_key`) raises a `pydantic.ValidationError`
+listing every missing var at once if it isn't set. Deploy files that only
+need a required setting when actually targeting a given device construct
+that class lazily inside the relevant `has_device_role(...)` guard, so
+running one Deploy file in isolation still never demands env vars an
+unrelated one needs — the same "targetable in isolation" contract as
+before. No `env_file` support — ADR-0010 already rejected a file-based
+secrets store, so these classes are a typed wrapper around plain
+environment variables, not a new persistence mechanism.
 
-| Variable | Used by | Default | Purpose |
-|---|---|---|---|
-| `PI_HOST`, `PI_SSH_USER` | inventory.py | `pi-zero.tailnet`, `pi` | The real Pi Zero |
-| `SERVER_HOST`, `SERVER_SSH_USER` | inventory.py | `main-server.tailnet`, `admin` | The real main server |
-| `PI_TEST_HOST`, `PI_TEST_SSH_PORT`, `PI_TEST_SSH_USER` | inventory.py | `localhost`, `2201`, `root` | `test` group's pi stand-in (see Testing) |
-| `SERVER_TEST_HOST`, `SERVER_TEST_SSH_PORT`, `SERVER_TEST_SSH_USER` | inventory.py | `localhost`, `2202`, `root` | `test` group's server stand-in |
-| `TAILSCALE_AUTH_KEY` | deploy_tailscale.py | *(required to join)* | Tailnet auth key, never committed |
-| `HOMELAB_REPO_URL` | deploy_control_{pi,server}_api.py | `git@github.com:nikbogman/homelab.git` | Repo the Control APIs are pulled from |
-| `DEPLOY_REF` | deploy_control_{pi,server}_api.py | `main` | Ref/commit checked out on-device |
-| `SERVER_MAC_ADDRESS` | deploy_control_pi_api.py | *(required)* | WoL target MAC for the Control Pi API |
-| `ALLOY_PUSH_URL` | deploy_control_{pi,server}_api.py | *(required)* | Grafana Alloy event-log endpoint |
-| `CONTROL_SERVER_API_ORIGIN` | deploy_control_pi_api.py | *(required)* | Baked into the Control UI build as `VITE_CONTROL_SERVER_API_URL` |
-| `CONTROL_UI_ORIGIN` | deploy_control_server_api.py | *(required)* | Control server API's CORS allow-list entry |
-| `CONTROL_PI_API_HOST`/`_PORT` | deploy_control_pi_api.py, deploy_caddy.py | `127.0.0.1`, `5000` | Bind address for the Control Pi API |
-| `CONTROL_SERVER_API_HOST`/`_PORT` | deploy_control_server_api.py | `127.0.0.1`, `5000` | Bind address for the Control server API |
-| `MAIN_SERVER_HOST` | deploy_caddy.py | `main-server.tailnet` | Upstream host for every auto-wake-proxy route |
-| `IMMICH_ROUTE_PORT`, `AGENTS_ROUTE_PORT` | deploy_caddy.py | `8443`, `8444` | Per-workload Caddy listen ports |
-| `CONTROL_UI_PORT` | deploy_caddy.py | `8080` | Caddy listen port for the Control UI/Pi API site |
-| `AUTO_WAKE_PROXY_BIND_HOST` | Caddyfile.j2 (Caddy env, not pyinfra) | `127.0.0.1` | Set on the device, not the dev machine |
+### inventory.py (`InventorySettings`)
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `PI_HOST`, `PI_SSH_USER` | `pi-zero.tailnet`, `pi` | The real Pi Zero |
+| `SERVER_HOST`, `SERVER_SSH_USER` | `main-server.tailnet`, `admin` | The real main server |
+| `PI_TEST_HOST`, `PI_TEST_SSH_PORT`, `PI_TEST_SSH_USER` | `localhost`, `2201`, `root` | `test` group's pi stand-in (see Testing) |
+| `SERVER_TEST_HOST`, `SERVER_TEST_SSH_PORT`, `SERVER_TEST_SSH_USER` | `localhost`, `2202`, `root` | `test` group's server stand-in |
+
+### deploy_tailscale.py (`TailscaleSettings`)
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `TAILSCALE_AUTH_KEY` | *(required to join)* | Tailnet auth key, never committed |
+
+### deploy_control_pi_api.py (`DeploySourceSettings`, `ControlPiApiSettings`, `ControlPiApiSecrets`)
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `HOMELAB_REPO_URL` | `git@github.com:nikbogman/homelab.git` | Repo the Control Pi API is pulled from |
+| `DEPLOY_REF` | `main` | Ref/commit checked out on-device |
+| `CONTROL_PI_API_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address for the Control Pi API |
+| `SERVER_MAC_ADDRESS` | *(required)* | WoL target MAC for the Control Pi API |
+| `ALLOY_PUSH_URL` | *(required)* | Grafana Alloy event-log endpoint |
+| `CONTROL_SERVER_API_ORIGIN` | *(required)* | Baked into the Control UI build as `VITE_CONTROL_SERVER_API_URL` |
+
+### deploy_control_server_api.py (`DeploySourceSettings`, `ControlServerApiSettings`, `ControlServerApiSecrets`)
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `HOMELAB_REPO_URL` | `git@github.com:nikbogman/homelab.git` | Repo the Control server API is pulled from |
+| `DEPLOY_REF` | `main` | Ref/commit checked out on-device |
+| `CONTROL_SERVER_API_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address for the Control server API |
+| `CONTROL_UI_ORIGIN` | *(required)* | Control server API's CORS allow-list entry |
+| `ALLOY_PUSH_URL` | *(required)* | Grafana Alloy event-log endpoint |
+
+### deploy_caddy.py (`CaddySettings`)
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `MAIN_SERVER_HOST` | `main-server.tailnet` | Host the `/server*` route forwards to |
+| `CONTROL_UI_PORT` | `8080` | Caddy listen port for the single Control UI/Pi API/`/server*` site |
+| `CONTROL_PI_API_PORT` | `5000` | Must match `deploy_control_pi_api.py`'s own `CONTROL_PI_API_PORT` -- read separately since each Deploy file's settings class is independent |
+| `SERVER_PROXY_PORT` | *(required)* | Port on `MAIN_SERVER_HOST` that `/server*` forwards to (path stripped) -- ADR-0011; no default since the server-side proxy it points at doesn't exist yet |
+
+### Not read by pyinfra at all
+
+| Variable | Set where | Purpose |
+|---|---|---|
+| `AUTO_WAKE_PROXY_BIND_HOST` | On the device, in Caddy's own environment | Not a dev-machine/pyinfra setting -- listed here only to avoid confusion with the pyinfra-side variables above |
 
 ## Running a Deploy
 
@@ -148,9 +193,9 @@ Then, from `pyinfra/`:
 uv run pyinfra inventory.py deploy.py --limit test
 ```
 
-Every Deploy file runs against both stand-ins (`device_kind` host data makes
+Every Deploy file runs against both stand-ins (`device_role` host data makes
 `pi-test`/`server-test` behave like `pi`/`server` for gating purposes —
-see `common.has_device_kind` and `inventory.py`'s module docstring). Bad package
+see `common.has_device_role` and `inventory.py`'s module docstring). Bad package
 names, invalid templates, and wrong command syntax surface here, against
 throwaway containers, not a physical device. `deploy_tailscale.py`
 deliberately skips the actual `tailscale up` join for `test` (only the
@@ -191,6 +236,12 @@ require Docker and a systemd-capable image, unavailable in the sandbox
 this feature was built in; the procedure above is what to run against
 real infrastructure.
 
+ADR-0011's `/server*` route (added after the above) was only Jinja2-rendered
+and eyeballed against `handle_path`'s documented behavior, not re-run
+through a real `caddy validate` with the `caddy-wol` binary — no Caddy
+build toolchain was available when it was added. Re-validate it the same
+way before trusting it in a real Deploy.
+
 ## Known gaps (flagged, not silently dropped)
 
 - **`tailscale serve` port mappings** are not configured by any Deploy
@@ -208,3 +259,8 @@ real infrastructure.
 - **Bind-address enforcement** (the "never bound off-tailnet" hard
   requirement) is not checked by pyinfra, exactly as `spec.md` already
   notes as an explicit, deferred gap.
+- **The server-side workload proxy** that `/server*` forwards to
+  (ADR-0011) doesn't exist yet — it's out of pyinfra's scope entirely
+  (same boundary as the Docker Compose stacks it would front) and is a
+  manual prerequisite to build, same as the Caddy binary above, before
+  this route actually reaches anything.

@@ -12,11 +12,12 @@ it's a declarative Caddy config artifact. There is one file:
   acceptance criteria (see the comments above the `(auto_wake_route)`
   snippet). **Superseded as the actually-deployed artifact** by
   `../../pyinfra/templates/Caddyfile.j2` (`../../pyinfra/deploy_caddy.py`,
-  per `.scratch/pyinfra-provisioning/spec.md` and ADR-0008): that
-  templated version is what pyinfra renders onto the Pi, parameterized by
-  a workload list instead of hand-duplicated per site. This file is kept
-  as the plugin-research and verification record below, not hand-edited
-  further — new workload routes go in `deploy_caddy.py`'s `WORKLOADS` list.
+  per `.scratch/pyinfra-provisioning/spec.md` and ADR-0008). This file is
+  kept as the plugin-research and verification record below, not
+  hand-edited further. Per ADR-0011, the templated version no longer
+  lists individual workload routes at all — new workloads are wired up
+  entirely on the main server's own reverse proxy (not yet built), not in
+  this repo.
 
 ## Plugins (real, researched — not invented)
 

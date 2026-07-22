@@ -1,9 +1,14 @@
 """Joins a target device to the tailnet.
 
-Installs Tailscale from its official apt repo, enables `tailscaled`, then
-runs `tailscale up` with an auth key from the `TAILSCALE_AUTH_KEY`
-environment variable on the dev machine -- never written to a file in this
-repo. Targetable in isolation:
+Installs Tailscale via the official install script -- Tailscale's own
+documented "mainstream distributions" method
+(https://tailscale.com/docs/install/linux#mainstream-distributions is
+`curl -fsSL https://tailscale.com/install.sh | sh`), which detects the
+distro/codename and wires up the apt repo and signing key itself, so this
+Deploy file no longer hand-rolls those steps via `apt.key`/`apt.repo`.
+Then enables `tailscaled` and runs `tailscale up` with an auth key from
+the `TAILSCALE_AUTH_KEY` environment variable on the dev machine -- never
+written to a file in this repo. Targetable in isolation:
 
     pyinfra inventory.py deploy_tailscale.py --limit pi
     pyinfra inventory.py deploy_tailscale.py --limit server --dry
@@ -15,13 +20,14 @@ enrolls in the real tailnet.
 """
 
 import json
-import os
 
 from pyinfra import host
 from pyinfra.api import FactBase
-from pyinfra.operations import apt, server, systemd
+from pyinfra.facts.server import Which
+from pyinfra.operations import server, systemd
 
-from common import debian_codename, has_device_kind
+from common import has_device_role
+from settings import TailscaleSettings
 
 
 class TailscaleBackendState(FactBase):
@@ -44,26 +50,12 @@ class TailscaleBackendState(FactBase):
             return None
 
 
-if has_device_kind("pi", "server"):
-    codename = debian_codename()
-
-    apt.key(
-        name="Add Tailscale's apt signing key",
-        src=f"https://pkgs.tailscale.com/stable/debian/{codename}.noarmor.gpg",
-        dest="tailscale.gpg",
-    )
-
-    apt.repo(
-        name="Add the Tailscale apt repo",
-        src=f"deb [signed-by=/etc/apt/keyrings/tailscale.gpg] https://pkgs.tailscale.com/stable/debian {codename} main",
-        filename="tailscale",
-    )
-
-    apt.packages(
-        name="Install tailscale",
-        packages=["tailscale"],
-        update=True,
-    )
+if has_device_role("pi", "server"):
+    if not host.get_fact(Which, command="tailscale"):
+        server.shell(
+            name="Install Tailscale via the official install script",
+            commands=["curl -fsSL https://tailscale.com/install.sh | sh"],
+        )
 
     systemd.service(
         name="Enable and start tailscaled",
@@ -75,7 +67,7 @@ if has_device_kind("pi", "server"):
     if "pi" in host.groups or "server" in host.groups:
         already_joined = host.get_fact(TailscaleBackendState) == "Running"
         if not already_joined:
-            auth_key = os.environ["TAILSCALE_AUTH_KEY"]
+            auth_key = TailscaleSettings().tailscale_auth_key
             server.shell(
                 name="Join the tailnet",
                 commands=[f"tailscale up --authkey={auth_key} --ssh"],
