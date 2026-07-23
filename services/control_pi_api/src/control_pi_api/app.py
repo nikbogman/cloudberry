@@ -7,7 +7,7 @@ the Control UI — same-origin, so no CORS entry is needed.
 from flask import Flask, Response, jsonify
 
 from control_plane_shared.alloy import AlloyLogger
-from control_plane_shared.auth import get_caller_identity, require_tailnet_identity
+from control_plane_shared.auth import get_caller_identity, require_tailnet_identity_or_loopback
 from control_plane_shared.bind_safety import assert_tailnet_only_bind
 
 from control_pi_api.wol import WakeOnLanSender, build_magic_packet
@@ -20,7 +20,7 @@ def create_app(*, server_mac_address: str, wol_sender: WakeOnLanSender, alloy_lo
     app = Flask(__name__)
 
     @app.post("/wake")
-    @require_tailnet_identity
+    @require_tailnet_identity_or_loopback
     def wake() -> tuple[Response, int]:
         identity = get_caller_identity()
         alloy_logger.send_event(event_type="wake_requested", outcome="requested", identity=identity)

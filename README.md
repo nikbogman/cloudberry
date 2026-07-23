@@ -24,12 +24,12 @@ Two physical devices on the same tailnet and the same LAN broadcast domain:
 - **[Control UI](services/control_ui)** — the browser app. Polls reachability, offers Wake/Suspend buttons. The only user-facing surface.
 - **[Control Pi API](services/control_pi_api)** — sends a deliberate Wake-on-LAN packet when the Wake button is pressed.
 - **[Control server API](services/control_server_api)** — exposes the Suspend action and the reachability health check the UI polls.
-- **[Auto-wake proxy](services/auto_wake_proxy)** — a Caddy config on the Pi that reverse-proxies every workload service and transparently wakes the server on any request while it's asleep, independent of the Control UI/API ([ADR-0005](docs/adr/0005-dual-wake-paths.md)).
+- **[Auto-wake proxy](services/auto_wake_proxy)** — a Caddy config on the Pi that reverse-proxies every workload service and transparently triggers the Control Pi API's wake action on any request while the server is asleep ([ADR-0012](docs/adr/0012-auto-wake-proxy-calls-control-pi-api.md)).
 - **[shared](services/shared)** — the auth, bind-safety, and Alloy-logging library both Flask apps depend on.
 
 Auth for every control-plane endpoint is the `Tailscale-User-Login` header injected by `tailscale serve`: tailnet membership is the entire authorization boundary, with no separate allow-list ([ADR-0004](docs/adr/0004-tailnet-membership-authorization.md)). Both Flask apps are stateless — Grafana Alloy is where wake/suspend/reachability history actually lives.
 
-Key architectural decisions are recorded as ADRs in [docs/adr/](docs/adr/), including why there's no server-side relay ([0001](docs/adr/0001-direct-browser-to-api-no-relay.md)), why suspend-to-RAM is the only sleep state ([0002](docs/adr/0002-suspend-only-no-shutdown.md)), and why there are two independent wake paths ([0005](docs/adr/0005-dual-wake-paths.md)).
+Key architectural decisions are recorded as ADRs in [docs/adr/](docs/adr/), including why there's no server-side relay ([0001](docs/adr/0001-direct-browser-to-api-no-relay.md)), why suspend-to-RAM is the only sleep state ([0002](docs/adr/0002-suspend-only-no-shutdown.md)), why there are two wake triggers ([0005](docs/adr/0005-dual-wake-paths.md), revised by [0012](docs/adr/0012-auto-wake-proxy-calls-control-pi-api.md)).
 
 ## Repo layout
 

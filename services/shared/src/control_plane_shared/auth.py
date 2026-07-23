@@ -29,3 +29,27 @@ def require_tailnet_identity(view):
 def get_caller_identity() -> str:
     """Return the caller's identity captured by `require_tailnet_identity`."""
     return g.tailnet_identity
+
+
+LOOPBACK_IDENTITY = "auto-wake-proxy"
+
+
+def require_tailnet_identity_or_loopback(view):
+    """Like `require_tailnet_identity`, but also accepts a caller on
+    127.0.0.1 with no identity header (ADR-0004, ADR-0012) -- for the
+    auto-wake proxy's same-device wake trigger. Opt in per-route; doesn't
+    change `require_tailnet_identity` itself.
+    """
+
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        identity = request.headers.get(IDENTITY_HEADER, "").strip()
+        if identity:
+            g.tailnet_identity = identity
+            return view(*args, **kwargs)
+        if request.remote_addr == "127.0.0.1":
+            g.tailnet_identity = LOOPBACK_IDENTITY
+            return view(*args, **kwargs)
+        return Response(status=401)
+
+    return wrapped

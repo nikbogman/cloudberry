@@ -2,35 +2,31 @@
 #
 # SUPERSEDED as the deployed artifact by ../../pyinfra/templates/Caddyfile.j2
 # (../../pyinfra/deploy_caddy.py) -- that templated version is what pyinfra
-# actually renders onto the Pi. Kept here as the design reference and
-# plugin-research record (see README.md); new workload routes go in
-# deploy_caddy.py's WORKLOADS list, not this file.
+# actually renders onto the Pi. Kept here as the design reference (see
+# README.md); new workload routes go in deploy_caddy.py, not this file.
 #
 # Runs on the Pi Zero. Reverse-proxies every Docker Compose workload on the
-# main server and, on any request while the server is asleep, sends a
-# Wake-on-LAN magic packet and holds/retries the request until the server
-# answers — transparent to the caller, not an error. Independent of the
-# Control Pi API's deliberate /wake endpoint: nothing in this file calls,
-# imports, or depends on the Control UI or Control Pi API.
+# main server and, on any request while the server is asleep, triggers the
+# Control Pi API's wake action and holds/retries the request until the
+# server answers — transparent to the caller, not an error (ADR-0012).
 #
 # Plugin required (this is NOT a stock Caddy build — see "Build" below):
 #
-#   github.com/dulli/caddy-wol — registers the `wake_on_lan` HTTP handler
-#   directive used below. See README.md's "Plugins" section for the
-#   rationale behind this choice.
+#   services/auto_wake_proxy/wake_plugin — registers the `call_wake_api`
+#   HTTP handler directive used below. See wake_plugin/README.md.
 #
 # Build (pyinfra's Caddy deploy owns how this actually gets built/installed
 # on the Pi):
 #
-#   xcaddy build --with github.com/dulli/caddy-wol
+#   xcaddy build --with github.com/nikbogman/homelab/services/auto_wake_proxy/wake_plugin
 #
 # Validated via `caddy validate` and a live `caddy run` smoke test — see
-# README.md for details.
+# wake_plugin/README.md for details.
 {
-	# Required by caddy-wol: the wake_on_lan handler must run before the
-	# built-in `respond`/`error` handlers it's paired with in handle_errors
-	# below, or its directive order in the compiled routes would be wrong.
-	order wake_on_lan before respond
+	# call_wake_api must run before the built-in `respond`/`error` handlers
+	# it's paired with in handle_errors below, or its directive order in
+	# the compiled routes would be wrong.
+	order call_wake_api before respond
 
 	# Never bound off-tailnet: exposure to the tailnet happens via an
 	# external `tailscale serve` instance in front of Caddy, not this bind.
@@ -64,16 +60,16 @@
 	handle_errors {
 		@server_asleep expression {err.status_code} == 502
 		handle @server_asleep {
-			# caddy-wol throttles repeat packets to at most one per host
-			# per 10 minutes, so concurrent requests during the same wake
-			# cycle don't flood the network.
-			wake_on_lan {$SERVER_MAC_ADDRESS} {$WOL_BROADCAST_ADDRESS:255.255.255.255:9}
+			# call_wake_api throttles repeat calls to at most one per
+			# upstream per 10 minutes, so concurrent requests during the
+			# same wake cycle don't flood the Control Pi API (ADR-0012).
+			call_wake_api {$CONTROL_PI_API_WAKE_URL:http://127.0.0.1:5000/wake}
 
 			# Hold/retry the *same* original request against the same
 			# upstream with a much longer window, so the caller gets a
 			# real response instead of an error while the server wakes.
 			# 120s is a bound, not a promise: if resume takes longer, this
-			# gives up with a real 502, but the WoL packet already fired
+			# gives up with a real 502, but the wake call already fired
 			# (throttled for 10 more minutes), so a reload catches the
 			# now-awake server on the fast path above without re-waking it.
 			reverse_proxy {args[0]} {

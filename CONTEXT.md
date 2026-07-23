@@ -19,7 +19,7 @@ The backend on the main server that exposes the Suspend action and a reachabilit
 _Avoid_: server API, suspend service
 
 **Auto-wake proxy**:
-Caddy's Wake-on-LAN plugin on the Pi Zero, reverse-proxying one fixed path (`/server*`) to a single upstream on the main server — not one route per workload service (Immich, AI agents, etc.); which path reaches which service is entirely the main server's own reverse proxy's concern, invisible to the Pi (ADR-0011). Sends a Wake-on-LAN packet on any request while the server is asleep and holds the request until the server responds. Operates independently of the Control Pi API — a second, automatic trigger for the same physical wake action, distinct from the deliberate Wake button.
+Caddy's wake plugin on the Pi Zero, reverse-proxying one fixed path (`/server*`) to a single upstream on the main server — not one route per workload service (Immich, AI agents, etc.); which path reaches which service is entirely the main server's own reverse proxy's concern, invisible to the Pi (ADR-0011). Triggers the Control Pi API's wake action on any request while the server is asleep, and holds the request until the server responds (ADR-0012) — a second, automatic trigger for the same physical wake action, distinct from the deliberate Wake button.
 _Avoid_: WoL plugin, wake proxy
 
 **Reachable**:
@@ -27,14 +27,14 @@ Whether the main server currently responds to the Control server API's health ch
 _Avoid_: online, up, awake
 
 **Wake**:
-Sending a Wake-on-LAN magic packet to bring the main server out of suspend. Triggered two independent ways: the Control Pi API (deliberate, via the Control UI's Wake button) or the auto-wake proxy (automatic, via any proxied request while asleep).
+Sending a Wake-on-LAN magic packet to bring the main server out of suspend. Always sent by the Control Pi API, triggered two ways: deliberately, via the Control UI's Wake button, or automatically, via the auto-wake proxy calling the Control Pi API's wake action on any proxied request while asleep (ADR-0012).
 
 **Suspend**:
 Putting the main server into suspend-to-RAM. The only sleep state this system supports — full shutdown (ACPI S5) is explicitly out of scope, since WoL after full power-off is unreliable across BIOS/NIC configurations.
 _Avoid_: shutdown, sleep, power off
 
 **Identity header**:
-The `Tailscale-User-Login` header injected by `tailscale serve` in front of both the Pi and the server. The entire authentication mechanism for both apps — tailnet membership is also the entire authorization boundary, with no separate allow-list.
+The `Tailscale-User-Login` header injected by `tailscale serve` in front of both the Pi and the server. The entire authentication mechanism for both apps — tailnet membership is also the entire authorization boundary, with no separate allow-list. One narrow exception: the Control Pi API's wake action also accepts a caller on `127.0.0.1` in place of this header, for the auto-wake proxy's same-device trigger (ADR-0004, ADR-0012).
 _Avoid_: auth token, login header
 
 ### Provisioning

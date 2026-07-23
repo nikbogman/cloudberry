@@ -236,11 +236,19 @@ require Docker and a systemd-capable image, unavailable in the sandbox
 this feature was built in; the procedure above is what to run against
 real infrastructure.
 
-ADR-0011's `/server*` route (added after the above) was only Jinja2-rendered
-and eyeballed against `handle_path`'s documented behavior, not re-run
-through a real `caddy validate` with the `caddy-wol` binary — no Caddy
-build toolchain was available when it was added. Re-validate it the same
-way before trusting it in a real Deploy.
+ADR-0011's `/server*` route, and ADR-0012's `call_wake_api` plugin that
+replaced `caddy-wol`, were re-validated with a real `caddy validate` run
+against a binary built with `services/auto_wake_proxy/wake_plugin`
+compiled in, plus a live `caddy run` smoke test against a fake Control Pi
+API and an unreachable upstream (confirmed: the wake call fires on the
+first 502, is throttled on the second, and the request still ultimately
+returns a real response). That validation pass also caught a real,
+pre-existing bug: `handle_errors` cannot be nested inside `handle_path`
+(Caddy rejects it as "not an ordered HTTP handler") — `handle_errors` now
+lives at the site's top level, matched against `orig_uri` so it still only
+fires for `/server*`. This bug predates ADR-0012 and was independent of
+`caddy-wol` vs. `call_wake_api`; it's fixed as part of this validation
+pass since it blocked verifying the very route this change touches.
 
 ## Known gaps (flagged, not silently dropped)
 
@@ -251,11 +259,12 @@ way before trusting it in a real Deploy.
   as in scope, and inventing it wasn't this implementation's call to
   make. Flagged the same way the spec itself flags the bind-address
   hard-requirement gap (spec.md's Further Notes).
-- **The Caddy binary itself** (built with `github.com/dulli/caddy-wol`
-  via `xcaddy`, per `services/auto_wake_proxy/README.md`) is not
-  installed by `deploy_caddy.py` — only the config it runs from is
-  declared. Provisioning that binary is a manual prerequisite until a
-  future ticket covers it (`deploy_caddy.py`'s docstring).
+- **The Caddy binary itself** (built with the in-repo
+  `services/auto_wake_proxy/wake_plugin` module via `xcaddy`, per
+  `services/auto_wake_proxy/README.md`, ADR-0012) is not installed by
+  `deploy_caddy.py` — only the config it runs from is declared.
+  Provisioning that binary is a manual prerequisite until a future ticket
+  covers it (`deploy_caddy.py`'s docstring).
 - **Bind-address enforcement** (the "never bound off-tailnet" hard
   requirement) is not checked by pyinfra, exactly as `spec.md` already
   notes as an explicit, deferred gap.

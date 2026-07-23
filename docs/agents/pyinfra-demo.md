@@ -115,3 +115,28 @@ github.com/dulli/caddy-wol`) was not repeated here — it's already real,
 researched, and verified in `services/auto_wake_proxy/README.md`, and
 `deploy_caddy.py`'s docstring is explicit that provisioning that binary is
 outside this Deploy file's scope.
+
+## caddy-wake-plugin: `wake_plugin` validated live, `caddy-wol` retired
+
+ADR-0012 replaced `caddy-wol` with the in-repo `services/auto_wake_proxy/wake_plugin`
+module (the `call_wake_api` directive, calling the Control Pi API's
+`/wake` instead of sending its own WoL packet). Unlike the `caddy-wol`
+line above, this one *was* actually compiled in and exercised:
+
+1. Built a real Caddy binary with `xcaddy build --with
+   github.com/nikbogman/homelab/services/auto_wake_proxy/wake_plugin=./services/auto_wake_proxy/wake_plugin`
+   (local module override — this repo isn't fetchable as a public Go
+   module yet).
+2. `caddy validate` against `templates/Caddyfile.j2` rendered with
+   representative values reported `Valid configuration` with that binary.
+3. A live `caddy run` against that config, a fake Control Pi API (a
+   throwaway HTTP server logging `POST /wake`), and a deliberately
+   unreachable upstream: the first request to `/server*` triggered a
+   `POST /wake` and returned 502 once the retry window elapsed; a second
+   request within the throttle window skipped the `/wake` call
+   ("throttled, skipping") and still returned 502 the same way — matching
+   the fail-open, throttled design in `.scratch/caddy-wake-plugin/spec.md`.
+
+Step 2 is what surfaced the `handle_errors`-inside-`handle_path` bug
+documented in `pyinfra/README.md`'s "What was actually verified" section
+— found and fixed here, not carried over from `caddy-wol`.

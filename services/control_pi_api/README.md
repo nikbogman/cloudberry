@@ -6,9 +6,9 @@ Path-routed under the same `tailscale serve` app as the Control UI, so it's same
 
 ## Endpoint
 
-`POST /wake` — requires the `Tailscale-User-Login` identity header ([ADR-0004](../../docs/adr/0004-tailnet-membership-authorization.md)). Sends a WoL magic packet to the configured `SERVER_MAC_ADDRESS`, logs a `wake_requested`/`wake_succeeded`/`wake_failed` event to Alloy, and returns `{"wake": "succeeded"}` (200) or `{"wake": "failed"}` (500).
+`POST /wake` — requires the `Tailscale-User-Login` identity header, or a caller on `127.0.0.1` ([ADR-0004](../../docs/adr/0004-tailnet-membership-authorization.md)). Sends a WoL magic packet to the configured `SERVER_MAC_ADDRESS`, logs a `wake_requested`/`wake_succeeded`/`wake_failed` event to Alloy, and returns `{"wake": "succeeded"}` (200) or `{"wake": "failed"}` (500).
 
-This is one of two independent wake triggers in the system — the other is the [Auto-wake proxy](../auto_wake_proxy), which wakes the server automatically on any proxied request. Neither calls the other ([ADR-0005](../../docs/adr/0005-dual-wake-paths.md)).
+This is one of two wake triggers in the system — the other is the [Auto-wake proxy](../auto_wake_proxy), which calls this endpoint automatically (via the loopback path above) on any proxied request while the server is asleep ([ADR-0012](../../docs/adr/0012-auto-wake-proxy-calls-control-pi-api.md), superseding [ADR-0005](../../docs/adr/0005-dual-wake-paths.md)'s original independent-paths design).
 
 Requires the Pi and the main server to share an L2 broadcast domain ([ADR-0003](../../docs/adr/0003-wol-same-broadcast-domain.md)) — WoL packets don't route across subnets.
 

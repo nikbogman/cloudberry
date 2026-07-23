@@ -20,8 +20,9 @@ which Docker service is that server's own reverse proxy's job entirely,
 out of pyinfra's scope (same boundary as the Compose stacks themselves)
 and not yet built -- a known gap until it is (see this repo's README).
 
-Doesn't build/install the Caddy binary itself (with the `caddy-wol` plugin)
--- only the config. Provisioning the binary is a manual prerequisite for now.
+Doesn't build/install the Caddy binary itself (with the in-repo
+services/auto_wake_proxy/wake_plugin module, ADR-0012) -- only the config.
+Provisioning the binary is a manual prerequisite for now.
 """
 
 from pyinfra.operations import files, systemd

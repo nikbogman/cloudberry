@@ -13,13 +13,20 @@ it's a declarative Caddy config artifact. There is one file:
   snippet). **Superseded as the actually-deployed artifact** by
   `../../pyinfra/templates/Caddyfile.j2` (`../../pyinfra/deploy_caddy.py`,
   per `.scratch/pyinfra-provisioning/spec.md` and ADR-0008). This file is
-  kept as the plugin-research and verification record below, not
-  hand-edited further. Per ADR-0011, the templated version no longer
-  lists individual workload routes at all — new workloads are wired up
-  entirely on the main server's own reverse proxy (not yet built), not in
-  this repo.
+  kept as the design-reference record, updated to track real decisions
+  (not hand-edited for anything else). Per ADR-0011, the templated
+  version no longer lists individual workload routes at all — new
+  workloads are wired up entirely on the main server's own reverse proxy
+  (not yet built), not in this repo. Per ADR-0012, the wake mechanism
+  itself changed: `call_wake_api` (this repo's own
+  [`wake_plugin`](wake_plugin/), calling the Control Pi API's `/wake`)
+  replaced the third-party `caddy-wol` plugin's `wake_on_lan` directive.
+  The **Plugins** and **Verification performed** sections below document
+  the original `caddy-wol` research and are kept as the historical record
+  of that decision — see [`wake_plugin/README.md`](wake_plugin/) for the
+  plugin actually in use today.
 
-## Plugins (real, researched — not invented)
+## Plugins (real, researched — not invented; historical, see ADR-0012)
 
 This Caddyfile requires a Caddy binary built with one third-party plugin
 compiled in (Caddy plugins are Go modules linked in at build time via
@@ -77,17 +84,15 @@ needed by anything this file actually does — see item 2 below.
    "Verification performed" below for confirmation the Caddyfile validates
    identically with or without it.)
 
-Build command for the Caddy binary this Caddyfile actually needs (via
-[`xcaddy`](https://github.com/caddyserver/xcaddy) — this is a build-time
-concern; `pyinfra/deploy_caddy.py` templates the config but deliberately
-does not build/install this binary — see that file's docstring and
-`pyinfra/README.md`'s Known gaps):
+Build command for this historical `caddy-wol` build (superseded — see
+[`wake_plugin/README.md`](wake_plugin/) for the build command actually in
+use):
 
 ```sh
 xcaddy build --with github.com/dulli/caddy-wol
 ```
 
-## Verification performed
+## Verification performed (historical — `caddy-wol`; see ADR-0012)
 
 No pytest/vitest seam applies to a Caddyfile, and there's no real Pi/server
 to test against, so verification here means: is the syntax genuinely valid,

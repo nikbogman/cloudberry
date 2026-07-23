@@ -39,9 +39,26 @@ def client(app):
 
 
 def test_wake_requires_identity_header(client):
-    response = client.post("/wake")
+    # Flask's test client defaults REMOTE_ADDR to 127.0.0.1, which would
+    # now pass via the loopback exception -- pin a non-loopback address so
+    # this test actually exercises the identity-header requirement.
+    response = client.post("/wake", environ_base={"REMOTE_ADDR": "10.0.0.5"})
 
     assert response.status_code == 401
+
+
+def test_wake_allows_a_loopback_caller_with_no_identity_header(client, wol_sender):
+    response = client.post("/wake", environ_base={"REMOTE_ADDR": "127.0.0.1"})
+
+    assert response.status_code == 200
+    wol_sender.send.assert_called_once_with(SERVER_MAC_ADDRESS)
+
+
+def test_wake_still_honors_identity_header_from_a_non_loopback_caller(client, wol_sender):
+    response = client.post("/wake", headers=AUTH_HEADERS, environ_base={"REMOTE_ADDR": "10.0.0.5"})
+
+    assert response.status_code == 200
+    wol_sender.send.assert_called_once_with(SERVER_MAC_ADDRESS)
 
 
 def test_wake_sends_magic_packet_to_configured_mac(client, wol_sender):

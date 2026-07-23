@@ -4,15 +4,15 @@
     hand-edited on the device. This is the templated evolution of
     services/auto_wake_proxy/Caddyfile (built by
     .scratch/homelab-control-system/issues/05-auto-wake-proxy.md): the
-    wake_on_lan mechanism below is ported from that file. See that file's
-    README (services/auto_wake_proxy/README.md) for the full plugin
-    research/rationale and live-verification writeup behind the
-    wake_on_lan mechanism -- not repeated here to avoid two copies of the
-    same argument drifting out of sync.
+    call_wake_api mechanism below is ported from that file. See that
+    file's README (services/auto_wake_proxy/README.md) for the full
+    plugin rationale and live-verification writeup -- not repeated here
+    to avoid two copies of the same argument drifting out of sync.
 
-    Requires a Caddy binary built with github.com/dulli/caddy-wol
-    compiled in (see services/auto_wake_proxy/README.md's Build section);
-    that build step is not this ticket's concern.
+    Requires a Caddy binary built with the in-repo
+    services/auto_wake_proxy/wake_plugin module compiled in (see
+    services/auto_wake_proxy/README.md's Build section); that build step
+    is not this ticket's concern.
 
     Per ADR-0011, this file carries no per-workload knowledge -- everything
     under /server is forwarded, path-stripped, to a single fixed upstream
@@ -28,35 +28,13 @@
     server API.
 #}
 {
-	order wake_on_lan before respond
+	order call_wake_api before respond
 
 	# ADR-0004 hard requirement: never bound off-tailnet. An external
 	# `tailscale serve` instance is expected to front this Caddy, exactly
 	# as control_pi_api/control_server_api's own bind_host convention
 	# (services/shared/src/control_plane_shared/bind_safety.py).
 	default_bind {$AUTO_WAKE_PROXY_BIND_HOST:127.0.0.1}
-}
-
-# --- Reusable auto-wake route -------------------------------------------
-# One snippet, imported below. {args[0]} is the upstream address (host:port)
-# to proxy to.
-(auto_wake_route) {
-	reverse_proxy {args[0]} {
-		lb_try_duration 3s
-		lb_try_interval 500ms
-	}
-
-	handle_errors {
-		@server_asleep expression {err.status_code} == 502
-		handle @server_asleep {
-			wake_on_lan {$SERVER_MAC_ADDRESS} {$WOL_BROADCAST_ADDRESS:255.255.255.255:9}
-
-			reverse_proxy {args[0]} {
-				lb_try_duration 120s
-				lb_try_interval 1s
-			}
-		}
-	}
 }
 
 # --- Single site: Control UI, Control Pi API, and the main server --------
@@ -70,7 +48,26 @@
 	}
 
 	handle_path /server* {
-		import auto_wake_route {{ main_server_host }}:{{ server_proxy_port }}
+		reverse_proxy {{ main_server_host }}:{{ server_proxy_port }} {
+			lb_try_duration 3s
+			lb_try_interval 500ms
+		}
+	}
+
+	# handle_errors only works as a site-level directive, not nested
+	# inside handle_path -- matched against orig_uri since handle_path
+	# has already stripped /server from the working path by the time an
+	# error propagates here.
+	handle_errors {
+		@server_asleep expression {http.error.status_code} == 502 && {http.request.orig_uri.path}.startsWith("/server")
+		handle @server_asleep {
+			call_wake_api http://127.0.0.1:{{ control_pi_api_port }}/wake
+
+			reverse_proxy {{ main_server_host }}:{{ server_proxy_port }} {
+				lb_try_duration 120s
+				lb_try_interval 1s
+			}
+		}
 	}
 
 	handle {
