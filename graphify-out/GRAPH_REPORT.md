@@ -1,16 +1,16 @@
 # Graph Report - homelab  (2026-07-23)
 
 ## Corpus Check
-- 102 files · ~41,757 words
+- 100 files · ~41,062 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 549 nodes · 736 edges · 46 communities (32 shown, 14 thin omitted)
-- Extraction: 94% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 39 edges (avg confidence: 0.8)
+- 529 nodes · 702 edges · 46 communities (32 shown, 14 thin omitted)
+- Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 35 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `5ce2c060`
+- Built from commit: `2d177f16`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -60,13 +60,13 @@
 1. `Homelab README.md` - 24 edges
 2. `compilerOptions` - 16 edges
 3. `pyinfra Provisioning Spec` - 16 edges
-4. `SystemSuspender` - 14 edges
+4. `SystemSuspender` - 13 edges
 5. `wake_plugin Go module` - 12 edges
 6. `Issue 07: Caddy Deploy File` - 12 edges
-7. `create_app()` - 10 edges
-8. `build_magic_packet()` - 10 edges
-9. `newWakeCaller()` - 10 edges
-10. `AlloyLogger` - 10 edges
+7. `build_magic_packet()` - 10 edges
+8. `newWakeCaller()` - 10 edges
+9. `pyinfra/deploy.py` - 10 edges
+10. `create_app()` - 9 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `pyinfra/deploy_tailscale.py` --references--> `TailscaleBackendState`  [EXTRACTED]
@@ -96,16 +96,16 @@
 ## Communities (46 total, 14 thin omitted)
 
 ### Community 0 - "Server API Reachability"
-Cohesion: 0.06
-Nodes (21): alloy(), create_app(), Flask, Server API: exposes a Reachable health check and a Suspend action.  Runs on the, Logs a `reachability_changed` event the first time this process     observes its, ReachabilityTracker, Suspend-to-RAM: runs the configured system command as a subprocess. This is the, Suspends the host to RAM by running the configured command. (+13 more)
+Cohesion: 0.09
+Nodes (15): create_app(), Flask, Server API: exposes a Reachable health check and a Suspend action.  Runs on the, Suspend-to-RAM: runs the configured system command as a subprocess. This is the, Suspends the host to RAM by running the configured command., SystemSuspender, Real entrypoint: wires `create_app` to environment-provided config so this can a, app() (+7 more)
 
 ### Community 1 - "Shared Git-Pull Deploy Helper"
 Cohesion: 0.07
-Nodes (33): BaseSettings, git_systemd_service(), Shared git-pull + systemd deploy helper.  The pattern common to both the Pi API, Pull `repo_url`@`ref` to `dest`, install/enable a systemd unit named     `unit_n, has_device_role(), linux_codename(), linux_distro_id(), Helpers shared by more than one Deploy file.  Not a Deploy file itself -- define (+25 more)
+Nodes (34): BaseSettings, git_systemd_service(), Shared git-pull + systemd deploy helper.  The pattern common to both the Pi API, Pull `repo_url`@`ref` to `dest`, install/enable a systemd unit named     `unit_n, has_device_role(), linux_codename(), linux_distro_id(), Helpers shared by more than one Deploy file.  Not a Deploy file itself -- define (+26 more)
 
 ### Community 2 - "Pi API Wake-on-LAN"
 Cohesion: 0.07
-Nodes (30): create_app(), Flask, Pi API: sends a Wake-on-LAN packet to the main server on request.  Runs on the P, build_magic_packet(), Wake-on-LAN: builds and broadcasts the magic packet that wakes the main server., Broadcasts a WoL magic packet over UDP on the local L2 segment., WakeOnLanSender, Real entrypoint: wires `create_app` to environment-provided config so this can a (+22 more)
+Nodes (29): create_app(), Flask, Pi API: sends a Wake-on-LAN packet to the main server on request.  Runs on the P, build_magic_packet(), Wake-on-LAN: builds and broadcasts the magic packet that wakes the main server., Broadcasts a WoL magic packet over UDP on the local L2 segment., WakeOnLanSender, Real entrypoint: wires `create_app` to environment-provided config so this can a (+21 more)
 
 ### Community 3 - "Graphify Skill Exports"
 Cohesion: 0.06
@@ -113,7 +113,7 @@ Nodes (37): Graphify Slash-Command Trigger, FalkorDB Export, MCP stdio Server, N
 
 ### Community 4 - "Deploy Domain Concepts"
 Cohesion: 0.12
-Nodes (37): Deploy (concept), Deploy File (concept), Host Group (concept), ADR-0001: Direct Browser-to-API Calls, No Pi-Side Relay, ADR-0006: Git-Pull Deploy Model, Control UI Built Off-Device, ADR-0007: systemd Units for Control APIs, Not Docker, ADR-0009: Manual-Only Deploy Trigger, ADR-0010: Secrets via Dev-Machine Environment Variables (+29 more)
+Nodes (36): Deploy (concept), Deploy File (concept), Host Group (concept), ADR-0001: Direct Browser-to-API Calls, No Pi-Side Relay, ADR-0006: Git-Pull Deploy Model, Control UI Built Off-Device, ADR-0007: systemd Units for Control APIs, Not Docker, ADR-0009: Manual-Only Deploy Trigger, ADR-0010: Secrets via Dev-Machine Environment Variables (+28 more)
 
 ### Community 5 - "Caddy Deploy ADR Decisions"
 Cohesion: 0.08
@@ -217,13 +217,13 @@ _Questions this graph is uniquely positioned to answer:_
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **What is the exact relationship between `git_systemd_service live demo (ticket 04)` and `api_deploy.py (shared git+systemd @deploy helper)`?**
   _Edge tagged AMBIGUOUS (relation: references) - confidence is low._
-- **Why does `TailscaleBackendState` connect `Shared Git-Pull Deploy Helper` to `Deploy Domain Concepts`?**
-  _High betweenness centrality (0.039) - this node is a cross-community bridge._
-- **Why does `pyinfra/deploy_tailscale.py` connect `Deploy Domain Concepts` to `Shared Git-Pull Deploy Helper`?**
-  _High betweenness centrality (0.039) - this node is a cross-community bridge._
+- **Why does `pyinfra/deploy_tailscale.py` connect `Shared Git-Pull Deploy Helper` to `Deploy Domain Concepts`?**
+  _High betweenness centrality (0.042) - this node is a cross-community bridge._
 - **Why does `Homelab README.md` connect `Homelab Domain Glossary` to `Deploy Domain Concepts`, `Caddy Deploy ADR Decisions`?**
-  _High betweenness centrality (0.038) - this node is a cross-community bridge._
-- **Are the 2 inferred relationships involving `SystemSuspender` (e.g. with `ReachabilityTracker` and `system_suspender()`) actually correct?**
-  _`SystemSuspender` has 2 INFERRED edges - model-reasoned connections that need verification._
+  _High betweenness centrality (0.041) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `wake_plugin Go module` (e.g. with `wol.py` and `Caddy WoL Plugin Config (initial)`) actually correct?**
   _`wake_plugin Go module` has 2 INFERRED edges - model-reasoned connections that need verification._
+- **What connects `homelab-pyinfra`, `pi-api`, `github.com/nikbogman/homelab/services/pi-proxy/wake_plugin` to the rest of the system?**
+  _127 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Server API Reachability` be split into smaller, more focused modules?**
+  _Cohesion score 0.0855614973262032 - nodes in this community are weakly interconnected._

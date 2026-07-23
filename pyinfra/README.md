@@ -94,7 +94,6 @@ environment variables, not a new persistence mechanism.
 | `DEPLOY_REF` | `main` | Ref/commit checked out on-device |
 | `PI_API_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address for the Pi API |
 | `SERVER_MAC_ADDRESS` | *(required)* | WoL target MAC for the Pi API |
-| `ALLOY_PUSH_URL` | *(required)* | Grafana Alloy event-log endpoint |
 | `SERVER_API_ORIGIN` | *(required)* | Baked into the UI build as `VITE_SERVER_API_URL` |
 
 ### deploy_server_api.py (`DeploySourceSettings`, `ServerApiSettings`, `ServerApiSecrets`)
@@ -105,7 +104,6 @@ environment variables, not a new persistence mechanism.
 | `DEPLOY_REF` | `main` | Ref/commit checked out on-device |
 | `SERVER_API_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address for the Server API |
 | `UI_ORIGIN` | *(required)* | Server API's CORS allow-list entry |
-| `ALLOY_PUSH_URL` | *(required)* | Grafana Alloy event-log endpoint |
 
 ### deploy_caddy.py (`CaddySettings`)
 

@@ -54,7 +54,6 @@ class PiApiSettings(BaseSettings):
 
 class PiApiSecrets(BaseSettings):
     server_mac_address: str
-    alloy_push_url: str
     server_api_origin: str
 
 
@@ -65,7 +64,6 @@ class ServerApiSettings(BaseSettings):
 
 class ServerApiSecrets(BaseSettings):
     ui_origin: str
-    alloy_push_url: str
 
 
 class CaddySettings(BaseSettings):

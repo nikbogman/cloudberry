@@ -1,17 +1,15 @@
 [project]
 name = "control-plane-shared"
 version = "0.1.0"
-description = "Shared auth, bind-safety, and logging helpers for the homelab control plane's Flask apps"
+description = "Shared auth and bind-safety helpers for the homelab control plane's Flask apps"
 requires-python = ">=3.11"
 dependencies = [
     "flask>=3.0",
-    "requests>=2.31",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
-    "responses>=0.25",
     "mypy>=1.11",
 ]
 

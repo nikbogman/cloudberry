@@ -8,7 +8,6 @@ IDENTITY_HEADER = "Tailscale-User-Login"
 @pytest.fixture
 def wsgi_module(monkeypatch):
     monkeypatch.setenv("SERVER_MAC_ADDRESS", "AA:BB:CC:DD:EE:FF")
-    monkeypatch.setenv("ALLOY_PUSH_URL", "https://alloy.example.internal/loki/api/v1/push")
     monkeypatch.setenv("PI_API_HOST", "127.0.0.1")
 
     from pi_api import wsgi
@@ -29,7 +28,6 @@ def test_wsgi_builds_a_working_app_from_environment(wsgi_module):
 
 def test_wsgi_raises_clearly_when_required_env_vars_are_missing(monkeypatch):
     monkeypatch.delenv("SERVER_MAC_ADDRESS", raising=False)
-    monkeypatch.delenv("ALLOY_PUSH_URL", raising=False)
 
     from pi_api import wsgi
 

@@ -6,7 +6,7 @@ Path-routed under the same `tailscale serve` app as the UI, so it's same-origin 
 
 ## Endpoint
 
-`POST /wake` — requires the `Tailscale-User-Login` identity header, or a caller on `127.0.0.1` ([ADR-0004](../../docs/adr/0004-tailnet-membership-authorization.md)). Sends a WoL magic packet to the configured `SERVER_MAC_ADDRESS`, logs a `wake_requested`/`wake_succeeded`/`wake_failed` event to Alloy, and returns `{"wake": "succeeded"}` (200) or `{"wake": "failed"}` (500).
+`POST /wake` — requires the `Tailscale-User-Login` identity header, or a caller on `127.0.0.1` ([ADR-0004](../../docs/adr/0004-tailnet-membership-authorization.md)). Sends a WoL magic packet to the configured `SERVER_MAC_ADDRESS` and returns `{"wake": "succeeded"}` (200) or `{"wake": "failed"}` (500).
 
 This is one of two wake triggers in the system — the other is the [Pi proxy](../pi-proxy), which calls this endpoint automatically (via the loopback path above) on any proxied request while the server is asleep ([ADR-0012](../../docs/adr/0012-auto-wake-proxy-calls-control-pi-api.md), superseding [ADR-0005](../../docs/adr/0005-dual-wake-paths.md)'s original independent-paths design).
 
@@ -19,7 +19,6 @@ Read from the environment by [`wsgi.py`](src/pi_api/wsgi.py):
 | Variable | Required | Purpose |
 |---|---|---|
 | `SERVER_MAC_ADDRESS` | yes | MAC address the magic packet targets. Validated at startup — a malformed value fails fast, not mid-request. |
-| `ALLOY_PUSH_URL` | yes | Grafana Alloy endpoint for event logging. |
 | `PI_API_HOST` | no (default `127.0.0.1`) | Bind address. Asserted at startup to be loopback or a tailnet address ([`assert_tailnet_only_bind`](../shared/src/control_plane_shared/bind_safety.py)) — the process refuses to start if this would expose it off-tailnet. |
 
 ## Development
@@ -33,7 +32,7 @@ uv run mypy src
 Run locally:
 
 ```sh
-SERVER_MAC_ADDRESS=AA:BB:CC:DD:EE:FF ALLOY_PUSH_URL=http://localhost:4318 uv run flask --app pi_api.wsgi run
+SERVER_MAC_ADDRESS=AA:BB:CC:DD:EE:FF uv run flask --app pi_api.wsgi run
 ```
 
 ## Deployment

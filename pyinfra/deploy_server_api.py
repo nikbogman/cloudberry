@@ -9,7 +9,7 @@ Targetable in isolation:
     pyinfra inventory.py deploy_server_api.py --limit server --dry
 
 Required dev-machine env vars (fail fast if missing, only when targeting
-`server`/its `test` stand-in): `UI_ORIGIN`, `ALLOY_PUSH_URL` (the
+`server`/its `test` stand-in): `UI_ORIGIN` (the
 Server API's own config).
 """
 
@@ -38,7 +38,6 @@ if has_device_role("server"):
         ),
         environment={
             "UI_ORIGIN": secrets.ui_origin,
-            "ALLOY_PUSH_URL": secrets.alloy_push_url,
             "SERVER_API_HOST": api_settings.server_api_host,
         },
         setup_commands=["uv sync"],
