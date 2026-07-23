@@ -1,16 +1,16 @@
 # Graph Report - homelab  (2026-07-23)
 
 ## Corpus Check
-- 100 files · ~41,062 words
+- 101 files · ~41,753 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 529 nodes · 702 edges · 46 communities (32 shown, 14 thin omitted)
+- 531 nodes · 703 edges · 47 communities (32 shown, 15 thin omitted)
 - Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 35 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `2d177f16`
+- Built from commit: `8fae71bd`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -55,6 +55,7 @@
 - Control UI Favicon
 - Vite Config
 - wsgi.py (env config)
+- 0013-caddy-binary-built-off-device-by-pyinfra.md
 
 ## God Nodes (most connected - your core abstractions)
 1. `Homelab README.md` - 24 edges
@@ -93,31 +94,31 @@
 - **pyinfra's three-tier testing pattern (--dry, disposable containers, idempotency)** — pyinfra_readme_three_tier_testing, docs_agents_pyinfra_dry_flag, docs_agents_pyinfra_idempotency_mechanics, docs_agents_pyinfra_demo_highest_available_seam [EXTRACTED 1.00]
 - **Tailnet-only bind safety pattern shared by Pi API and Server API** — services_shared_readme_bind_safety_py, services_pi_api_readme_pi_api_host, services_server_api_readme_server_api_host, docs_adr_0004_tailnet_membership_authorization_doc [EXTRACTED 1.00]
 
-## Communities (46 total, 14 thin omitted)
+## Communities (47 total, 15 thin omitted)
 
 ### Community 0 - "Server API Reachability"
-Cohesion: 0.09
-Nodes (15): create_app(), Flask, Server API: exposes a Reachable health check and a Suspend action.  Runs on the, Suspend-to-RAM: runs the configured system command as a subprocess. This is the, Suspends the host to RAM by running the configured command., SystemSuspender, Real entrypoint: wires `create_app` to environment-provided config so this can a, app() (+7 more)
+Cohesion: 0.06
+Nodes (28): test_create_app_refuses_off_tailnet_bind_host(), create_app(), Flask, Server API: exposes a Reachable health check and a Suspend action.  Runs on the, Suspend-to-RAM: runs the configured system command as a subprocess. This is the, Suspends the host to RAM by running the configured command., SystemSuspender, Real entrypoint: wires `create_app` to environment-provided config so this can a (+20 more)
 
 ### Community 1 - "Shared Git-Pull Deploy Helper"
 Cohesion: 0.07
-Nodes (34): BaseSettings, git_systemd_service(), Shared git-pull + systemd deploy helper.  The pattern common to both the Pi API, Pull `repo_url`@`ref` to `dest`, install/enable a systemd unit named     `unit_n, has_device_role(), linux_codename(), linux_distro_id(), Helpers shared by more than one Deploy file.  Not a Deploy file itself -- define (+26 more)
+Nodes (33): BaseSettings, git_systemd_service(), Shared git-pull + systemd deploy helper.  The pattern common to both the Pi API, Pull `repo_url`@`ref` to `dest`, install/enable a systemd unit named     `unit_n, has_device_role(), linux_codename(), linux_distro_id(), Helpers shared by more than one Deploy file.  Not a Deploy file itself -- define (+25 more)
 
 ### Community 2 - "Pi API Wake-on-LAN"
-Cohesion: 0.07
-Nodes (29): create_app(), Flask, Pi API: sends a Wake-on-LAN packet to the main server on request.  Runs on the P, build_magic_packet(), Wake-on-LAN: builds and broadcasts the magic packet that wakes the main server., Broadcasts a WoL magic packet over UDP on the local L2 segment., WakeOnLanSender, Real entrypoint: wires `create_app` to environment-provided config so this can a (+21 more)
+Cohesion: 0.10
+Nodes (16): create_app(), Flask, Pi API: sends a Wake-on-LAN packet to the main server on request.  Runs on the P, build_magic_packet(), Wake-on-LAN: builds and broadcasts the magic packet that wakes the main server., Broadcasts a WoL magic packet over UDP on the local L2 segment., WakeOnLanSender, Real entrypoint: wires `create_app` to environment-provided config so this can a (+8 more)
 
 ### Community 3 - "Graphify Skill Exports"
 Cohesion: 0.06
 Nodes (37): Graphify Slash-Command Trigger, FalkorDB Export, MCP stdio Server, Neo4j Export, Wiki Export, Confidence Score Rubric, Hyperedges Rule, Node ID Format Rule (+29 more)
 
 ### Community 4 - "Deploy Domain Concepts"
-Cohesion: 0.12
-Nodes (36): Deploy (concept), Deploy File (concept), Host Group (concept), ADR-0001: Direct Browser-to-API Calls, No Pi-Side Relay, ADR-0006: Git-Pull Deploy Model, Control UI Built Off-Device, ADR-0007: systemd Units for Control APIs, Not Docker, ADR-0009: Manual-Only Deploy Trigger, ADR-0010: Secrets via Dev-Machine Environment Variables (+28 more)
+Cohesion: 0.13
+Nodes (35): Deploy (concept), Deploy File (concept), Host Group (concept), ADR-0001: Direct Browser-to-API Calls, No Pi-Side Relay, ADR-0006: Git-Pull Deploy Model, Control UI Built Off-Device, ADR-0007: systemd Units for Control APIs, Not Docker, ADR-0009: Manual-Only Deploy Trigger, ADR-0010: Secrets via Dev-Machine Environment Variables (+27 more)
 
 ### Community 5 - "Caddy Deploy ADR Decisions"
 Cohesion: 0.08
-Nodes (35): ADR-0005: Dual wake paths (superseded), ADR-0008 (templated Caddyfile.j2 supersedes hand-edited Caddyfile), ADR-0009 (deploy.py never runs automatically), ADR-0011 (/server* route via server-side workload proxy), ADR-0012: Auto-wake proxy calls Control Pi API, @deploy decorator, Caddyfile.j2 validated with real caddy binary (ticket 07), git_systemd_service live demo (ticket 04) (+27 more)
+Nodes (37): ADR-0005: Dual wake paths (superseded), ADR-0008 (templated Caddyfile.j2 supersedes hand-edited Caddyfile), ADR-0009 (deploy.py never runs automatically), ADR-0011 (/server* route via server-side workload proxy), ADR-0012: Auto-wake proxy calls Control Pi API, @deploy decorator, Caddyfile.j2 validated with real caddy binary (ticket 07), docs/agents/pyinfra-demo.md (+29 more)
 
 ### Community 6 - "Homelab Domain Glossary"
 Cohesion: 0.09
@@ -206,9 +207,9 @@ Nodes (5): Behavior, Configuration, Deployment, Development, UI
   docs/agents/pyinfra-demo.md · relation: references
 
 ## Knowledge Gaps
-- **127 isolated node(s):** `homelab-pyinfra`, `pi-api`, `github.com/nikbogman/homelab/services/pi-proxy/wake_plugin`, `server-api`, `name` (+122 more)
+- **128 isolated node(s):** `homelab-pyinfra`, `pi-api`, `github.com/nikbogman/homelab/services/pi-proxy/wake_plugin`, `server-api`, `name` (+123 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **14 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **15 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
@@ -217,13 +218,13 @@ _Questions this graph is uniquely positioned to answer:_
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **What is the exact relationship between `git_systemd_service live demo (ticket 04)` and `api_deploy.py (shared git+systemd @deploy helper)`?**
   _Edge tagged AMBIGUOUS (relation: references) - confidence is low._
-- **Why does `pyinfra/deploy_tailscale.py` connect `Shared Git-Pull Deploy Helper` to `Deploy Domain Concepts`?**
+- **Why does `TailscaleBackendState` connect `Shared Git-Pull Deploy Helper` to `Deploy Domain Concepts`?**
   _High betweenness centrality (0.042) - this node is a cross-community bridge._
+- **Why does `pyinfra/deploy_tailscale.py` connect `Deploy Domain Concepts` to `Shared Git-Pull Deploy Helper`?**
+  _High betweenness centrality (0.041) - this node is a cross-community bridge._
 - **Why does `Homelab README.md` connect `Homelab Domain Glossary` to `Deploy Domain Concepts`, `Caddy Deploy ADR Decisions`?**
   _High betweenness centrality (0.041) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `wake_plugin Go module` (e.g. with `wol.py` and `Caddy WoL Plugin Config (initial)`) actually correct?**
   _`wake_plugin Go module` has 2 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `homelab-pyinfra`, `pi-api`, `github.com/nikbogman/homelab/services/pi-proxy/wake_plugin` to the rest of the system?**
-  _127 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `Server API Reachability` be split into smaller, more focused modules?**
-  _Cohesion score 0.0855614973262032 - nodes in this community are weakly interconnected._
+  _128 weakly-connected nodes found - possible documentation gaps or missing edges._

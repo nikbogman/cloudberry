@@ -8,8 +8,9 @@
     here to avoid two copies of the same argument drifting out of sync.
 
     Requires a Caddy binary built with the in-repo
-    services/pi-proxy/wake_plugin module compiled in (see that README's
-    Build section); that build step is not this ticket's concern.
+    services/pi-proxy/wake_plugin module compiled in -- deploy_caddy.py
+    now builds and ships that binary itself (ADR-0013); see that
+    README's Build section for the underlying xcaddy command.
 
     Per ADR-0011, this file carries no per-workload knowledge -- everything
     under /server is forwarded, path-stripped, to a single fixed upstream

@@ -1,0 +1,18 @@
+[Unit]
+Description=Caddy (wake_plugin-enabled build, see services/pi-proxy/wake_plugin)
+Documentation=https://caddyserver.com/docs/
+After=network.target network-online.target
+Requires=network-online.target
+
+[Service]
+Type=notify
+User={{ run_as_user }}
+ExecStart={{ binary_path }} run --environ --config /etc/caddy/Caddyfile
+ExecReload={{ binary_path }} reload --config /etc/caddy/Caddyfile --force
+TimeoutStopSec=5s
+LimitNOFILE=1048576
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

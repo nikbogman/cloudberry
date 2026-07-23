@@ -22,10 +22,11 @@ pyinfra/
   api_deploy.py                   # shared git+systemd @deploy helper (ticket 04)
   deploy_pi_api.py                # ticket 05 (+ UI static delivery)
   deploy_server_api.py            # ticket 06
-  deploy_caddy.py                 # ticket 07
+  deploy_caddy.py                 # ticket 07, binary build+ship added by ADR-0013
   deploy.py                       # entrypoint composing everything (ticket 08)
   templates/
     api.service.j2                 # systemd unit template, both the Pi API and Server API
+    caddy.service.j2               # systemd unit template for caddy (ADR-0013)
     Caddyfile.j2                  # the Pi's complete Caddy config
 ```
 
@@ -257,12 +258,6 @@ pass since it blocked verifying the very route this change touches.
   as in scope, and inventing it wasn't this implementation's call to
   make. Flagged the same way the spec itself flags the bind-address
   hard-requirement gap (spec.md's Further Notes).
-- **The Caddy binary itself** (built with the in-repo
-  `services/pi-proxy/wake_plugin` module via `xcaddy`, per
-  `services/pi-proxy/README.md`, ADR-0012) is not installed by
-  `deploy_caddy.py` — only the config it runs from is declared.
-  Provisioning that binary is a manual prerequisite until a future ticket
-  covers it (`deploy_caddy.py`'s docstring).
 - **Bind-address enforcement** (the "never bound off-tailnet" hard
   requirement) is not checked by pyinfra, exactly as `spec.md` already
   notes as an explicit, deferred gap.

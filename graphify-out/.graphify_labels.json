@@ -44,5 +44,6 @@
   "42": "Package Init File",
   "43": "Package Init File",
   "44": "wsgi.py (env config)",
-  "45": "vite.config.ts"
+  "45": "vite.config.ts",
+  "46": "0013-caddy-binary-built-off-device-by-pyinfra.md"
 }

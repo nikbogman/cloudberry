@@ -290,7 +290,7 @@
       "norm_label": "deploy_caddy.py"
     },
     {
-      "label": "Templates the complete Caddyfile on `pi`.  Single declarative source of truth fo",
+      "label": "Builds the wake_plugin-enabled Caddy binary and templates the complete Caddyfile",
       "file_type": "rationale",
       "source_file": "pyinfra/deploy_caddy.py",
       "source_location": "L1",
@@ -298,7 +298,7 @@
       "id": "pyinfra_deploy_caddy_rationale_1",
       "community": 1,
       "community_name": "Shared Git-Pull Deploy Helper",
-      "norm_label": "templates the complete caddyfile on `pi`.  single declarative source of truth fo"
+      "norm_label": "builds the wake_plugin-enabled caddy binary and templates the complete caddyfile"
     },
     {
       "label": "deploy_docker.py",
@@ -962,8 +962,8 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "services_pi_api_tests_test_app_test_create_app_refuses_off_tailnet_bind_host",
-      "community": 2,
-      "community_name": "Pi API Wake-on-LAN",
+      "community": 0,
+      "community_name": "Server API Reachability",
       "norm_label": "test_create_app_refuses_off_tailnet_bind_host()"
     },
     {
@@ -1616,8 +1616,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "services_server_api_src_server_api_suspend_systemsuspender_init",
-      "community": 2,
-      "community_name": "Pi API Wake-on-LAN",
+      "community": 0,
+      "community_name": "Server API Reachability",
       "norm_label": ".__init__()"
     },
     {
@@ -2103,8 +2103,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_shared_src_control_plane_shared_bind_safety",
-      "community": 2,
-      "community_name": "Pi API Wake-on-LAN",
+      "community": 0,
+      "community_name": "Server API Reachability",
       "norm_label": "bind_safety.py"
     },
     {
@@ -2114,8 +2114,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "services_shared_src_control_plane_shared_bind_safety_bindofftailneterror",
-      "community": 2,
-      "community_name": "Pi API Wake-on-LAN",
+      "community": 0,
+      "community_name": "Server API Reachability",
       "norm_label": "bindofftailneterror"
     },
     {
@@ -2125,8 +2125,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "valueerror",
-      "community": 2,
-      "community_name": "Pi API Wake-on-LAN",
+      "community": 0,
+      "community_name": "Server API Reachability",
       "norm_label": "valueerror"
     },
     {
@@ -2136,8 +2136,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "services_shared_src_control_plane_shared_bind_safety_assert_tailnet_only_bind",
-      "community": 2,
-      "community_name": "Pi API Wake-on-LAN",
+      "community": 0,
+      "community_name": "Server API Reachability",
       "norm_label": "assert_tailnet_only_bind()"
     },
     {
@@ -2147,8 +2147,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_shared_src_control_plane_shared_bind_safety_rationale_1",
-      "community": 2,
-      "community_name": "Pi API Wake-on-LAN",
+      "community": 0,
+      "community_name": "Server API Reachability",
       "norm_label": "startup assertion that a control-plane app is not reachable off-tailnet.  allowe"
     },
     {
@@ -2158,8 +2158,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "services_shared_src_control_plane_shared_bind_safety_rationale_15",
-      "community": 2,
-      "community_name": "Pi API Wake-on-LAN",
+      "community": 0,
+      "community_name": "Server API Reachability",
       "norm_label": "raised when a host would bind the app somewhere reachable off-tailnet."
     },
     {
@@ -2169,8 +2169,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "services_shared_src_control_plane_shared_bind_safety_rationale_19",
-      "community": 2,
-      "community_name": "Pi API Wake-on-LAN",
+      "community": 0,
+      "community_name": "Server API Reachability",
       "norm_label": "raise `bindofftailneterror` unless `host` is loopback or a tailnet address."
     },
     {
@@ -2290,8 +2290,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_shared_tests_test_bind_safety",
-      "community": 2,
-      "community_name": "Pi API Wake-on-LAN",
+      "community": 0,
+      "community_name": "Server API Reachability",
       "norm_label": "test_bind_safety.py"
     },
     {
@@ -2301,8 +2301,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "services_shared_tests_test_bind_safety_test_allows_loopback_and_tailnet_addresses",
-      "community": 2,
-      "community_name": "Pi API Wake-on-LAN",
+      "community": 0,
+      "community_name": "Server API Reachability",
       "norm_label": "test_allows_loopback_and_tailnet_addresses()"
     },
     {
@@ -2312,8 +2312,8 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "services_shared_tests_test_bind_safety_test_rejects_off_tailnet_addresses",
-      "community": 2,
-      "community_name": "Pi API Wake-on-LAN",
+      "community": 0,
+      "community_name": "Server API Reachability",
       "norm_label": "test_rejects_off_tailnet_addresses()"
     },
     {
@@ -2323,8 +2323,8 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "services_shared_tests_test_bind_safety_create_app",
-      "community": 2,
-      "community_name": "Pi API Wake-on-LAN",
+      "community": 0,
+      "community_name": "Server API Reachability",
       "norm_label": "create_app()"
     },
     {
@@ -2334,8 +2334,8 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "services_shared_tests_test_bind_safety_test_app_factory_refuses_to_start_on_off_tailnet_host",
-      "community": 2,
-      "community_name": "Pi API Wake-on-LAN",
+      "community": 0,
+      "community_name": "Server API Reachability",
       "norm_label": "test_app_factory_refuses_to_start_on_off_tailnet_host()"
     },
     {
@@ -2345,8 +2345,8 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "services_shared_tests_test_bind_safety_test_app_factory_starts_on_loopback_host",
-      "community": 2,
-      "community_name": "Pi API Wake-on-LAN",
+      "community": 0,
+      "community_name": "Server API Reachability",
       "norm_label": "test_app_factory_starts_on_loopback_host()"
     },
     {
@@ -2356,8 +2356,8 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "services_shared_tests_test_bind_safety_rationale_37",
-      "community": 2,
-      "community_name": "Pi API Wake-on-LAN",
+      "community": 0,
+      "community_name": "Server API Reachability",
       "norm_label": "stand-in for a control api's app factory: refuses to start if `host`     would e"
     },
     {
@@ -2953,6 +2953,28 @@
       "community": 45,
       "community_name": "vite.config.ts",
       "norm_label": "vite.config.ts"
+    },
+    {
+      "label": "0013-caddy-binary-built-off-device-by-pyinfra.md",
+      "file_type": "document",
+      "source_file": "docs/adr/0013-caddy-binary-built-off-device-by-pyinfra.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_adr_0013_caddy_binary_built_off_device_by_pyinfra",
+      "community": 46,
+      "community_name": "0013-caddy-binary-built-off-device-by-pyinfra.md",
+      "norm_label": "0013-caddy-binary-built-off-device-by-pyinfra.md"
+    },
+    {
+      "label": "The Caddy binary is cross-compiled off-device and shipped by pyinfra, not hand-built on the Pi",
+      "file_type": "document",
+      "source_file": "docs/adr/0013-caddy-binary-built-off-device-by-pyinfra.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_adr_0013_caddy_binary_built_off_device_by_pyinfra_the_caddy_binary_is_cross_compiled_off_device_and_shipped_by_pyinfra_not_hand_built_on_the_pi",
+      "community": 46,
+      "community_name": "0013-caddy-binary-built-off-device-by-pyinfra.md",
+      "norm_label": "the caddy binary is cross-compiled off-device and shipped by pyinfra, not hand-built on the pi"
     },
     {
       "label": "README.md",
@@ -5143,9 +5165,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 4,
       "norm_label": "pyinfra/deploy_tailscale.py",
-      "community_name": "Shared Git-Pull Deploy Helper",
+      "community_name": "Deploy Domain Concepts",
       "id": "pyinfra_deploy_tailscale_module"
     },
     {
@@ -5227,9 +5249,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 4,
+      "community": 5,
       "norm_label": "docs/agents/pyinfra-demo.md",
-      "community_name": "Deploy Domain Concepts",
+      "community_name": "Caddy Deploy ADR Decisions",
       "id": "docs_agents_pyinfra_demo_doc"
     },
     {
@@ -6649,9 +6671,9 @@
       "author": null,
       "contributor": null,
       "rationale": "go test covers throttling, different-URL isolation, and fail-open behavior against an httptest.Server; caddy validate and a live caddy run confirm wake-on-error and throttling in a real proxy chain.",
-      "community": 4,
+      "community": 5,
       "norm_label": "verification performed (go test, caddy validate/run)",
-      "community_name": "Deploy Domain Concepts",
+      "community_name": "Caddy Deploy ADR Decisions",
       "id": "services_pi_proxy_wake_plugin_readme_verification"
     },
     {
@@ -6916,7 +6938,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "pyinfra/deploy_caddy.py",
-      "source_location": "L30",
+      "source_location": "L40",
       "weight": 1.0,
       "_origin": "ast",
       "source": "pyinfra_deploy_caddy",
@@ -7033,7 +7055,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "pyinfra/deploy_caddy.py",
-      "source_location": "L30",
+      "source_location": "L40",
       "weight": 1.0,
       "_origin": "ast",
       "source": "pyinfra_deploy_caddy",
@@ -7104,7 +7126,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "pyinfra/deploy_caddy.py",
-      "source_location": "L31",
+      "source_location": "L41",
       "weight": 1.0,
       "_origin": "ast",
       "source": "pyinfra_deploy_caddy",
@@ -7116,7 +7138,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "pyinfra/deploy_caddy.py",
-      "source_location": "L31",
+      "source_location": "L41",
       "weight": 1.0,
       "_origin": "ast",
       "source": "pyinfra_deploy_caddy",
@@ -10737,6 +10759,17 @@
       "_origin": "ast",
       "source": "services_ui_tsconfig_include",
       "target": "ref_src",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/adr/0013-caddy-binary-built-off-device-by-pyinfra.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_adr_0013_caddy_binary_built_off_device_by_pyinfra",
+      "target": "docs_adr_0013_caddy_binary_built_off_device_by_pyinfra_the_caddy_binary_is_cross_compiled_off_device_and_shipped_by_pyinfra_not_hand_built_on_the_pi",
       "confidence_score": 1.0
     },
     {
@@ -14425,5 +14458,5 @@
       "source_file": "services/shared/README.md"
     }
   ],
-  "built_at_commit": "2d177f16f2fff45be00c21a1efee5e6d7c04fa07"
+  "built_at_commit": "8fae71bdf84cfcf30fdecec031117dc7b3afd008"
 }

@@ -20,8 +20,8 @@
     "semantic_hash": ""
   },
   "pyinfra/deploy_caddy.py": {
-    "mtime": 1784810757.6853805,
-    "ast_hash": "9a2e37f4e66480faeee38cb86fef5fde",
+    "mtime": 1784824740.218217,
+    "ast_hash": "3ab1a69f8a645d7e5b41a98057b95591",
     "semantic_hash": ""
   },
   "pyinfra/deploy_docker.py": {
@@ -435,8 +435,8 @@
     "semantic_hash": "0d3351531db0a1328a6e6530912e36f8"
   },
   "pyinfra/README.md": {
-    "mtime": 1784822711.5940955,
-    "ast_hash": "382492a9ea6156583d5f92c628bc653a",
+    "mtime": 1784823688.3221614,
+    "ast_hash": "5af3bb3fb4758b1f9ecaa7050ed39069",
     "semantic_hash": ""
   },
   "services/pi-api/README.md": {
@@ -450,9 +450,9 @@
     "semantic_hash": ""
   },
   "services/pi-proxy/wake_plugin/README.md": {
-    "mtime": 1784807497.6611784,
-    "ast_hash": "be981eb0e0166eee6d3ec2cd136f5c23",
-    "semantic_hash": "be981eb0e0166eee6d3ec2cd136f5c23"
+    "mtime": 1784823677.270161,
+    "ast_hash": "1e15e581db4f6cae6a6dba9f66ba6b94",
+    "semantic_hash": ""
   },
   "services/server-api/README.md": {
     "mtime": 1784822707.262095,
@@ -507,6 +507,11 @@
   "services/ui/public/favicon.svg": {
     "mtime": 1784486792.0972793,
     "ast_hash": "7e840862161341271697daa99a40d76b",
+    "semantic_hash": ""
+  },
+  "docs/adr/0013-caddy-binary-built-off-device-by-pyinfra.md": {
+    "mtime": 1784824881.5222294,
+    "ast_hash": "94bd8a39dd90cf2cea74b42767316e11",
     "semantic_hash": ""
   }
 }
