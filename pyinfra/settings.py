@@ -7,8 +7,8 @@ file-based secrets store; these classes are a typed wrapper around plain
 environment variables, not a new persistence mechanism.
 
 One settings class per Deploy file's needs, plus `DeploySourceSettings`
-shared by both Control API Deploy files (they pull the same repo via the
-same `control_api_deploy.git_systemd_service` helper). Fields with no
+shared by both the Pi API and Server API Deploy files (they pull the same
+repo via the same `api_deploy.git_systemd_service` helper). Fields with no
 default are required -- pydantic-settings raises a `ValidationError`
 listing every missing one at once if they're absent.
 
@@ -41,29 +41,29 @@ class TailscaleSettings(BaseSettings):
 
 
 class DeploySourceSettings(BaseSettings):
-    """Where both Control API Deploy files pull this repo from."""
+    """Where both the Pi API and Server API Deploy files pull this repo from."""
 
     homelab_repo_url: str = "git@github.com:nikbogman/homelab.git"
     deploy_ref: str = "main"
 
 
-class ControlPiApiSettings(BaseSettings):
-    control_pi_api_host: str = "127.0.0.1"
-    control_pi_api_port: int = 5000
+class PiApiSettings(BaseSettings):
+    pi_api_host: str = "127.0.0.1"
+    pi_api_port: int = 5000
 
 
-class ControlPiApiSecrets(BaseSettings):
+class PiApiSecrets(BaseSettings):
     server_mac_address: str
     alloy_push_url: str
-    control_server_api_origin: str
+    server_api_origin: str
 
 
-class ControlServerApiSettings(BaseSettings):
-    control_server_api_host: str = "127.0.0.1"
-    control_server_api_port: int = 5000
+class ServerApiSettings(BaseSettings):
+    server_api_host: str = "127.0.0.1"
+    server_api_port: int = 5000
 
 
-class ControlServerApiSecrets(BaseSettings):
+class ServerApiSecrets(BaseSettings):
     control_ui_origin: str
     alloy_push_url: str
 
@@ -71,7 +71,7 @@ class ControlServerApiSecrets(BaseSettings):
 class CaddySettings(BaseSettings):
     main_server_host: str = "main-server.tailnet"
     control_ui_port: int = 8080
-    control_pi_api_port: int = 5000
+    pi_api_port: int = 5000
     # No default (ADR-0011): the server-side proxy this points at doesn't
     # exist yet, so there's no real value to fall back to.
     server_proxy_port: int

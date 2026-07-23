@@ -35,9 +35,9 @@ pyinfra/
   inventory.py                    # pi / server / test groups
   deploy_tailscale.py             # Concern (02)
   deploy_docker.py                # Concern (03)
-  control_api_deploy.py           # shared @deploy helper (04)
-  deploy_control_pi_api.py        # Concern (05)
-  deploy_control_server_api.py    # Concern (06)
+  api_deploy.py                   # shared @deploy helper (04)
+  deploy_pi_api.py                # Concern (05)
+  deploy_server_api.py            # Concern (06)
   deploy_caddy.py                 # Concern (07)
   templates/
     Caddyfile.j2
@@ -137,7 +137,7 @@ files.template(
     dest="/etc/caddy/Caddyfile",
     workloads=WORKLOADS,
     control_ui_root="/srv/control-ui/dist",
-    control_server_api_upstream="server.tailnet:8000",
+    server_api_upstream="server.tailnet:8000",
 )
 ```
 Idempotency/diffing mechanism for `files.template` isn't spelled out in prose on that page; pyinfra's general model (confirmed by live testing below) is: render the template during prepare, diff against the current remote file content, and only write if different — a second run with unchanged inputs reports "No Change".
@@ -179,16 +179,16 @@ def git_systemd_service(
         daemon_reload=unit.did_change,
     )
 ```
-Consumed from `deploy_control_pi_api.py` / `deploy_control_server_api.py`:
+Consumed from `deploy_pi_api.py` / `deploy_server_api.py`:
 ```python
-from control_api_deploy import git_systemd_service
+from api_deploy import git_systemd_service
 
 git_systemd_service(
     repo_url="git@github.com:you/homelab.git",
     ref="main",
-    dest="/srv/control-pi-api",
-    unit_name="control-pi-api.service",
-    unit_src="templates/control-pi-api.service.j2",
+    dest="/srv/pi-api",
+    unit_name="pi-api.service",
+    unit_src="templates/api.service.j2",
 )
 ```
 - `@deploy(name, data_defaults=None)` wraps a function so operations called inside it inherit deploy-wide global arguments (e.g. `_sudo`); callers can pass those globals when invoking the function (`git_systemd_service(..., sudo=True)`). [Writing Deploys](https://docs.pyinfra.com/en/3.x/api/deploys.html)
@@ -340,8 +340,8 @@ systemd.service(
 from pyinfra.operations import systemd
 
 systemd.service(
-    name="Enable and restart the control-pi-api service",
-    service="control-pi-api.service",
+    name="Enable and restart the pi-api service",
+    service="pi-api.service",
     running=True,
     restarted=True,   # set conditionally via a previous op's .did_change, not always True
     enabled=True,
@@ -375,9 +375,9 @@ git.repo(
 
 ```python
 git.repo(
-    name="Pull control-pi-api source",
+    name="Pull pi-api source",
     src="git@github.com:you/homelab.git",
-    dest="/srv/control-pi-api",
+    dest="/srv/pi-api",
     branch="main",       # or a pinned commit SHA
     ssh_keyscan=True,
 )

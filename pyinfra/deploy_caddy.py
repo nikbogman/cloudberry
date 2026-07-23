@@ -1,7 +1,7 @@
 """Templates the complete Caddyfile on `pi`.
 
 Single declarative source of truth for every route Caddy serves on the Pi:
-the Control UI's static files, Control Pi API path-routing, and one blind
+the Control UI's static files, Pi API path-routing, and one blind
 path-routed proxy to the main server. Nothing is hand-edited on the
 device. Targetable in isolation:
 
@@ -9,8 +9,8 @@ device. Targetable in isolation:
     pyinfra inventory.py deploy_caddy.py --limit pi --dry
 
 Requires the tailnet already joined (tailnet-only addresses) and the
-Control UI's static path already delivered. Doesn't route to the Control
-server API -- that would be a Pi-side relay, which ADR-0001 rejects.
+Control UI's static path already delivered. Doesn't route to the Server
+API -- that would be a Pi-side relay, which ADR-0001 rejects.
 
 Per ADR-0011, this Caddy config carries no knowledge of individual
 workload services (Immich, AI agents, etc.) or their container ports --
@@ -21,7 +21,7 @@ out of pyinfra's scope (same boundary as the Compose stacks themselves)
 and not yet built -- a known gap until it is (see this repo's README).
 
 Doesn't build/install the Caddy binary itself (with the in-repo
-services/auto_wake_proxy/wake_plugin module, ADR-0012) -- only the config.
+services/pi-proxy/wake_plugin module, ADR-0012) -- only the config.
 Provisioning the binary is a manual prerequisite for now.
 """
 
@@ -41,7 +41,7 @@ if has_device_role("pi"):
         server_proxy_port=settings.server_proxy_port,
         control_ui_root="/srv/control-ui",
         control_ui_port=settings.control_ui_port,
-        control_pi_api_port=settings.control_pi_api_port,
+        pi_api_port=settings.pi_api_port,
     )
 
     systemd.service(

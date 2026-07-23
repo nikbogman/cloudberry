@@ -7,8 +7,8 @@
 Each Deploy file is also independently runnable (e.g. `pyinfra inventory.py
 deploy_caddy.py --limit pi`), gated by `common.has_device_role`. This file
 just composes them in dependency order: tailnet before Caddy (tailnet-only
-addresses), Control APIs before Caddy (routes to the Control UI's static
-path).
+addresses), the Pi/Server APIs before Caddy (routes to the Control UI's
+static path).
 
 Never invoked automatically -- only run by hand from the dev machine (ADR-0009).
 """
@@ -17,6 +17,6 @@ from pyinfra import local
 
 local.include("deploy_tailscale.py")
 local.include("deploy_docker.py")
-local.include("deploy_control_pi_api.py")
-local.include("deploy_control_server_api.py")
+local.include("deploy_pi_api.py")
+local.include("deploy_server_api.py")
 local.include("deploy_caddy.py")

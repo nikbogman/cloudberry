@@ -2,16 +2,16 @@
     The Pi's complete Caddy config, templated by deploy_caddy.py as the
     single declarative source of truth (ADR-0008) -- nothing is ever
     hand-edited on the device. This is the templated evolution of
-    services/auto_wake_proxy/Caddyfile (built by
+    services/pi-proxy/Caddyfile (built by
     .scratch/homelab-control-system/issues/05-auto-wake-proxy.md): the
     call_wake_api mechanism below is ported from that file. See that
-    file's README (services/auto_wake_proxy/README.md) for the full
+    file's README (services/pi-proxy/README.md) for the full
     plugin rationale and live-verification writeup -- not repeated here
     to avoid two copies of the same argument drifting out of sync.
 
     Requires a Caddy binary built with the in-repo
-    services/auto_wake_proxy/wake_plugin module compiled in (see
-    services/auto_wake_proxy/README.md's Build section); that build step
+    services/pi-proxy/wake_plugin module compiled in (see
+    services/pi-proxy/README.md's Build section); that build step
     is not this ticket's concern.
 
     Per ADR-0011, this file carries no per-workload knowledge -- everything
@@ -20,31 +20,30 @@
     AI agents, etc.) is decided entirely by a reverse proxy running on
     that server itself, not templated here.
 
-    Deliberately does NOT proxy to the Control server API: the browser
-    calls it directly at its own tailscale-served origin (ADR-0001, "no
-    Pi-side relay"). The Control UI is built (deploy_control_pi_api.py)
-    with VITE_CONTROL_SERVER_API_URL pointing at that real origin, so the
-    client -- not this Caddy instance -- is what "routes to" the Control
-    server API.
+    Deliberately does NOT proxy to the Server API: the browser calls it
+    directly at its own tailscale-served origin (ADR-0001, "no Pi-side
+    relay"). The Control UI is built (deploy_pi_api.py) with
+    VITE_SERVER_API_URL pointing at that real origin, so the client --
+    not this Caddy instance -- is what "routes to" the Server API.
 #}
 {
 	order call_wake_api before respond
 
 	# ADR-0004 hard requirement: never bound off-tailnet. An external
 	# `tailscale serve` instance is expected to front this Caddy, exactly
-	# as control_pi_api/control_server_api's own bind_host convention
+	# as the Pi API/Server API's own bind_host convention
 	# (services/shared/src/control_plane_shared/bind_safety.py).
-	default_bind {$AUTO_WAKE_PROXY_BIND_HOST:127.0.0.1}
+	default_bind {$PI_PROXY_BIND_HOST:127.0.0.1}
 }
 
-# --- Single site: Control UI, Control Pi API, and the main server --------
-# One origin, path-routed. `/wake` reaches the Control Pi API; everything
-# else falls through to the Control UI's static files, except `/server`,
-# which is forwarded (path stripped) to the main server as a single blind
+# --- Single site: Control UI, Pi API, and the main server -----------------
+# One origin, path-routed. `/wake` reaches the Pi API; everything else
+# falls through to the Control UI's static files, except `/server`, which
+# is forwarded (path stripped) to the main server as a single blind
 # upstream (ADR-0011) -- this Caddy has no opinion on what's behind it.
 :{{ control_ui_port }} {
 	handle /wake* {
-		reverse_proxy 127.0.0.1:{{ control_pi_api_port }}
+		reverse_proxy 127.0.0.1:{{ pi_api_port }}
 	}
 
 	handle_path /server* {
@@ -61,7 +60,7 @@
 	handle_errors {
 		@server_asleep expression {http.error.status_code} == 502 && {http.request.orig_uri.path}.startsWith("/server")
 		handle @server_asleep {
-			call_wake_api http://127.0.0.1:{{ control_pi_api_port }}/wake
+			call_wake_api http://127.0.0.1:{{ pi_api_port }}/wake
 
 			reverse_proxy {{ main_server_host }}:{{ server_proxy_port }} {
 				lb_try_duration 120s

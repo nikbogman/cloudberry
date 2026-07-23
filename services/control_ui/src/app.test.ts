@@ -131,7 +131,7 @@ describe('mountControlUi', () => {
     expect(wakeButton().disabled).toBe(false)
   })
 
-  it('calls the Control Pi API when the wake button is clicked', async () => {
+  it('calls the Pi API when the wake button is clicked', async () => {
     const fetchMock = stubFetch(200)
 
     unmount = mountControlUi(container, {
@@ -143,7 +143,7 @@ describe('mountControlUi', () => {
     expect(fetchMock).toHaveBeenCalledWith(`${PI_API_BASE_URL}/wake`, { method: 'POST' })
   })
 
-  it('calls the Control Pi API same-origin (relative path) when no piApiBaseUrl is given', async () => {
+  it('calls the Pi API same-origin (relative path) when no piApiBaseUrl is given', async () => {
     const fetchMock = stubFetch(200)
 
     unmount = mountControlUi(container, { serverApiBaseUrl: SERVER_API_BASE_URL })
@@ -182,7 +182,7 @@ describe('mountControlUi', () => {
     expect(suspendButton().disabled).toBe(true)
   })
 
-  it('calls the Control server API when the suspend button is clicked', async () => {
+  it('calls the Server API when the suspend button is clicked', async () => {
     const fetchMock = stubFetch(200)
 
     unmount = mountControlUi(container, { serverApiBaseUrl: SERVER_API_BASE_URL })

@@ -4,7 +4,7 @@ Declarative provisioning for the homelab control plane, per
 `.scratch/pyinfra-provisioning/spec.md`. Converges the Pi Zero (`pi`) and
 the main server (`server`) to their declared state: Tailscale joined,
 Docker installed on `server`, the full Caddy config templated on `pi`, and
-both Control APIs (plus the Control UI's static build) deployed as
+both the Pi API and Server API (plus the Control UI's static build) deployed as
 systemd services. Domain vocabulary (Deploy, Deploy file, Host group) is
 defined in the root [`CONTEXT.md`](../CONTEXT.md); pyinfra-specific
 implementation notes and citations live in
@@ -19,19 +19,19 @@ pyinfra/
   settings.py                     # pydantic-settings classes -- typed env var config
   deploy_tailscale.py             # ticket 02
   deploy_docker.py                # ticket 03
-  control_api_deploy.py           # shared git+systemd @deploy helper (ticket 04)
-  deploy_control_pi_api.py        # ticket 05 (+ Control UI static delivery)
-  deploy_control_server_api.py    # ticket 06
+  api_deploy.py                   # shared git+systemd @deploy helper (ticket 04)
+  deploy_pi_api.py                # ticket 05 (+ Control UI static delivery)
+  deploy_server_api.py            # ticket 06
   deploy_caddy.py                 # ticket 07
   deploy.py                       # entrypoint composing everything (ticket 08)
   templates/
-    control-api.service.j2        # systemd unit template, both Control APIs
+    api.service.j2                 # systemd unit template, both the Pi API and Server API
     Caddyfile.j2                  # the Pi's complete Caddy config
 ```
 
 **Run every command from inside this directory** (`cd pyinfra/` first).
 Deploy files import from sibling modules (`from common import ...`,
-`from control_api_deploy import ...`) and `files.template` resolves
+`from api_deploy import ...`) and `files.template` resolves
 `templates/*.j2` relative to the current working directory — both need
 `pyinfra/` on `sys.path`/as cwd, which pyinfra only does automatically for
 the directory it's actually invoked from. (Running from the repo root
@@ -86,25 +86,25 @@ environment variables, not a new persistence mechanism.
 |---|---|---|
 | `TAILSCALE_AUTH_KEY` | *(required to join)* | Tailnet auth key, never committed |
 
-### deploy_control_pi_api.py (`DeploySourceSettings`, `ControlPiApiSettings`, `ControlPiApiSecrets`)
+### deploy_pi_api.py (`DeploySourceSettings`, `PiApiSettings`, `PiApiSecrets`)
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `HOMELAB_REPO_URL` | `git@github.com:nikbogman/homelab.git` | Repo the Control Pi API is pulled from |
+| `HOMELAB_REPO_URL` | `git@github.com:nikbogman/homelab.git` | Repo the Pi API is pulled from |
 | `DEPLOY_REF` | `main` | Ref/commit checked out on-device |
-| `CONTROL_PI_API_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address for the Control Pi API |
-| `SERVER_MAC_ADDRESS` | *(required)* | WoL target MAC for the Control Pi API |
+| `PI_API_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address for the Pi API |
+| `SERVER_MAC_ADDRESS` | *(required)* | WoL target MAC for the Pi API |
 | `ALLOY_PUSH_URL` | *(required)* | Grafana Alloy event-log endpoint |
-| `CONTROL_SERVER_API_ORIGIN` | *(required)* | Baked into the Control UI build as `VITE_CONTROL_SERVER_API_URL` |
+| `SERVER_API_ORIGIN` | *(required)* | Baked into the Control UI build as `VITE_SERVER_API_URL` |
 
-### deploy_control_server_api.py (`DeploySourceSettings`, `ControlServerApiSettings`, `ControlServerApiSecrets`)
+### deploy_server_api.py (`DeploySourceSettings`, `ServerApiSettings`, `ServerApiSecrets`)
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `HOMELAB_REPO_URL` | `git@github.com:nikbogman/homelab.git` | Repo the Control server API is pulled from |
+| `HOMELAB_REPO_URL` | `git@github.com:nikbogman/homelab.git` | Repo the Server API is pulled from |
 | `DEPLOY_REF` | `main` | Ref/commit checked out on-device |
-| `CONTROL_SERVER_API_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address for the Control server API |
-| `CONTROL_UI_ORIGIN` | *(required)* | Control server API's CORS allow-list entry |
+| `SERVER_API_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address for the Server API |
+| `CONTROL_UI_ORIGIN` | *(required)* | Server API's CORS allow-list entry |
 | `ALLOY_PUSH_URL` | *(required)* | Grafana Alloy event-log endpoint |
 
 ### deploy_caddy.py (`CaddySettings`)
@@ -113,14 +113,14 @@ environment variables, not a new persistence mechanism.
 |---|---|---|
 | `MAIN_SERVER_HOST` | `main-server.tailnet` | Host the `/server*` route forwards to |
 | `CONTROL_UI_PORT` | `8080` | Caddy listen port for the single Control UI/Pi API/`/server*` site |
-| `CONTROL_PI_API_PORT` | `5000` | Must match `deploy_control_pi_api.py`'s own `CONTROL_PI_API_PORT` -- read separately since each Deploy file's settings class is independent |
+| `PI_API_PORT` | `5000` | Must match `deploy_pi_api.py`'s own `PI_API_PORT` -- read separately since each Deploy file's settings class is independent |
 | `SERVER_PROXY_PORT` | *(required)* | Port on `MAIN_SERVER_HOST` that `/server*` forwards to (path stripped) -- ADR-0011; no default since the server-side proxy it points at doesn't exist yet |
 
 ### Not read by pyinfra at all
 
 | Variable | Set where | Purpose |
 |---|---|---|
-| `AUTO_WAKE_PROXY_BIND_HOST` | On the device, in Caddy's own environment | Not a dev-machine/pyinfra setting -- listed here only to avoid confusion with the pyinfra-side variables above |
+| `PI_PROXY_BIND_HOST` | On the device, in Caddy's own environment | Not a dev-machine/pyinfra setting -- listed here only to avoid confusion with the pyinfra-side variables above |
 
 ## Running a Deploy
 
@@ -238,8 +238,8 @@ real infrastructure.
 
 ADR-0011's `/server*` route, and ADR-0012's `call_wake_api` plugin that
 replaced `caddy-wol`, were re-validated with a real `caddy validate` run
-against a binary built with `services/auto_wake_proxy/wake_plugin`
-compiled in, plus a live `caddy run` smoke test against a fake Control Pi
+against a binary built with `services/pi-proxy/wake_plugin`
+compiled in, plus a live `caddy run` smoke test against a fake Pi
 API and an unreachable upstream (confirmed: the wake call fires on the
 first 502, is throttled on the second, and the request still ultimately
 returns a real response). That validation pass also caught a real,
@@ -254,14 +254,14 @@ pass since it blocked verifying the very route this change touches.
 
 - **`tailscale serve` port mappings** are not configured by any Deploy
   file here. Something still needs to run `tailscale serve` to actually
-  expose Caddy's (and the Control server API's) loopback-bound ports to
+  expose Caddy's (and the Server API's) loopback-bound ports to
   the tailnet with HTTPS — none of tickets 01-09 as written call this out
   as in scope, and inventing it wasn't this implementation's call to
   make. Flagged the same way the spec itself flags the bind-address
   hard-requirement gap (spec.md's Further Notes).
 - **The Caddy binary itself** (built with the in-repo
-  `services/auto_wake_proxy/wake_plugin` module via `xcaddy`, per
-  `services/auto_wake_proxy/README.md`, ADR-0012) is not installed by
+  `services/pi-proxy/wake_plugin` module via `xcaddy`, per
+  `services/pi-proxy/README.md`, ADR-0012) is not installed by
   `deploy_caddy.py` — only the config it runs from is declared.
   Provisioning that binary is a manual prerequisite until a future ticket
   covers it (`deploy_caddy.py`'s docstring).

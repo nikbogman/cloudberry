@@ -9,16 +9,16 @@ const STATUS_LABELS: Record<ReachabilityState, string> = {
 const DEFAULT_POLL_INTERVAL_MS = 12_000
 
 export interface MountOptions {
-  /** Control server API origin. */
+  /** Server API origin. */
   serverApiBaseUrl: string
-  /** Control Pi API origin — same-origin as the Control UI by default, so '' (relative) works. */
+  /** Pi API origin — same-origin as the Control UI by default, so '' (relative) works. */
   piApiBaseUrl?: string
   intervalMs?: number
 }
 
-/** Renders the Control UI into `container`, starts polling the Control
- * server API's health check, and wires the Wake button (Control Pi API)
- * and the Suspend button (Control server API). Returns a cleanup function
+/** Renders the Control UI into `container`, starts polling the Server
+ * API's health check, and wires the Wake button (Pi API)
+ * and the Suspend button (Server API). Returns a cleanup function
  * that stops polling. */
 export function mountControlUi(container: HTMLElement, options: MountOptions): () => void {
   const { serverApiBaseUrl, piApiBaseUrl = '', intervalMs = DEFAULT_POLL_INTERVAL_MS } = options
@@ -57,7 +57,7 @@ export function mountControlUi(container: HTMLElement, options: MountOptions): (
 
   suspendButton.addEventListener('click', () => {
     // Fire-and-forget, same rationale as the Wake button above. Suspend
-    // lives on the Control server API (not the Pi API) — unlike Wake.
+    // lives on the Server API (not the Pi API) — unlike Wake.
     void fetch(`${serverApiBaseUrl}/suspend`, { method: 'POST' }).catch(() => {})
   })
 

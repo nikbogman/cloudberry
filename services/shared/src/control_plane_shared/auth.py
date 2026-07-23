@@ -1,6 +1,6 @@
 """Tailnet identity-header auth for the control plane's Flask apps.
 
-Both Control APIs sit behind `tailscale serve`, which injects
+Both the Pi API and Server API sit behind `tailscale serve`, which injects
 `Tailscale-User-Login` for any tailnet-authenticated caller. This module
 only checks the header is present, not which identity it names.
 """
@@ -31,13 +31,13 @@ def get_caller_identity() -> str:
     return g.tailnet_identity
 
 
-LOOPBACK_IDENTITY = "auto-wake-proxy"
+LOOPBACK_IDENTITY = "pi-proxy"
 
 
 def require_tailnet_identity_or_loopback(view):
     """Like `require_tailnet_identity`, but also accepts a caller on
     127.0.0.1 with no identity header (ADR-0004, ADR-0012) -- for the
-    auto-wake proxy's same-device wake trigger. Opt in per-route; doesn't
+    Pi proxy's same-device wake trigger. Opt in per-route; doesn't
     change `require_tailnet_identity` itself.
     """
 
