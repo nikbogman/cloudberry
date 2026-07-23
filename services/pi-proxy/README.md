@@ -5,7 +5,7 @@ component of the homelab control system
 (`.scratch/homelab-control-system/spec.md`, ticket
 `.scratch/homelab-control-system/issues/05-auto-wake-proxy.md`, ADR-0005).
 Unlike `services/shared`, `services/pi-api`, `services/server-api`,
-and `services/control_ui`, this is not a Python/TypeScript application —
+and `services/ui`, this is not a Python/TypeScript application —
 it's a declarative Caddy config artifact. There is one file:
 
 - `Caddyfile` — the design reference for this component: heavily commented,
@@ -65,10 +65,10 @@ needed by anything this file actually does — see item 2 below.
    serve` needed) and a `tailscale_auth` directive for asserting identity.
    **Not used for binding in this file, and not part of the recommended
    build below.** This repo's established convention (see `CONTEXT.md`'s
-   Control UI entry, and the `bind_host` + `assert_tailnet_only_bind`
+   UI entry, and the `bind_host` + `assert_tailnet_only_bind`
    pattern shared by `pi-api` and `server-api`) is: bind
    the app to loopback, and let an *external* `tailscale serve` instance
-   expose it to the tailnet. No Control-UI-serving Caddy config exists in
+   expose it to the tailnet. No UI-serving Caddy config exists in
    this repo yet — this ticket only adds the workload routes — but per
    CONTEXT.md that's the model it's expected to follow when it's built.
    Mixing in a second, different tailnet-joining mechanism just for these
@@ -142,7 +142,7 @@ real, not assumed:
      HTTP 502 an actually-running app chose to send. This directly checks
      the concern that "server asleep" detection might false-positive on a
      live-but-erroring workload; it doesn't.
-5. **Independence from the Control UI/Pi API (AC4)** verified by
+5. **Independence from the UI/Pi API (AC4)** verified by
    `grep` over the committed Caddyfile for any reference to those services
    (origins, ports, endpoint paths, env var names) — the only matches are
    explanatory comments; there is no functional directive (`reverse_proxy`

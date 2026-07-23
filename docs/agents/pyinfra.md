@@ -136,7 +136,7 @@ files.template(
     src="templates/Caddyfile.j2",
     dest="/etc/caddy/Caddyfile",
     workloads=WORKLOADS,
-    control_ui_root="/srv/control-ui/dist",
+    ui_root="/srv/ui/dist",
     server_api_upstream="server.tailnet:8000",
 )
 ```
@@ -249,7 +249,7 @@ Live-verified (installed 3.9.2, `@local` connector, a `files.file` operation):
 ## Connectors
 
 - **`@ssh`** — the default; a bare hostname or `(hostname, {ssh_user, ssh_port, ssh_key, ssh_password, ...})` tuple in `inventory.py` uses it implicitly. This is what `pi` and `server` groups should use. [SSH connector](https://docs.pyinfra.com/en/3.x/connectors/ssh.html)
-- **`@local`** — runs against the machine running pyinfra itself; useful for ticket 05's "build the Control UI on the dev machine" step (`local.shell(...)` / a `@local`-targeted host in a separate small inventory, or just plain `subprocess`/`local.shell` outside the SSH-targeted deploy). [Connectors](https://docs.pyinfra.com/en/3.x/connectors.html)
+- **`@local`** — runs against the machine running pyinfra itself; useful for ticket 05's "build the UI on the dev machine" step (`local.shell(...)` / a `@local`-targeted host in a separate small inventory, or just plain `subprocess`/`local.shell` outside the SSH-targeted deploy). [Connectors](https://docs.pyinfra.com/en/3.x/connectors.html)
 - **`@docker`** — see below (ticket 09, high priority).
 - **`@dockerssh`** — Docker containers *on a remote host*, reached over SSH to the Docker host first (`@dockerssh/remotehost:image`). Documented as **beta**. Not needed here unless the disposable containers for `test` live on a remote Docker host rather than the dev machine. [Connectors](https://docs.pyinfra.com/en/3.x/connectors.html), confirmed via installed package docstring (`pyinfra/connectors/dockerssh.py`).
 - **`@terraform`**, **`@vagrant`**, **`@podman`/`@podmanssh`**, **`@chroot`** — not relevant to this repo.

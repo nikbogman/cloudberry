@@ -1,8 +1,8 @@
 # Pi API
 
-Flask app that runs on the Pi Zero and sends a Wake-on-LAN magic packet to the main server. The backend for the [Control UI](../control_ui)'s Wake button — see the [Pi API](../../CONTEXT.md) entry in CONTEXT.md.
+Flask app that runs on the Pi Zero and sends a Wake-on-LAN magic packet to the main server. The backend for the [UI](../ui)'s Wake button — see the [Pi API](../../CONTEXT.md) entry in CONTEXT.md.
 
-Path-routed under the same `tailscale serve` app as the Control UI, so it's same-origin with it — no CORS needed, unlike the [Server API](../server-api) ([ADR-0001](../../docs/adr/0001-direct-browser-to-api-no-relay.md)).
+Path-routed under the same `tailscale serve` app as the UI, so it's same-origin with it — no CORS needed, unlike the [Server API](../server-api) ([ADR-0001](../../docs/adr/0001-direct-browser-to-api-no-relay.md)).
 
 ## Endpoint
 

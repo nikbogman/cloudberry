@@ -2,7 +2,7 @@
 
 How the engineering skills should consume this repo's domain documentation when exploring the codebase.
 
-This repo is single-context (one control system: Control UI, Pi API, Server API).
+This repo is single-context (one control system: UI, Pi API, Server API).
 
 ## Before exploring, read these
 

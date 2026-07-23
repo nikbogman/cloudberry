@@ -2,17 +2,17 @@
 
 A control plane that lets the user wake, monitor, and suspend the main workload server (which hosts Docker-based services like Immich and other self-hosted apps) from anywhere on their Tailscale tailnet — without leaving the server running 24/7.
 
-The full domain vocabulary — Control UI, Reachable, Wake, Suspend, Identity header, Deploy, Concern, Host group, etc. — is defined in [CONTEXT.md](CONTEXT.md). Read it before making non-trivial changes; this README stays intentionally high-level.
+The full domain vocabulary — UI, Reachable, Wake, Suspend, Identity header, Deploy, Concern, Host group, etc. — is defined in [CONTEXT.md](CONTEXT.md). Read it before making non-trivial changes; this README stays intentionally high-level.
 
 ## How it fits together
 
 Two physical devices on the same tailnet and the same LAN broadcast domain:
 
-- **Pi Zero** — always on, low-power. Serves the Control UI and runs the Pi API.
+- **Pi Zero** — always on, low-power. Serves the UI and runs the Pi API.
 - **Main server** — the workload machine (Immich, AI agents, etc.), spends most of its time suspended to RAM.
 
 ```
- Browser (tailnet) ──┬──> Control UI (Pi Zero, static)
+ Browser (tailnet) ──┬──> UI (Pi Zero, static)
                       │        │
                       │        ├──POST /wake────> Pi API (Pi Zero) ──WoL──> Main server
                       │        │
@@ -21,7 +21,7 @@ Two physical devices on the same tailnet and the same LAN broadcast domain:
                       └──any request──> Pi proxy (Pi Zero, Caddy) ──proxies + WoL──> Main server workloads
 ```
 
-- **[Control UI](services/control_ui)** — the browser app. Polls reachability, offers Wake/Suspend buttons. The only user-facing surface.
+- **[UI](services/ui)** — the browser app. Polls reachability, offers Wake/Suspend buttons. The only user-facing surface.
 - **[Pi API](services/pi-api)** — sends a deliberate Wake-on-LAN packet when the Wake button is pressed.
 - **[Server API](services/server-api)** — exposes the Suspend action and the reachability health check the UI polls.
 - **[Pi proxy](services/pi-proxy)** — a Caddy config on the Pi that reverse-proxies every workload service and transparently triggers the Pi API's wake action on any request while the server is asleep ([ADR-0012](docs/adr/0012-auto-wake-proxy-calls-control-pi-api.md)).
@@ -38,7 +38,7 @@ CONTEXT.md              domain glossary — read this first
 docs/adr/                architectural decisions
 docs/agents/              how agent skills should use this repo's docs
 services/
-  control_ui/            browser SPA (TypeScript + Vite)
+  ui/                      browser SPA (TypeScript + Vite)
   pi-api/                  Flask app on the Pi (Wake)
   server-api/              Flask app on the server (Suspend, health)
   shared/                  shared Python library for the two Flask apps
@@ -49,18 +49,18 @@ pyinfra/                   declarative provisioning (pyinfra) for the Pi and ser
 
 ## Status
 
-The control system itself (Control UI, both the Pi API and Server API, the Pi proxy) is built per `.scratch/homelab-control-system/spec.md` — all five of its issues are implemented.
+The control system itself (UI, both the Pi API and Server API, the Pi proxy) is built per `.scratch/homelab-control-system/spec.md` — all five of its issues are implemented.
 
-**Declarative provisioning (pyinfra) is built** per `.scratch/pyinfra-provisioning/spec.md` — all nine of its issues are implemented in [`pyinfra/`](pyinfra), which converges the Pi and the server to their declared state (Tailscale, Docker, Caddy, both the Pi API and Server API, the Control UI's static build) in one command. See [`pyinfra/README.md`](pyinfra/README.md) for usage, configuration, and the three-tier testing procedure. Tiers 2/3 of that procedure (disposable-container and real-device runs) and the Caddy binary's own provisioning still need running against real infrastructure — flagged explicitly in that README's Known gaps, not silently assumed done.
+**Declarative provisioning (pyinfra) is built** per `.scratch/pyinfra-provisioning/spec.md` — all nine of its issues are implemented in [`pyinfra/`](pyinfra), which converges the Pi and the server to their declared state (Tailscale, Docker, Caddy, both the Pi API and Server API, the UI's static build) in one command. See [`pyinfra/README.md`](pyinfra/README.md) for usage, configuration, and the three-tier testing procedure. Tiers 2/3 of that procedure (disposable-container and real-device runs) and the Caddy binary's own provisioning still need running against real infrastructure — flagged explicitly in that README's Known gaps, not silently assumed done.
 
 ## Development
 
-Each Python service (`pi-api`, `server-api`, `shared`) is an independent [uv](https://docs.astral.sh/uv/) project with its own virtualenv; the two apps pull in `shared` via an editable path dependency. `control_ui` is a separate npm project. There's no root-level build — work inside each service's directory. See each service's README for exact commands:
+Each Python service (`pi-api`, `server-api`, `shared`) is an independent [uv](https://docs.astral.sh/uv/) project with its own virtualenv; the two apps pull in `shared` via an editable path dependency. `ui` is a separate npm project. There's no root-level build — work inside each service's directory. See each service's README for exact commands:
 
 - [services/shared/README.md](services/shared/README.md)
 - [services/pi-api/README.md](services/pi-api/README.md)
 - [services/server-api/README.md](services/server-api/README.md)
-- [services/control_ui/README.md](services/control_ui/README.md)
+- [services/ui/README.md](services/ui/README.md)
 - [services/pi-proxy/README.md](services/pi-proxy/README.md)
 - [pyinfra/README.md](pyinfra/README.md) — also an independent `uv` project, but not an installable package
 

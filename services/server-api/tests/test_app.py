@@ -9,7 +9,7 @@ from server_api.app import create_app
 from server_api.suspend import SystemSuspender
 
 IDENTITY_HEADER = "Tailscale-User-Login"
-CONTROL_UI_ORIGIN = "https://control.example.ts.net"
+UI_ORIGIN = "https://control.example.ts.net"
 CALLER_IDENTITY = "nicola@example.com"
 AUTH_HEADERS = {IDENTITY_HEADER: CALLER_IDENTITY}
 
@@ -27,7 +27,7 @@ def system_suspender():
 @pytest.fixture
 def app(alloy, system_suspender):
     return create_app(
-        control_ui_origin=CONTROL_UI_ORIGIN,
+        ui_origin=UI_ORIGIN,
         alloy_logger=alloy,
         system_suspender=system_suspender,
         bind_host="127.0.0.1",
@@ -73,10 +73,10 @@ def test_subsequent_health_checks_do_not_re_log_reachability(client, alloy):
     assert alloy.send_event.call_count == 1
 
 
-def test_cors_allows_control_ui_origin(client):
-    response = client.get("/health", headers={**AUTH_HEADERS, "Origin": CONTROL_UI_ORIGIN})
+def test_cors_allows_ui_origin(client):
+    response = client.get("/health", headers={**AUTH_HEADERS, "Origin": UI_ORIGIN})
 
-    assert response.headers.get("Access-Control-Allow-Origin") == CONTROL_UI_ORIGIN
+    assert response.headers.get("Access-Control-Allow-Origin") == UI_ORIGIN
 
 
 def test_cors_rejects_other_origins(client):
@@ -88,7 +88,7 @@ def test_cors_rejects_other_origins(client):
 def test_create_app_refuses_off_tailnet_bind_host(alloy, system_suspender):
     with pytest.raises(BindOffTailnetError):
         create_app(
-            control_ui_origin=CONTROL_UI_ORIGIN,
+            ui_origin=UI_ORIGIN,
             alloy_logger=alloy,
             system_suspender=system_suspender,
             bind_host="0.0.0.0",

@@ -15,7 +15,7 @@ from server_api.suspend import SystemSuspender
 # shutdown path. SystemSuspender's default is the only command this app
 # will ever run.
 app = create_app(
-    control_ui_origin=os.environ["CONTROL_UI_ORIGIN"],
+    ui_origin=os.environ["UI_ORIGIN"],
     alloy_logger=AlloyLogger(push_url=os.environ["ALLOY_PUSH_URL"]),
     system_suspender=SystemSuspender(),
     bind_host=os.environ.get("SERVER_API_HOST", "127.0.0.1"),

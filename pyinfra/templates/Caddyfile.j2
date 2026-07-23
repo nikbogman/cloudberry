@@ -22,7 +22,7 @@
 
     Deliberately does NOT proxy to the Server API: the browser calls it
     directly at its own tailscale-served origin (ADR-0001, "no Pi-side
-    relay"). The Control UI is built (deploy_pi_api.py) with
+    relay"). The UI is built (deploy_pi_api.py) with
     VITE_SERVER_API_URL pointing at that real origin, so the client --
     not this Caddy instance -- is what "routes to" the Server API.
 #}
@@ -36,12 +36,12 @@
 	default_bind {$PI_PROXY_BIND_HOST:127.0.0.1}
 }
 
-# --- Single site: Control UI, Pi API, and the main server -----------------
+# --- Single site: UI, Pi API, and the main server -----------------
 # One origin, path-routed. `/wake` reaches the Pi API; everything else
-# falls through to the Control UI's static files, except `/server`, which
+# falls through to the UI's static files, except `/server`, which
 # is forwarded (path stripped) to the main server as a single blind
 # upstream (ADR-0011) -- this Caddy has no opinion on what's behind it.
-:{{ control_ui_port }} {
+:{{ ui_port }} {
 	handle /wake* {
 		reverse_proxy 127.0.0.1:{{ pi_api_port }}
 	}
@@ -70,7 +70,7 @@
 	}
 
 	handle {
-		root * {{ control_ui_root }}
+		root * {{ ui_root }}
 		file_server
 	}
 }

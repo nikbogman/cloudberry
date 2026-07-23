@@ -1,15 +1,15 @@
-# Control UI
+# UI
 
-The browser-facing app on the Pi Zero: shows whether the main server is [Reachable](../../CONTEXT.md) and offers Wake/Suspend actions. The only user-facing surface in the system — see the [Control UI](../../CONTEXT.md) entry in CONTEXT.md.
+The browser-facing app on the Pi Zero: shows whether the main server is [Reachable](../../CONTEXT.md) and offers Wake/Suspend actions. The only user-facing surface in the system — see the [UI](../../CONTEXT.md) entry in CONTEXT.md.
 
 A framework-light TypeScript + Vite SPA (no framework), deliberately kept minimal so it never needs to run on the Pi Zero itself — see Deployment below.
 
 ## Behavior
 
-All of it lives in [`mountControlUi`](src/app.ts):
+All of it lives in [`mountUi`](src/app.ts):
 
 - Polls the [Server API](../server-api)'s `GET /health` every 12s (configurable) and renders `Checking…` / `Reachable` / `Unreachable`.
-- **Wake button** — enabled unless already reachable. `POST`s to the [Pi API](../pi-api)'s `/wake` (same-origin by default — the Control UI and Pi API are served from the same `tailscale serve` app, [ADR-0001](../../docs/adr/0001-direct-browser-to-api-no-relay.md)).
+- **Wake button** — enabled unless already reachable. `POST`s to the [Pi API](../pi-api)'s `/wake` (same-origin by default — the UI and Pi API are served from the same `tailscale serve` app, [ADR-0001](../../docs/adr/0001-direct-browser-to-api-no-relay.md)).
 - **Suspend button** — enabled unless already unreachable. `POST`s to the Server API's `/suspend` (a distinct origin, per the same ADR).
 - Both actions are fire-and-forget: the request outcome is not surfaced in the UI, only in the Alloy audit log each API writes.
 

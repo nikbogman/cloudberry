@@ -11,16 +11,16 @@ const DEFAULT_POLL_INTERVAL_MS = 12_000
 export interface MountOptions {
   /** Server API origin. */
   serverApiBaseUrl: string
-  /** Pi API origin — same-origin as the Control UI by default, so '' (relative) works. */
+  /** Pi API origin — same-origin as the UI by default, so '' (relative) works. */
   piApiBaseUrl?: string
   intervalMs?: number
 }
 
-/** Renders the Control UI into `container`, starts polling the Server
+/** Renders the UI into `container`, starts polling the Server
  * API's health check, and wires the Wake button (Pi API)
  * and the Suspend button (Server API). Returns a cleanup function
  * that stops polling. */
-export function mountControlUi(container: HTMLElement, options: MountOptions): () => void {
+export function mountUi(container: HTMLElement, options: MountOptions): () => void {
   const { serverApiBaseUrl, piApiBaseUrl = '', intervalMs = DEFAULT_POLL_INTERVAL_MS } = options
 
   container.innerHTML = `

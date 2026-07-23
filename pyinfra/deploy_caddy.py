@@ -1,7 +1,7 @@
 """Templates the complete Caddyfile on `pi`.
 
 Single declarative source of truth for every route Caddy serves on the Pi:
-the Control UI's static files, Pi API path-routing, and one blind
+the UI's static files, Pi API path-routing, and one blind
 path-routed proxy to the main server. Nothing is hand-edited on the
 device. Targetable in isolation:
 
@@ -9,7 +9,7 @@ device. Targetable in isolation:
     pyinfra inventory.py deploy_caddy.py --limit pi --dry
 
 Requires the tailnet already joined (tailnet-only addresses) and the
-Control UI's static path already delivered. Doesn't route to the Server
+UI's static path already delivered. Doesn't route to the Server
 API -- that would be a Pi-side relay, which ADR-0001 rejects.
 
 Per ADR-0011, this Caddy config carries no knowledge of individual
@@ -39,8 +39,8 @@ if has_device_role("pi"):
         dest="/etc/caddy/Caddyfile",
         main_server_host=settings.main_server_host,
         server_proxy_port=settings.server_proxy_port,
-        control_ui_root="/srv/control-ui",
-        control_ui_port=settings.control_ui_port,
+        ui_root="/srv/ui",
+        ui_port=settings.ui_port,
         pi_api_port=settings.pi_api_port,
     )
 

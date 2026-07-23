@@ -6,16 +6,16 @@ Domain glossary for the control plane that lets the user wake, monitor, and susp
 
 ### Control plane
 
-**Control UI**:
+**UI**:
 The browser-facing app on the Pi Zero that shows server reachability and offers Wake/Suspend actions. The only user-facing surface in the system.
-_Avoid_: Panel, dashboard, frontend
+_Avoid_: Control UI, Panel, dashboard, frontend
 
 **Pi API**:
-The backend on the Pi Zero that sends an explicit Wake-on-LAN packet when the Control UI's Wake button is pressed. Same-origin with the Control UI; not reachable from off-tailnet.
+The backend on the Pi Zero that sends an explicit Wake-on-LAN packet when the UI's Wake button is pressed. Same-origin with the UI; not reachable from off-tailnet.
 _Avoid_: Control Pi API, wake service
 
 **Server API**:
-The backend on the main server that exposes the Suspend action and a reachability health check. A distinct origin from the Control UI, fronted by its own `tailscale serve` instance.
+The backend on the main server that exposes the Suspend action and a reachability health check. A distinct origin from the UI, fronted by its own `tailscale serve` instance.
 _Avoid_: Control server API, suspend service
 
 **Pi proxy**:
@@ -23,11 +23,11 @@ Caddy's wake plugin on the Pi Zero, reverse-proxying one fixed path (`/server*`)
 _Avoid_: Auto-wake proxy, WoL plugin, wake proxy
 
 **Reachable**:
-Whether the main server currently responds to the Server API's health check. The Control UI polls this and uses it to decide which of Wake/Suspend is actionable.
+Whether the main server currently responds to the Server API's health check. The UI polls this and uses it to decide which of Wake/Suspend is actionable.
 _Avoid_: online, up, awake
 
 **Wake**:
-Sending a Wake-on-LAN magic packet to bring the main server out of suspend. Always sent by the Pi API, triggered two ways: deliberately, via the Control UI's Wake button, or automatically, via the Pi proxy calling the Pi API's wake action on any proxied request while asleep (ADR-0012).
+Sending a Wake-on-LAN magic packet to bring the main server out of suspend. Always sent by the Pi API, triggered two ways: deliberately, via the UI's Wake button, or automatically, via the Pi proxy calling the Pi API's wake action on any proxied request while asleep (ADR-0012).
 
 **Suspend**:
 Putting the main server into suspend-to-RAM. The only sleep state this system supports — full shutdown (ACPI S5) is explicitly out of scope, since WoL after full power-off is unreliable across BIOS/NIC configurations.

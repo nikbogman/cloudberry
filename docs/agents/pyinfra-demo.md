@@ -89,7 +89,7 @@ downloaded fresh from Caddy's GitHub releases in this sandbox — no
 (now-templated) Caddyfile this file evolved from:
 
 1. Rendered `templates/Caddyfile.j2` standalone (plain Jinja2, the values
-   `deploy_caddy.py` would pass: two `WORKLOADS` entries, the Control UI
+   `deploy_caddy.py` would pass: two `WORKLOADS` entries, the UI
    root/port, the Control Pi API port) to get real output, not inspected
    source.
 2. `caddy validate` against that rendered file with a **stock** binary
@@ -104,7 +104,7 @@ downloaded fresh from Caddy's GitHub releases in this sandbox — no
    call inside `handle_errors`), the **same stock binary reports `Valid
    configuration`** — confirming every directive this ticket actually
    added (the `{% for workload in workloads %}` site-block loop, and the
-   new Control UI/Control Pi API site's `handle`/`reverse_proxy`/
+   new UI/Control Pi API site's `handle`/`reverse_proxy`/
    `root`/`file_server` block) is genuinely valid Caddyfile syntax, not
    just "looks right." The only unvalidated piece is the plugin-gated
    directive this file inherited unchanged from the already-verified

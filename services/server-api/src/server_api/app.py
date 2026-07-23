@@ -1,7 +1,7 @@
 """Server API: exposes a Reachable health check and a Suspend action.
 
 Runs on the main server behind its own `tailscale serve` instance, a
-distinct origin from the Control UI — hence the CORS allow-list.
+distinct origin from the UI — hence the CORS allow-list.
 """
 
 import subprocess
@@ -42,12 +42,12 @@ class ReachabilityTracker:
 
 
 def create_app(
-    *, control_ui_origin: str, alloy_logger: AlloyLogger, system_suspender: SystemSuspender, bind_host: str
+    *, ui_origin: str, alloy_logger: AlloyLogger, system_suspender: SystemSuspender, bind_host: str
 ) -> Flask:
     assert_tailnet_only_bind(bind_host)
 
     app = Flask(__name__)
-    CORS(app, origins=[control_ui_origin])
+    CORS(app, origins=[ui_origin])
 
     reachability = ReachabilityTracker()
 

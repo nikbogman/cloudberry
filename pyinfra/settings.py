@@ -64,13 +64,13 @@ class ServerApiSettings(BaseSettings):
 
 
 class ServerApiSecrets(BaseSettings):
-    control_ui_origin: str
+    ui_origin: str
     alloy_push_url: str
 
 
 class CaddySettings(BaseSettings):
     main_server_host: str = "main-server.tailnet"
-    control_ui_port: int = 8080
+    ui_port: int = 8080
     pi_api_port: int = 5000
     # No default (ADR-0011): the server-side proxy this points at doesn't
     # exist yet, so there's no real value to fall back to.

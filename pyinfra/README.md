@@ -4,7 +4,7 @@ Declarative provisioning for the homelab control plane, per
 `.scratch/pyinfra-provisioning/spec.md`. Converges the Pi Zero (`pi`) and
 the main server (`server`) to their declared state: Tailscale joined,
 Docker installed on `server`, the full Caddy config templated on `pi`, and
-both the Pi API and Server API (plus the Control UI's static build) deployed as
+both the Pi API and Server API (plus the UI's static build) deployed as
 systemd services. Domain vocabulary (Deploy, Deploy file, Host group) is
 defined in the root [`CONTEXT.md`](../CONTEXT.md); pyinfra-specific
 implementation notes and citations live in
@@ -20,7 +20,7 @@ pyinfra/
   deploy_tailscale.py             # ticket 02
   deploy_docker.py                # ticket 03
   api_deploy.py                   # shared git+systemd @deploy helper (ticket 04)
-  deploy_pi_api.py                # ticket 05 (+ Control UI static delivery)
+  deploy_pi_api.py                # ticket 05 (+ UI static delivery)
   deploy_server_api.py            # ticket 06
   deploy_caddy.py                 # ticket 07
   deploy.py                       # entrypoint composing everything (ticket 08)
@@ -95,7 +95,7 @@ environment variables, not a new persistence mechanism.
 | `PI_API_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address for the Pi API |
 | `SERVER_MAC_ADDRESS` | *(required)* | WoL target MAC for the Pi API |
 | `ALLOY_PUSH_URL` | *(required)* | Grafana Alloy event-log endpoint |
-| `SERVER_API_ORIGIN` | *(required)* | Baked into the Control UI build as `VITE_SERVER_API_URL` |
+| `SERVER_API_ORIGIN` | *(required)* | Baked into the UI build as `VITE_SERVER_API_URL` |
 
 ### deploy_server_api.py (`DeploySourceSettings`, `ServerApiSettings`, `ServerApiSecrets`)
 
@@ -104,7 +104,7 @@ environment variables, not a new persistence mechanism.
 | `HOMELAB_REPO_URL` | `git@github.com:nikbogman/homelab.git` | Repo the Server API is pulled from |
 | `DEPLOY_REF` | `main` | Ref/commit checked out on-device |
 | `SERVER_API_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address for the Server API |
-| `CONTROL_UI_ORIGIN` | *(required)* | Server API's CORS allow-list entry |
+| `UI_ORIGIN` | *(required)* | Server API's CORS allow-list entry |
 | `ALLOY_PUSH_URL` | *(required)* | Grafana Alloy event-log endpoint |
 
 ### deploy_caddy.py (`CaddySettings`)
@@ -112,7 +112,7 @@ environment variables, not a new persistence mechanism.
 | Variable | Default | Purpose |
 |---|---|---|
 | `MAIN_SERVER_HOST` | `main-server.tailnet` | Host the `/server*` route forwards to |
-| `CONTROL_UI_PORT` | `8080` | Caddy listen port for the single Control UI/Pi API/`/server*` site |
+| `UI_PORT` | `8080` | Caddy listen port for the single UI/Pi API/`/server*` site |
 | `PI_API_PORT` | `5000` | Must match `deploy_pi_api.py`'s own `PI_API_PORT` -- read separately since each Deploy file's settings class is independent |
 | `SERVER_PROXY_PORT` | *(required)* | Port on `MAIN_SERVER_HOST` that `/server*` forwards to (path stripped) -- ADR-0011; no default since the server-side proxy it points at doesn't exist yet |
 

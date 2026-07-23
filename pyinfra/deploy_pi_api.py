@@ -1,7 +1,7 @@
-"""Deploys the Pi API to `pi`, plus delivers the Control UI's static build.
+"""Deploys the Pi API to `pi`, plus delivers the UI's static build.
 
 Uses the shared helper to pull this repo to a specific ref and run the
-Pi API as an enabled systemd service. Also builds the Control UI on the
+Pi API as an enabled systemd service. Also builds the UI on the
 dev machine (`npm ci && npm run build`) and syncs only its static `dist/`
 to `pi` -- the Pi never runs a Node/npm toolchain. Targetable in isolation:
 
@@ -10,11 +10,11 @@ to `pi` -- the Pi never runs a Node/npm toolchain. Targetable in isolation:
 
 Required dev-machine env vars (fail fast if missing, only when targeting
 `pi`/its `test` stand-in): `SERVER_MAC_ADDRESS`, `ALLOY_PUSH_URL` (the
-Pi API's own config) plus `SERVER_API_ORIGIN`, baked into the Control UI
+Pi API's own config) plus `SERVER_API_ORIGIN`, baked into the UI
 build as `VITE_SERVER_API_URL`. The UI, not this Pi's Caddy, routes to the
 Server API (ADR-0001 rules out a Pi-side relay).
 
-Note on `--dry`: the Control UI build (`local.shell` below) always runs,
+Note on `--dry`: the UI build (`local.shell` below) always runs,
 even under `--dry` -- pyinfra's dry-run guarantee only covers remote
 operations, not a local build step. It never touches `pi`, but isn't a
 true no-op.
@@ -58,14 +58,14 @@ if has_device_role("pi"):
     # Server API directly (ADR-0001). VITE_PI_API_URL is left unset --
     # same-origin works since the Pi API shares this Caddy site.
     local.shell(
-        f"cd ../services/control_ui && npm ci && "
+        f"cd ../services/ui && npm ci && "
         f"VITE_SERVER_API_URL={secrets.server_api_origin} npm run build",
         print_output=True,
     )
 
     files.sync(
-        name="Sync the Control UI's static build to pi",
-        src="../services/control_ui/dist",
-        dest="/srv/control-ui",
+        name="Sync the UI's static build to pi",
+        src="../services/ui/dist",
+        dest="/srv/ui",
         delete=True,
     )
