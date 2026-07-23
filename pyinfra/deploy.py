@@ -7,7 +7,7 @@
 Each Deploy file is also independently runnable (e.g. `pyinfra inventory.py
 deploy_caddy.py --limit pi`), gated by `common.has_device_role`. This file
 just composes them in dependency order: tailnet before Caddy (tailnet-only
-addresses), the Pi/Server APIs before Caddy (routes to the Control UI's
+addresses), the Pi/Server APIs before Caddy (routes to the UI's
 static path).
 
 Never invoked automatically -- only run by hand from the dev machine (ADR-0009).
