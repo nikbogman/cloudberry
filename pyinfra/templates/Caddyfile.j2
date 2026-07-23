@@ -1,18 +1,15 @@
 {#
     The Pi's complete Caddy config, templated by deploy_caddy.py as the
     single declarative source of truth (ADR-0008) -- nothing is ever
-    hand-edited on the device. This is the templated evolution of
-    services/pi-proxy/Caddyfile (built by
-    .scratch/homelab-control-system/issues/05-auto-wake-proxy.md): the
-    call_wake_api mechanism below is ported from that file. See that
-    file's README (services/pi-proxy/README.md) for the full
-    plugin rationale and live-verification writeup -- not repeated here
-    to avoid two copies of the same argument drifting out of sync.
+    hand-edited on the device. The call_wake_api mechanism below calls
+    the Pi API's /wake instead of sending a WoL packet directly
+    (ADR-0012) -- see services/pi-proxy/wake_plugin/README.md for the
+    directive, build command, and verification writeup; not repeated
+    here to avoid two copies of the same argument drifting out of sync.
 
     Requires a Caddy binary built with the in-repo
-    services/pi-proxy/wake_plugin module compiled in (see
-    services/pi-proxy/README.md's Build section); that build step
-    is not this ticket's concern.
+    services/pi-proxy/wake_plugin module compiled in (see that README's
+    Build section); that build step is not this ticket's concern.
 
     Per ADR-0011, this file carries no per-workload knowledge -- everything
     under /server is forwarded, path-stripped, to a single fixed upstream

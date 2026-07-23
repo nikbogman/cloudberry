@@ -61,7 +61,6 @@ Each Python service (`pi-api`, `server-api`, `shared`) is an independent [uv](ht
 - [services/pi-api/README.md](services/pi-api/README.md)
 - [services/server-api/README.md](services/server-api/README.md)
 - [services/ui/README.md](services/ui/README.md)
-- [services/pi-proxy/README.md](services/pi-proxy/README.md)
 - [pyinfra/README.md](pyinfra/README.md) — also an independent `uv` project, but not an installable package
 
 ## Working with this repo as an agent
