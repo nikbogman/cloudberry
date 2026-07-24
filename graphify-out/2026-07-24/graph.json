@@ -262,7 +262,7 @@
       "source_file": "pyinfra/deploy.py",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "pyinfra_deploy",
+      "id": "pyinfra_deploy_py_pyinfra_deploy",
       "community": 29,
       "community_name": "Deploy Entrypoint",
       "norm_label": "deploy.py"
@@ -277,6 +277,36 @@
       "community": 29,
       "community_name": "Deploy Entrypoint",
       "norm_label": "single entrypoint composing every deploy file.      pyinfra inventory.py deploy."
+    },
+    {
+      "label": "deploy.sh",
+      "file_type": "code",
+      "source_file": "pyinfra/deploy.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "file"
+      },
+      "_origin": "ast",
+      "id": "pyinfra_deploy_sh_pyinfra_deploy",
+      "community": 49,
+      "community_name": "deploy.sh script",
+      "norm_label": "deploy.sh"
+    },
+    {
+      "label": "deploy.sh script",
+      "file_type": "code",
+      "source_file": "pyinfra/deploy.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_entrypoint"
+      },
+      "_origin": "ast",
+      "id": "pyinfra_deploy_sh__entry",
+      "community": 49,
+      "community_name": "deploy.sh script",
+      "norm_label": "deploy.sh script"
     },
     {
       "label": "deploy_caddy.py",
@@ -5407,9 +5437,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 4,
+      "community": 1,
       "norm_label": "pyinfra/deploy_tailscale.py",
-      "community_name": "Deploy Domain Concepts",
+      "community_name": "Shared Git-Pull Deploy Helper",
       "id": "pyinfra_deploy_tailscale_module"
     },
     {
@@ -7258,7 +7288,18 @@
       "weight": 1.0,
       "_origin": "ast",
       "source": "pyinfra_deploy_rationale_1",
-      "target": "pyinfra_deploy",
+      "target": "pyinfra_deploy_py_pyinfra_deploy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "pyinfra/deploy.sh",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "pyinfra_deploy_sh_pyinfra_deploy",
+      "target": "pyinfra_deploy_sh__entry",
       "confidence_score": 1.0
     },
     {
@@ -14859,5 +14900,5 @@
       "source_file": "services/shared/README.md"
     }
   ],
-  "built_at_commit": "cfa435700053490b359932dabc0c2d601cae7fb8"
+  "built_at_commit": "0d2ad8b2ba96d6ec5b2ba0f335b67f00791dd58d"
 }

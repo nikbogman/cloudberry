@@ -1,16 +1,16 @@
 # Graph Report - homelab  (2026-07-24)
 
 ## Corpus Check
-- 103 files · ~42,291 words
+- 104 files · ~42,430 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 546 nodes · 724 edges · 49 communities (32 shown, 17 thin omitted)
+- 548 nodes · 725 edges · 50 communities (32 shown, 18 thin omitted)
 - Extraction: 94% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 39 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `cfa43570`
+- Built from commit: `0d2ad8b2`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -58,6 +58,7 @@
 - 0013-caddy-binary-built-off-device-by-pyinfra.md
 - 0014-events-shipped-directly-to-grafana-cloud.md
 - wake_plugin README
+- deploy.sh script
 
 ## God Nodes (most connected - your core abstractions)
 1. `Homelab README.md` - 24 edges
@@ -96,7 +97,7 @@
 - **pyinfra's three-tier testing pattern (--dry, disposable containers, idempotency)** — pyinfra_readme_three_tier_testing, docs_agents_pyinfra_dry_flag, docs_agents_pyinfra_idempotency_mechanics, docs_agents_pyinfra_demo_highest_available_seam [EXTRACTED 1.00]
 - **Tailnet-only bind safety pattern shared by Pi API and Server API** — services_shared_readme_bind_safety_py, services_pi_api_readme_pi_api_host, services_server_api_readme_server_api_host, docs_adr_0004_tailnet_membership_authorization_doc [EXTRACTED 1.00]
 
-## Communities (49 total, 17 thin omitted)
+## Communities (50 total, 18 thin omitted)
 
 ### Community 0 - "Server API Reachability"
 Cohesion: 0.06
@@ -104,7 +105,7 @@ Nodes (21): event_logger(), create_app(), Flask, Server API: exposes a Reachable
 
 ### Community 1 - "Shared Git-Pull Deploy Helper"
 Cohesion: 0.07
-Nodes (33): BaseSettings, git_systemd_service(), Shared git-pull + systemd deploy helper.  The pattern common to both the Pi API, Pull `repo_url`@`ref` to `dest`, install/enable a systemd unit named     `unit_n, has_device_role(), linux_codename(), linux_distro_id(), Helpers shared by more than one Deploy file.  Not a Deploy file itself -- define (+25 more)
+Nodes (34): BaseSettings, git_systemd_service(), Shared git-pull + systemd deploy helper.  The pattern common to both the Pi API, Pull `repo_url`@`ref` to `dest`, install/enable a systemd unit named     `unit_n, has_device_role(), linux_codename(), linux_distro_id(), Helpers shared by more than one Deploy file.  Not a Deploy file itself -- define (+26 more)
 
 ### Community 2 - "Pi API Wake-on-LAN"
 Cohesion: 0.07
@@ -116,7 +117,7 @@ Nodes (37): Graphify Slash-Command Trigger, FalkorDB Export, MCP stdio Server, N
 
 ### Community 4 - "Deploy Domain Concepts"
 Cohesion: 0.12
-Nodes (37): Deploy (concept), Deploy File (concept), Host Group (concept), ADR-0001: Direct Browser-to-API Calls, No Pi-Side Relay, ADR-0006: Git-Pull Deploy Model, Control UI Built Off-Device, ADR-0007: systemd Units for Control APIs, Not Docker, ADR-0009: Manual-Only Deploy Trigger, ADR-0010: Secrets via Dev-Machine Environment Variables (+29 more)
+Nodes (36): Deploy (concept), Deploy File (concept), Host Group (concept), ADR-0001: Direct Browser-to-API Calls, No Pi-Side Relay, ADR-0006: Git-Pull Deploy Model, Control UI Built Off-Device, ADR-0007: systemd Units for Control APIs, Not Docker, ADR-0009: Manual-Only Deploy Trigger, ADR-0010: Secrets via Dev-Machine Environment Variables (+28 more)
 
 ### Community 5 - "Caddy Deploy ADR Decisions"
 Cohesion: 0.07
@@ -209,9 +210,9 @@ Nodes (5): Behavior, Configuration, Deployment, Development, UI
   docs/agents/pyinfra-demo.md · relation: references
 
 ## Knowledge Gaps
-- **128 isolated node(s):** `homelab-pyinfra`, `pi-api`, `github.com/nikbogman/homelab/services/pi-proxy/wake_plugin`, `server-api`, `name` (+123 more)
+- **129 isolated node(s):** `deploy.sh script`, `homelab-pyinfra`, `pi-api`, `github.com/nikbogman/homelab/services/pi-proxy/wake_plugin`, `server-api` (+124 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **17 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **18 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
@@ -220,13 +221,13 @@ _Questions this graph is uniquely positioned to answer:_
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **What is the exact relationship between `git_systemd_service live demo (ticket 04)` and `api_deploy.py (shared git+systemd @deploy helper)`?**
   _Edge tagged AMBIGUOUS (relation: references) - confidence is low._
-- **Why does `TailscaleBackendState` connect `Shared Git-Pull Deploy Helper` to `Deploy Domain Concepts`?**
-  _High betweenness centrality (0.036) - this node is a cross-community bridge._
-- **Why does `pyinfra/deploy_tailscale.py` connect `Deploy Domain Concepts` to `Shared Git-Pull Deploy Helper`?**
-  _High betweenness centrality (0.036) - this node is a cross-community bridge._
+- **Why does `pyinfra/deploy_tailscale.py` connect `Shared Git-Pull Deploy Helper` to `Deploy Domain Concepts`?**
+  _High betweenness centrality (0.035) - this node is a cross-community bridge._
 - **Why does `Homelab README.md` connect `Homelab Domain Glossary` to `Deploy Domain Concepts`, `Caddy Deploy ADR Decisions`?**
   _High betweenness centrality (0.035) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `SystemSuspender` (e.g. with `ReachabilityTracker` and `system_suspender()`) actually correct?**
   _`SystemSuspender` has 2 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 2 inferred relationships involving `wake_plugin Go module` (e.g. with `wol.py` and `Caddy WoL Plugin Config (initial)`) actually correct?**
   _`wake_plugin Go module` has 2 INFERRED edges - model-reasoned connections that need verification._
+- **What connects `deploy.sh script`, `homelab-pyinfra`, `pi-api` to the rest of the system?**
+  _129 weakly-connected nodes found - possible documentation gaps or missing edges._

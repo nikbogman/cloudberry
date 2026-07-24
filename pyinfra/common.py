@@ -6,6 +6,7 @@ the `pyinfra` CLI directly.
 """
 
 from pyinfra import host
+from pyinfra.api import FactBase
 from pyinfra.facts.server import LinuxDistribution
 
 
@@ -39,3 +40,25 @@ def has_device_role(*roles: str) -> bool:
     """
 
     return host.data.device_role in roles
+
+
+class TailscaleServeStatus(FactBase):
+    """Raw `tailscale serve status --json` output (or `"{}"` if unset, not
+    installed, or not yet joined) -- `|| true` keeps that from failing the
+    fact gather. The shape isn't officially documented and has changed
+    across Tailscale versions -- Tailscale's own docs even note that plain
+    `tailscale serve status` and `... --json` can disagree -- so callers
+    check for a target string's (e.g. "localhost:5000") presence in this
+    raw text rather than parsing a specific key path, which is more
+    resilient to that drift than a strict schema parse. Lives here rather
+    than in `deploy_tailscale.py` because that file's top level has
+    side-effecting operations (installing/joining Tailscale) that would
+    re-run if another Deploy file imported from it -- this module is
+    side-effect-free by design (see module docstring).
+    """
+
+    def command(self) -> str:
+        return "tailscale serve status --json 2>/dev/null || true"
+
+    def process(self, output: list[str]) -> str:
+        return "\n".join(output).strip() or "{}"

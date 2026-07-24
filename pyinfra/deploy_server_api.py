@@ -1,19 +1,29 @@
 """Deploys the Server API to `server`.
 
 Uses the shared helper to pull this repo to a specific ref and run the
-Server API as an enabled systemd service. Structurally similar to
-`deploy_pi_api.py` but a distinct application on a distinct Host group.
-Targetable in isolation:
+Server API as an enabled systemd service, then exposes it on the tailnet
+over HTTPS via `tailscale serve` (CONTEXT.md's Server API is "fronted by
+its own `tailscale serve` instance" -- this was previously a flagged gap,
+see README's Known gaps). Structurally similar to `deploy_pi_api.py` but a
+distinct application on a distinct Host group. Targetable in isolation:
 
     pyinfra inventory.py deploy_server_api.py --limit server
     pyinfra inventory.py deploy_server_api.py --limit server --dry
+
+Assumes `server` is already joined to the tailnet (`deploy_tailscale.py`,
+which `deploy.py` always runs first) -- `tailscale serve` needs a running,
+joined `tailscaled`, and this file doesn't re-check that when run standalone,
+same as every other Deploy file's implicit tailnet-address assumption.
 
 Required dev-machine env vars (fail fast if missing, only when targeting
 `server`/its `test` stand-in): `UI_ORIGIN` and the `GRAFANA_CLOUD_LOKI_*`
 trio (the Server API's own config).
 """
 
-from common import has_device_role
+from pyinfra import host
+from pyinfra.operations import server
+
+from common import TailscaleServeStatus, has_device_role
 from api_deploy import git_systemd_service
 from settings import DeploySourceSettings, ServerApiSecrets, ServerApiSettings
 
@@ -45,3 +55,11 @@ if has_device_role("server"):
         },
         setup_commands=["uv sync"],
     )
+
+    serve_target = f"localhost:{api_settings.server_api_port}"
+    already_served = serve_target in host.get_fact(TailscaleServeStatus)
+    if not already_served:
+        server.shell(
+            name="Expose the Server API on the tailnet via tailscale serve",
+            commands=[f"tailscale serve --bg --https=443 {serve_target}"],
+        )

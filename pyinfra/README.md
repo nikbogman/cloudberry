@@ -119,6 +119,16 @@ interactive shell.
 | `GRAFANA_CLOUD_LOKI_USER` | *(required)* | Grafana Cloud Loki basic-auth username (the stack's numeric instance/user ID) |
 | `GRAFANA_CLOUD_LOKI_API_KEY` | *(required)* | Grafana Cloud Access Policy token, scoped to `logs:write` |
 
+After the systemd unit, this Deploy file also runs `tailscale serve --bg
+--https=443 localhost:$SERVER_API_PORT` to expose the Server API on the
+tailnet (CONTEXT.md: fronted by its own `tailscale serve` instance) --
+guarded by `common.TailscaleServeStatus`, a fact that checks the raw
+`tailscale serve status --json` text for that target string, so a second
+run is a no-op. `tailscale serve`'s exact CLI syntax/JSON shape has moved
+across Tailscale versions and isn't fully documented, so re-verify this
+against whatever `tailscale version` is actually installed before trusting
+it blindly on a new device.
+
 ### deploy_caddy.py (`CaddySettings`)
 
 | Variable | Default | Purpose |
@@ -273,13 +283,13 @@ pass since it blocked verifying the very route this change touches.
 
 ## Known gaps (flagged, not silently dropped)
 
-- **`tailscale serve` port mappings** are not configured by any Deploy
-  file here. Something still needs to run `tailscale serve` to actually
-  expose Caddy's (and the Server API's) loopback-bound ports to
-  the tailnet with HTTPS — none of tickets 01-09 as written call this out
-  as in scope, and inventing it wasn't this implementation's call to
-  make. Flagged the same way the spec itself flags the bind-address
-  hard-requirement gap (spec.md's Further Notes).
+- **`tailscale serve` port mappings** — `deploy_server_api.py` now runs
+  `tailscale serve` for the Server API (see its section above). Caddy's
+  loopback-bound port (the UI/Pi API) on `pi` is still not exposed by any
+  Deploy file — none of tickets 01-09 as written call that out as in scope,
+  and inventing it wasn't this implementation's call to make. Flagged the
+  same way the spec itself flags the bind-address hard-requirement gap
+  (spec.md's Further Notes).
 - **Bind-address enforcement** (the "never bound off-tailnet" hard
   requirement) is not checked by pyinfra, exactly as `spec.md` already
   notes as an explicit, deferred gap.

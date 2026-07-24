@@ -10,13 +10,13 @@
     "semantic_hash": "4a4e914f07354586691b8763e1fdf0f4"
   },
   "pyinfra/common.py": {
-    "mtime": 1784754332.849501,
-    "ast_hash": "1a0f4db2a857403ff7bf00b9ea38fcc2",
-    "semantic_hash": "1a0f4db2a857403ff7bf00b9ea38fcc2"
+    "mtime": 1784907477.668168,
+    "ast_hash": "c9689201c7c039ac264c20fae1415791",
+    "semantic_hash": ""
   },
   "pyinfra/deploy.py": {
-    "mtime": 1784851810.7859583,
-    "ast_hash": "e3f03cc958c1f8b5f492c502c2621f91",
+    "mtime": 1784907145.3721437,
+    "ast_hash": "3a0f156893e20f32b18b9a9c87e0091b",
     "semantic_hash": ""
   },
   "pyinfra/deploy_caddy.py": {
@@ -35,8 +35,8 @@
     "semantic_hash": ""
   },
   "pyinfra/deploy_server_api.py": {
-    "mtime": 1784851831.3619616,
-    "ast_hash": "d6bdd7940330fcced6665ffdb861f9f4",
+    "mtime": 1784907494.748169,
+    "ast_hash": "de28ed7800646e56b3938eb859cdf768",
     "semantic_hash": ""
   },
   "pyinfra/deploy_tailscale.py": {
@@ -435,8 +435,8 @@
     "semantic_hash": "0d3351531db0a1328a6e6530912e36f8"
   },
   "pyinfra/README.md": {
-    "mtime": 1784906477.1161041,
-    "ast_hash": "e773267e6808fc5ad317c74043a69bb3",
+    "mtime": 1784907541.8201702,
+    "ast_hash": "27e72e42cfb7c472b13d11f4b072b2d3",
     "semantic_hash": ""
   },
   "services/pi-api/README.md": {
@@ -525,8 +525,8 @@
     "semantic_hash": ""
   },
   "pyinfra/deploy.sh": {
-    "mtime": 1784906286.1760795,
-    "ast_hash": "e1bf545e949380b58cd12823af5be51b",
+    "mtime": 1784906906.020127,
+    "ast_hash": "d9d78da2cd1ec9cb474fcdb28b55867d",
     "semantic_hash": ""
   }
 }
