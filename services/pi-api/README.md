@@ -6,7 +6,7 @@ Path-routed under the same `tailscale serve` app as the UI, so it's same-origin 
 
 ## Endpoint
 
-`POST /wake` — requires the `Tailscale-User-Login` identity header, or a caller on `127.0.0.1` ([ADR-0004](../../docs/adr/0004-tailnet-membership-authorization.md)). Sends a WoL magic packet to the configured `SERVER_MAC_ADDRESS` and returns `{"wake": "succeeded"}` (200) or `{"wake": "failed"}` (500).
+`POST /wake` — requires the `Tailscale-User-Login` identity header, or a caller on `127.0.0.1` ([ADR-0004](../../docs/adr/0004-tailnet-membership-authorization.md)). Sends a WoL magic packet to the configured `SERVER_MAC_ADDRESS`, logs a `wake_requested`/`wake_succeeded`/`wake_failed` event to Grafana Cloud ([ADR-0014](../../docs/adr/0014-events-shipped-directly-to-grafana-cloud.md)), and returns `{"wake": "succeeded"}` (200) or `{"wake": "failed"}` (500).
 
 This is one of two wake triggers in the system — the other is the [Pi proxy](../pi-proxy), which calls this endpoint automatically (via the loopback path above) on any proxied request while the server is asleep ([ADR-0012](../../docs/adr/0012-auto-wake-proxy-calls-control-pi-api.md), superseding [ADR-0005](../../docs/adr/0005-dual-wake-paths.md)'s original independent-paths design).
 
@@ -19,6 +19,9 @@ Read from the environment by [`wsgi.py`](src/pi_api/wsgi.py):
 | Variable | Required | Purpose |
 |---|---|---|
 | `SERVER_MAC_ADDRESS` | yes | MAC address the magic packet targets. Validated at startup — a malformed value fails fast, not mid-request. |
+| `GRAFANA_CLOUD_LOKI_URL` | yes | Grafana Cloud's Loki push endpoint for your stack ([ADR-0014](../../docs/adr/0014-events-shipped-directly-to-grafana-cloud.md)) — events are POSTed here directly, no local collector in between. |
+| `GRAFANA_CLOUD_LOKI_USER` | yes | Grafana Cloud Loki basic-auth username (the stack's numeric instance/user ID). |
+| `GRAFANA_CLOUD_LOKI_API_KEY` | yes | Grafana Cloud Access Policy token, scoped to `logs:write`. |
 | `PI_API_HOST` | no (default `127.0.0.1`) | Bind address. Asserted at startup to be loopback or a tailnet address ([`assert_tailnet_only_bind`](../shared/src/control_plane_shared/bind_safety.py)) — the process refuses to start if this would expose it off-tailnet. |
 
 ## Development
@@ -32,7 +35,10 @@ uv run mypy src
 Run locally:
 
 ```sh
-SERVER_MAC_ADDRESS=AA:BB:CC:DD:EE:FF uv run flask --app pi_api.wsgi run
+SERVER_MAC_ADDRESS=AA:BB:CC:DD:EE:FF \
+GRAFANA_CLOUD_LOKI_URL=https://logs-prod-000.grafana.net/loki/api/v1/push \
+GRAFANA_CLOUD_LOKI_USER=123456 GRAFANA_CLOUD_LOKI_API_KEY=glc_xxx \
+uv run flask --app pi_api.wsgi run
 ```
 
 ## Deployment

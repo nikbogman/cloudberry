@@ -45,7 +45,5 @@
   "43": "Package Init File",
   "44": "wsgi.py (env config)",
   "45": "vite.config.ts",
-  "46": "0013-caddy-binary-built-off-device-by-pyinfra.md",
-  "47": "0014-events-shipped-directly-to-grafana-cloud.md",
-  "48": "wake_plugin README"
+  "46": "0013-caddy-binary-built-off-device-by-pyinfra.md"
 }

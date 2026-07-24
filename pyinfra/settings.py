@@ -55,6 +55,9 @@ class PiApiSettings(BaseSettings):
 class PiApiSecrets(BaseSettings):
     server_mac_address: str
     server_api_origin: str
+    grafana_cloud_loki_url: str
+    grafana_cloud_loki_user: str
+    grafana_cloud_loki_api_key: str
 
 
 class ServerApiSettings(BaseSettings):
@@ -64,6 +67,9 @@ class ServerApiSettings(BaseSettings):
 
 class ServerApiSecrets(BaseSettings):
     ui_origin: str
+    grafana_cloud_loki_url: str
+    grafana_cloud_loki_user: str
+    grafana_cloud_loki_api_key: str
 
 
 class CaddySettings(BaseSettings):

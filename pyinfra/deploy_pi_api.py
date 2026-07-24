@@ -9,8 +9,8 @@ to `pi` -- the Pi never runs a Node/npm toolchain. Targetable in isolation:
     pyinfra inventory.py deploy_pi_api.py --limit pi --dry
 
 Required dev-machine env vars (fail fast if missing, only when targeting
-`pi`/its `test` stand-in): `SERVER_MAC_ADDRESS` (the
-Pi API's own config) plus `SERVER_API_ORIGIN`, baked into the UI
+`pi`/its `test` stand-in): `SERVER_MAC_ADDRESS` and the `GRAFANA_CLOUD_LOKI_*`
+trio (the Pi API's own config) plus `SERVER_API_ORIGIN`, baked into the UI
 build as `VITE_SERVER_API_URL`. The UI, not this Pi's Caddy, routes to the
 Server API (ADR-0001 rules out a Pi-side relay).
 
@@ -49,6 +49,9 @@ if has_device_role("pi"):
         environment={
             "SERVER_MAC_ADDRESS": secrets.server_mac_address,
             "PI_API_HOST": api_settings.pi_api_host,
+            "GRAFANA_CLOUD_LOKI_URL": secrets.grafana_cloud_loki_url,
+            "GRAFANA_CLOUD_LOKI_USER": secrets.grafana_cloud_loki_user,
+            "GRAFANA_CLOUD_LOKI_API_KEY": secrets.grafana_cloud_loki_api_key,
         },
         setup_commands=["uv sync"],
     )

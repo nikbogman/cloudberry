@@ -10,6 +10,9 @@ IDENTITY_HEADER = "Tailscale-User-Login"
 @pytest.fixture
 def wsgi_module(monkeypatch):
     monkeypatch.setenv("UI_ORIGIN", "https://control.example.ts.net")
+    monkeypatch.setenv("GRAFANA_CLOUD_LOKI_URL", "https://logs-prod-000.grafana.net/loki/api/v1/push")
+    monkeypatch.setenv("GRAFANA_CLOUD_LOKI_USER", "123456")
+    monkeypatch.setenv("GRAFANA_CLOUD_LOKI_API_KEY", "glc_faketoken")
     monkeypatch.setenv("SERVER_API_HOST", "127.0.0.1")
 
     from server_api import wsgi
@@ -44,6 +47,7 @@ def test_wsgi_wires_suspend_to_the_real_systemctl_suspend_command(wsgi_module, m
 
 def test_wsgi_raises_clearly_when_required_env_vars_are_missing(monkeypatch):
     monkeypatch.delenv("UI_ORIGIN", raising=False)
+    monkeypatch.delenv("GRAFANA_CLOUD_LOKI_URL", raising=False)
 
     from server_api import wsgi
 

@@ -95,6 +95,9 @@ environment variables, not a new persistence mechanism.
 | `DEPLOY_REF` | `main` | Ref/commit checked out on-device |
 | `PI_API_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address for the Pi API |
 | `SERVER_MAC_ADDRESS` | *(required)* | WoL target MAC for the Pi API |
+| `GRAFANA_CLOUD_LOKI_URL` | *(required)* | Grafana Cloud's Loki push endpoint -- events are POSTed here directly (ADR-0014) |
+| `GRAFANA_CLOUD_LOKI_USER` | *(required)* | Grafana Cloud Loki basic-auth username (the stack's numeric instance/user ID) |
+| `GRAFANA_CLOUD_LOKI_API_KEY` | *(required)* | Grafana Cloud Access Policy token, scoped to `logs:write` |
 | `SERVER_API_ORIGIN` | *(required)* | Baked into the UI build as `VITE_SERVER_API_URL` |
 
 ### deploy_server_api.py (`DeploySourceSettings`, `ServerApiSettings`, `ServerApiSecrets`)
@@ -105,6 +108,9 @@ environment variables, not a new persistence mechanism.
 | `DEPLOY_REF` | `main` | Ref/commit checked out on-device |
 | `SERVER_API_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address for the Server API |
 | `UI_ORIGIN` | *(required)* | Server API's CORS allow-list entry |
+| `GRAFANA_CLOUD_LOKI_URL` | *(required)* | Grafana Cloud's Loki push endpoint -- events are POSTed here directly (ADR-0014) |
+| `GRAFANA_CLOUD_LOKI_USER` | *(required)* | Grafana Cloud Loki basic-auth username (the stack's numeric instance/user ID) |
+| `GRAFANA_CLOUD_LOKI_API_KEY` | *(required)* | Grafana Cloud Access Policy token, scoped to `logs:write` |
 
 ### deploy_caddy.py (`CaddySettings`)
 

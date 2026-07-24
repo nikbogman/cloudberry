@@ -9,8 +9,8 @@ Targetable in isolation:
     pyinfra inventory.py deploy_server_api.py --limit server --dry
 
 Required dev-machine env vars (fail fast if missing, only when targeting
-`server`/its `test` stand-in): `UI_ORIGIN` (the
-Server API's own config).
+`server`/its `test` stand-in): `UI_ORIGIN` and the `GRAFANA_CLOUD_LOKI_*`
+trio (the Server API's own config).
 """
 
 from common import has_device_role
@@ -39,6 +39,9 @@ if has_device_role("server"):
         environment={
             "UI_ORIGIN": secrets.ui_origin,
             "SERVER_API_HOST": api_settings.server_api_host,
+            "GRAFANA_CLOUD_LOKI_URL": secrets.grafana_cloud_loki_url,
+            "GRAFANA_CLOUD_LOKI_USER": secrets.grafana_cloud_loki_user,
+            "GRAFANA_CLOUD_LOKI_API_KEY": secrets.grafana_cloud_loki_api_key,
         },
         setup_commands=["uv sync"],
     )
