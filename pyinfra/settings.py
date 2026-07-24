@@ -24,6 +24,12 @@ from pydantic_settings import BaseSettings
 
 
 class InventorySettings(BaseSettings):
+    # pi_host/server_host double as each device's browser-facing origin
+    # (https://{pi_host}, https://{server_host}) now that both are fronted
+    # by their own `tailscale serve --https=443` instance (deploy_caddy.py,
+    # deploy_server_api.py) -- real values must be each device's actual
+    # Tailscale MagicDNS name (<device>.<tailnet-name>.ts.net), since
+    # pyinfra also SSHes to exactly this host to run the Deploy.
     pi_host: str = "pi-zero.tailnet"
     pi_ssh_user: str = "pi"
     server_host: str = "main-server.tailnet"
@@ -54,7 +60,6 @@ class PiApiSettings(BaseSettings):
 
 class PiApiSecrets(BaseSettings):
     server_mac_address: str
-    server_api_origin: str
     grafana_cloud_loki_url: str
     grafana_cloud_loki_user: str
     grafana_cloud_loki_api_key: str
@@ -66,7 +71,6 @@ class ServerApiSettings(BaseSettings):
 
 
 class ServerApiSecrets(BaseSettings):
-    ui_origin: str
     grafana_cloud_loki_url: str
     grafana_cloud_loki_user: str
     grafana_cloud_loki_api_key: str

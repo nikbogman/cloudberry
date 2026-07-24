@@ -8,11 +8,17 @@ to `pi` -- the Pi never runs a Node/npm toolchain. Targetable in isolation:
     pyinfra inventory.py deploy_pi_api.py --limit pi
     pyinfra inventory.py deploy_pi_api.py --limit pi --dry
 
+`SERVER_API_ORIGIN` (baked into the UI build as `VITE_SERVER_API_URL`) is
+no longer a separate required secret -- it's derived from
+`InventorySettings.server_host`, since that's exactly the origin the
+Server API's own `tailscale serve` instance (deploy_server_api.py) exposes
+it at. One less value an operator has to keep in sync by hand across the
+two Deploy files. The UI, not this Pi's Caddy, routes to the Server API
+(ADR-0001 rules out a Pi-side relay).
+
 Required dev-machine env vars (fail fast if missing, only when targeting
 `pi`/its `test` stand-in): `SERVER_MAC_ADDRESS` and the `GRAFANA_CLOUD_LOKI_*`
-trio (the Pi API's own config) plus `SERVER_API_ORIGIN`, baked into the UI
-build as `VITE_SERVER_API_URL`. The UI, not this Pi's Caddy, routes to the
-Server API (ADR-0001 rules out a Pi-side relay).
+trio (the Pi API's own config).
 
 Note on `--dry`: the UI build (`local.shell` below) always runs,
 even under `--dry` -- pyinfra's dry-run guarantee only covers remote
@@ -25,10 +31,11 @@ from pyinfra.operations import files
 
 from common import has_device_role
 from api_deploy import git_systemd_service
-from settings import DeploySourceSettings, PiApiSecrets, PiApiSettings
+from settings import DeploySourceSettings, InventorySettings, PiApiSecrets, PiApiSettings
 
 source = DeploySourceSettings()
 api_settings = PiApiSettings()
+inventory = InventorySettings()
 CLONE_DEST = "/srv/homelab"
 APP_DIR = f"{CLONE_DEST}/services/pi-api"
 
@@ -61,7 +68,7 @@ if has_device_role("pi"):
     # same-origin works since the Pi API shares this Caddy site.
     local.shell(
         f"cd ../services/ui && npm ci && "
-        f"VITE_SERVER_API_URL={secrets.server_api_origin} npm run build",
+        f"VITE_SERVER_API_URL=https://{inventory.server_host} npm run build",
         print_output=True,
     )
 

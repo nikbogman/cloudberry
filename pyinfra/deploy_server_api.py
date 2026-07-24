@@ -15,9 +15,15 @@ which `deploy.py` always runs first) -- `tailscale serve` needs a running,
 joined `tailscaled`, and this file doesn't re-check that when run standalone,
 same as every other Deploy file's implicit tailnet-address assumption.
 
+`UI_ORIGIN` (the Server API's CORS allow-list entry) is no longer a
+separate required secret -- it's derived from `InventorySettings.pi_host`,
+since that's exactly the origin the Pi's own `tailscale serve` instance
+(deploy_caddy.py) exposes the UI at. One less value an operator has to keep
+in sync by hand across the two Deploy files.
+
 Required dev-machine env vars (fail fast if missing, only when targeting
-`server`/its `test` stand-in): `UI_ORIGIN` and the `GRAFANA_CLOUD_LOKI_*`
-trio (the Server API's own config).
+`server`/its `test` stand-in): the `GRAFANA_CLOUD_LOKI_*` trio (the Server
+API's own config).
 """
 
 from pyinfra import host
@@ -25,10 +31,11 @@ from pyinfra.operations import server
 
 from common import TailscaleServeStatus, has_device_role
 from api_deploy import git_systemd_service
-from settings import DeploySourceSettings, ServerApiSecrets, ServerApiSettings
+from settings import DeploySourceSettings, InventorySettings, ServerApiSecrets, ServerApiSettings
 
 source = DeploySourceSettings()
 api_settings = ServerApiSettings()
+inventory = InventorySettings()
 CLONE_DEST = "/srv/homelab"
 APP_DIR = f"{CLONE_DEST}/services/server-api"
 
@@ -47,7 +54,7 @@ if has_device_role("server"):
             f"--host {api_settings.server_api_host} --port {api_settings.server_api_port}"
         ),
         environment={
-            "UI_ORIGIN": secrets.ui_origin,
+            "UI_ORIGIN": f"https://{inventory.pi_host}",
             "SERVER_API_HOST": api_settings.server_api_host,
             "GRAFANA_CLOUD_LOKI_URL": secrets.grafana_cloud_loki_url,
             "GRAFANA_CLOUD_LOKI_USER": secrets.grafana_cloud_loki_user,

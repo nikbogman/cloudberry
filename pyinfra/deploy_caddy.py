@@ -13,6 +13,14 @@ Requires the tailnet already joined (tailnet-only addresses) and the
 UI's static path already delivered. Doesn't route to the Server
 API -- that would be a Pi-side relay, which ADR-0001 rejects.
 
+After Caddy is up, also runs `tailscale serve --bg --https=443` against
+Caddy's `ui_port` so the UI/Pi API are actually reachable on the tailnet
+over HTTPS (CONTEXT.md's UI: "served by Caddy on the Pi Zero via
+`tailscale serve`") -- this was the other half of a previously flagged gap,
+see README's Known gaps; `deploy_server_api.py` closed the Server API half.
+Guarded the same way, via `common.TailscaleServeStatus`, so a second run
+is a no-op.
+
 Per ADR-0011, this Caddy config carries no knowledge of individual
 workload services (Immich, AI agents, etc.) or their container ports --
 everything under `/server*` is forwarded, path-stripped, to a single fixed
@@ -34,10 +42,10 @@ pyinfra's dry-run guarantee only covers remote operations, not a local
 build step (same caveat deploy_pi_api.py's UI build documents).
 """
 
-from pyinfra import local
-from pyinfra.operations import files, systemd
+from pyinfra import host, local
+from pyinfra.operations import files, server, systemd
 
-from common import has_device_role
+from common import TailscaleServeStatus, has_device_role
 from settings import CaddySettings
 
 settings = CaddySettings()
@@ -104,3 +112,11 @@ if has_device_role("pi"):
         reloaded=caddyfile.will_change and not needs_restart,
         daemon_reload=unit.will_change,
     )
+
+    serve_target = f"localhost:{settings.ui_port}"
+    already_served = serve_target in host.get_fact(TailscaleServeStatus)
+    if not already_served:
+        server.shell(
+            name="Expose the UI/Pi API on the tailnet via tailscale serve",
+            commands=[f"tailscale serve --bg --https=443 {serve_target}"],
+        )

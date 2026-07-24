@@ -1,16 +1,16 @@
 # Graph Report - homelab  (2026-07-24)
 
 ## Corpus Check
-- 104 files · ~42,430 words
+- 104 files · ~42,941 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 548 nodes · 725 edges · 50 communities (32 shown, 18 thin omitted)
+- 553 nodes · 731 edges · 50 communities (32 shown, 18 thin omitted)
 - Extraction: 94% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 39 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `0d2ad8b2`
+- Built from commit: `d295f143`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -79,10 +79,10 @@
   .scratch/pyinfra-provisioning/spec.md → docs/adr/0008-full-caddyfile-single-source-of-truth.md
 - `Homelab README.md` --references--> `pyinfra/deploy.py`  [INFERRED]
   README.md → .scratch/pyinfra-provisioning/issues/08-deploy-entrypoint.md
+- `Homelab README.md` --references--> `.scratch/homelab-control-system/spec.md`  [EXTRACTED]
+  README.md → .scratch/pyinfra-provisioning/spec.md
 - `git_systemd_service live demo (ticket 04)` --references--> `api_deploy.py (shared git+systemd @deploy helper)`  [AMBIGUOUS]
   docs/agents/pyinfra-demo.md → pyinfra/README.md
-- `Issue 05: Control Pi API Deploy File` --references--> `ADR-0006: Git-Pull Deploy Model, Control UI Built Off-Device`  [EXTRACTED]
-  .scratch/pyinfra-provisioning/issues/05-control-pi-api.md → docs/adr/0006-git-pull-deploy-with-offdevice-ui-build.md
 
 ## Import Cycles
 - None detected.
@@ -105,7 +105,7 @@ Nodes (21): event_logger(), create_app(), Flask, Server API: exposes a Reachable
 
 ### Community 1 - "Shared Git-Pull Deploy Helper"
 Cohesion: 0.07
-Nodes (34): BaseSettings, git_systemd_service(), Shared git-pull + systemd deploy helper.  The pattern common to both the Pi API, Pull `repo_url`@`ref` to `dest`, install/enable a systemd unit named     `unit_n, has_device_role(), linux_codename(), linux_distro_id(), Helpers shared by more than one Deploy file.  Not a Deploy file itself -- define (+26 more)
+Nodes (33): BaseSettings, git_systemd_service(), Shared git-pull + systemd deploy helper.  The pattern common to both the Pi API, Pull `repo_url`@`ref` to `dest`, install/enable a systemd unit named     `unit_n, has_device_role(), linux_codename(), linux_distro_id(), FactBase (+25 more)
 
 ### Community 2 - "Pi API Wake-on-LAN"
 Cohesion: 0.07
@@ -116,16 +116,16 @@ Cohesion: 0.06
 Nodes (37): Graphify Slash-Command Trigger, FalkorDB Export, MCP stdio Server, Neo4j Export, Wiki Export, Confidence Score Rubric, Hyperedges Rule, Node ID Format Rule (+29 more)
 
 ### Community 4 - "Deploy Domain Concepts"
-Cohesion: 0.12
-Nodes (36): Deploy (concept), Deploy File (concept), Host Group (concept), ADR-0001: Direct Browser-to-API Calls, No Pi-Side Relay, ADR-0006: Git-Pull Deploy Model, Control UI Built Off-Device, ADR-0007: systemd Units for Control APIs, Not Docker, ADR-0009: Manual-Only Deploy Trigger, ADR-0010: Secrets via Dev-Machine Environment Variables (+28 more)
+Cohesion: 0.10
+Nodes (41): Deploy (concept), Deploy File (concept), Host Group (concept), ADR-0001: Direct Browser-to-API Calls, No Pi-Side Relay, ADR-0006: Git-Pull Deploy Model, Control UI Built Off-Device, ADR-0007: systemd Units for Control APIs, Not Docker, ADR-0009: Manual-Only Deploy Trigger, ADR-0010: Secrets via Dev-Machine Environment Variables (+33 more)
 
 ### Community 5 - "Caddy Deploy ADR Decisions"
 Cohesion: 0.07
 Nodes (41): ADR-0002: Suspend-only, no shutdown, ADR-0003: WoL same broadcast domain, ADR-0004: Tailnet membership authorization, ADR-0005: Dual wake paths (superseded), ADR-0007: systemd not Docker for control APIs, ADR-0009 (deploy.py never runs automatically), ADR-0012: Auto-wake proxy calls Control Pi API, @deploy decorator (+33 more)
 
 ### Community 6 - "Homelab Domain Glossary"
-Cohesion: 0.09
-Nodes (30): Homelab CLAUDE.md (Agent Skills Config), Control UI (concept), CONTEXT.md (Domain Glossary), Identity Header (concept), Pi API (concept), Pi Proxy (concept), Reachable (concept), Server API (concept) (+22 more)
+Cohesion: 0.10
+Nodes (29): Homelab CLAUDE.md (Agent Skills Config), Control UI (concept), CONTEXT.md (Domain Glossary), Identity Header (concept), Pi API (concept), Pi Proxy (concept), Reachable (concept), Server API (concept) (+21 more)
 
 ### Community 7 - "Wake Plugin Go Internals"
 Cohesion: 0.10
@@ -221,8 +221,8 @@ _Questions this graph is uniquely positioned to answer:_
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **What is the exact relationship between `git_systemd_service live demo (ticket 04)` and `api_deploy.py (shared git+systemd @deploy helper)`?**
   _Edge tagged AMBIGUOUS (relation: references) - confidence is low._
-- **Why does `pyinfra/deploy_tailscale.py` connect `Shared Git-Pull Deploy Helper` to `Deploy Domain Concepts`?**
-  _High betweenness centrality (0.035) - this node is a cross-community bridge._
+- **Why does `TailscaleBackendState` connect `Deploy Domain Concepts` to `Shared Git-Pull Deploy Helper`?**
+  _High betweenness centrality (0.039) - this node is a cross-community bridge._
 - **Why does `Homelab README.md` connect `Homelab Domain Glossary` to `Deploy Domain Concepts`, `Caddy Deploy ADR Decisions`?**
   _High betweenness centrality (0.035) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `SystemSuspender` (e.g. with `ReachabilityTracker` and `system_suspender()`) actually correct?**

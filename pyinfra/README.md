@@ -88,6 +88,13 @@ interactive shell.
 | `PI_TEST_HOST`, `PI_TEST_SSH_PORT`, `PI_TEST_SSH_USER` | `localhost`, `2201`, `root` | `test` group's pi stand-in (see Testing) |
 | `SERVER_TEST_HOST`, `SERVER_TEST_SSH_PORT`, `SERVER_TEST_SSH_USER` | `localhost`, `2202`, `root` | `test` group's server stand-in |
 
+`PI_HOST`/`SERVER_HOST` must be each device's real Tailscale MagicDNS name
+(`<device>.<tailnet-name>.ts.net`), not just an SSH target -- both
+`deploy_server_api.py` and `deploy_pi_api.py` derive the other's
+browser-facing origin from these two values (`https://{pi_host}`,
+`https://{server_host}`), since that's exactly what each device's own
+`tailscale serve` instance exposes it at.
+
 ### deploy_tailscale.py (`TailscaleSettings`)
 
 | Variable | Default | Purpose |
@@ -105,7 +112,9 @@ interactive shell.
 | `GRAFANA_CLOUD_LOKI_URL` | *(required)* | Grafana Cloud's Loki push endpoint -- events are POSTed here directly (ADR-0014) |
 | `GRAFANA_CLOUD_LOKI_USER` | *(required)* | Grafana Cloud Loki basic-auth username (the stack's numeric instance/user ID) |
 | `GRAFANA_CLOUD_LOKI_API_KEY` | *(required)* | Grafana Cloud Access Policy token, scoped to `logs:write` |
-| `SERVER_API_ORIGIN` | *(required)* | Baked into the UI build as `VITE_SERVER_API_URL` |
+
+`VITE_SERVER_API_URL` (baked into the UI build) is `https://{SERVER_HOST}`,
+derived from `InventorySettings` rather than its own separately-set secret.
 
 ### deploy_server_api.py (`DeploySourceSettings`, `ServerApiSettings`, `ServerApiSecrets`)
 
@@ -114,10 +123,12 @@ interactive shell.
 | `HOMELAB_REPO_URL` | `git@github.com:nikbogman/homelab.git` | Repo the Server API is pulled from |
 | `DEPLOY_REF` | `main` | Ref/commit checked out on-device |
 | `SERVER_API_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address for the Server API |
-| `UI_ORIGIN` | *(required)* | Server API's CORS allow-list entry |
 | `GRAFANA_CLOUD_LOKI_URL` | *(required)* | Grafana Cloud's Loki push endpoint -- events are POSTed here directly (ADR-0014) |
 | `GRAFANA_CLOUD_LOKI_USER` | *(required)* | Grafana Cloud Loki basic-auth username (the stack's numeric instance/user ID) |
 | `GRAFANA_CLOUD_LOKI_API_KEY` | *(required)* | Grafana Cloud Access Policy token, scoped to `logs:write` |
+
+`UI_ORIGIN` (the Server API's CORS allow-list entry) is `https://{PI_HOST}`,
+derived from `InventorySettings` rather than its own separately-set secret.
 
 After the systemd unit, this Deploy file also runs `tailscale serve --bg
 --https=443 localhost:$SERVER_API_PORT` to expose the Server API on the
@@ -137,6 +148,12 @@ it blindly on a new device.
 | `UI_PORT` | `8080` | Caddy listen port for the single UI/Pi API/`/server*` site |
 | `PI_API_PORT` | `5000` | Must match `deploy_pi_api.py`'s own `PI_API_PORT` -- read separately since each Deploy file's settings class is independent |
 | `SERVER_PROXY_PORT` | *(required)* | Port on `MAIN_SERVER_HOST` that `/server*` forwards to (path stripped) -- ADR-0011; no default since the server-side proxy it points at doesn't exist yet |
+
+After Caddy's systemd unit, this Deploy file also runs `tailscale serve
+--bg --https=443 localhost:$UI_PORT` to expose the UI/Pi API on the
+tailnet, guarded by the same `common.TailscaleServeStatus` idempotency
+check as `deploy_server_api.py` above -- same version-sensitivity caveat
+applies.
 
 ### Not read by pyinfra at all
 
@@ -283,13 +300,14 @@ pass since it blocked verifying the very route this change touches.
 
 ## Known gaps (flagged, not silently dropped)
 
-- **`tailscale serve` port mappings** — `deploy_server_api.py` now runs
-  `tailscale serve` for the Server API (see its section above). Caddy's
-  loopback-bound port (the UI/Pi API) on `pi` is still not exposed by any
-  Deploy file — none of tickets 01-09 as written call that out as in scope,
-  and inventing it wasn't this implementation's call to make. Flagged the
-  same way the spec itself flags the bind-address hard-requirement gap
-  (spec.md's Further Notes).
+- ~~**`tailscale serve` port mappings**~~ — closed. `deploy_server_api.py`
+  and `deploy_caddy.py` now both run `tailscale serve` for their respective
+  loopback-bound ports (see each section above), and the two Deploy files'
+  `UI_ORIGIN`/`VITE_SERVER_API_URL` values are derived from `InventorySettings`
+  rather than hand-kept-in-sync secrets, since that's exactly what each side's
+  `tailscale serve` exposes. Not yet re-verified against a real device (this
+  was built without one) — see the version-sensitivity caveat in each section
+  above before trusting it blindly on first use.
 - **Bind-address enforcement** (the "never bound off-tailnet" hard
   requirement) is not checked by pyinfra, exactly as `spec.md` already
   notes as an explicit, deferred gap.
