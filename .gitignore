@@ -1,4 +1,5 @@
 .venv/
+pyinfra/secrets.sh
 __pycache__/
 *.pyc
 .mypy_cache/

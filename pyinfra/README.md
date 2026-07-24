@@ -72,6 +72,13 @@ before. No `env_file` support — ADR-0010 already rejected a file-based
 secrets store, so these classes are a typed wrapper around plain
 environment variables, not a new persistence mechanism.
 
+Copy [`secrets.sh.example`](secrets.sh.example) to `secrets.sh` (gitignored,
+never committed) and fill in real values for every required variable listed
+below. Run deploys via `./deploy.sh` (see Running a Deploy) rather than
+`uv run pyinfra` directly — it loads `secrets.sh` into its own subprocess
+and execs pyinfra, so these vars never leak into or linger in your
+interactive shell.
+
 ### inventory.py (`InventorySettings`)
 
 | Variable | Default | Purpose |
@@ -129,16 +136,25 @@ environment variables, not a new persistence mechanism.
 
 ## Running a Deploy
 
+Use `./deploy.sh` in place of `uv run pyinfra inventory.py` — it loads
+`secrets.sh` into its own subprocess and execs pyinfra with `inventory.py`
+plus whatever args you pass, so secrets never touch your interactive shell
+and you don't repeat `inventory.py` on every invocation. With no target
+given it defaults to `deploy.py` (everything); otherwise it resolves a
+short name to its `deploy_<name>.py` file (e.g. `caddy` → `deploy_caddy.py`)
+so you don't have to keep retyping the `deploy_` prefix either — the full
+filename still works if you prefer it:
+
 ```sh
 # Everything, both groups
-uv run pyinfra inventory.py deploy.py
+./deploy.sh
 
 # Preview only -- connects and diffs, mutates nothing (see Gotcha below)
-uv run pyinfra inventory.py deploy.py --dry
+./deploy.sh --dry
 
 # One Deploy file against one Host group
-uv run pyinfra inventory.py deploy_caddy.py --limit pi
-uv run pyinfra inventory.py deploy_caddy.py --limit pi --dry
+./deploy.sh caddy --limit pi
+./deploy.sh caddy --limit pi --dry
 ```
 
 pyinfra 3.x has no `--check` flag — every "`--check`" in the ticket files
@@ -195,7 +211,7 @@ docker run -d --name server-test --privileged --cgroupns=host \
 Then, from `pyinfra/`:
 
 ```sh
-uv run pyinfra inventory.py deploy.py --limit test
+./deploy.sh --limit test
 ```
 
 Every Deploy file runs against both stand-ins (`device_role` host data makes
@@ -213,11 +229,11 @@ Run the same Deploy twice in a row, immediately, with nothing else
 changed in between, against **both** `test` and the real `pi`/`server`:
 
 ```sh
-uv run pyinfra inventory.py deploy.py --limit test
-uv run pyinfra inventory.py deploy.py --limit test   # again, immediately
+./deploy.sh --limit test
+./deploy.sh --limit test   # again, immediately
 
-uv run pyinfra inventory.py deploy.py --limit pi
-uv run pyinfra inventory.py deploy.py --limit pi     # again, immediately
+./deploy.sh --limit pi
+./deploy.sh --limit pi     # again, immediately
 ```
 
 **Pass condition**: the second run's `Grand total` row has an empty/`-`

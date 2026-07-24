@@ -15,8 +15,8 @@
     "semantic_hash": "1a0f4db2a857403ff7bf00b9ea38fcc2"
   },
   "pyinfra/deploy.py": {
-    "mtime": 1784810757.6893804,
-    "ast_hash": "1317f978558aabda2f30faa092c2ce97",
+    "mtime": 1784851810.7859583,
+    "ast_hash": "e3f03cc958c1f8b5f492c502c2621f91",
     "semantic_hash": ""
   },
   "pyinfra/deploy_caddy.py": {
@@ -30,13 +30,13 @@
     "semantic_hash": "572d7d748c350fe37251543f543046d5"
   },
   "pyinfra/deploy_pi_api.py": {
-    "mtime": 1784822668.5380933,
-    "ast_hash": "74485ac63ea284b0cc374dd437133fc4",
+    "mtime": 1784851822.02996,
+    "ast_hash": "5e977793beb954b018ac39accf6785cc",
     "semantic_hash": ""
   },
   "pyinfra/deploy_server_api.py": {
-    "mtime": 1784822677.0180936,
-    "ast_hash": "568fdfe98944e9d9403b000de0e214a3",
+    "mtime": 1784851831.3619616,
+    "ast_hash": "d6bdd7940330fcced6665ffdb861f9f4",
     "semantic_hash": ""
   },
   "pyinfra/deploy_tailscale.py": {
@@ -55,8 +55,8 @@
     "semantic_hash": "9ca6a3ebaefc4db60669cb9185c05cdf"
   },
   "pyinfra/settings.py": {
-    "mtime": 1784822657.090093,
-    "ast_hash": "cee7e7d9d303146e268c39f163714334",
+    "mtime": 1784851800.8019576,
+    "ast_hash": "34228a10694df89a18835f647852069d",
     "semantic_hash": ""
   },
   "services/pi-api/pyproject.toml": {
@@ -70,8 +70,8 @@
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "services/pi-api/src/pi_api/app.py": {
-    "mtime": 1784822547.3300753,
-    "ast_hash": "b9fdd596c9f968dec990f5d63f15ecfd",
+    "mtime": 1784851878.7299662,
+    "ast_hash": "4d16cc734e294e8673cc05a714a39f19",
     "semantic_hash": ""
   },
   "services/pi-api/src/pi_api/wol.py": {
@@ -80,13 +80,13 @@
     "semantic_hash": "9fa703019a67e78be73a8d1107f394e3"
   },
   "services/pi-api/src/pi_api/wsgi.py": {
-    "mtime": 1784822552.794076,
-    "ast_hash": "d87ff0af2768484f548866c38ba01ebb",
+    "mtime": 1784851885.4699667,
+    "ast_hash": "230007e418b586533a9677bdeba49e33",
     "semantic_hash": ""
   },
   "services/pi-api/tests/test_app.py": {
-    "mtime": 1784822599.29809,
-    "ast_hash": "6a9d436921119511d81dec55c82ad8ab",
+    "mtime": 1784851901.3819675,
+    "ast_hash": "7a1bf0ea8a5856c230c7a87dfe35ed4b",
     "semantic_hash": ""
   },
   "services/pi-api/tests/test_wol.py": {
@@ -95,8 +95,8 @@
     "semantic_hash": "8fa397768964efea0a156f36b29d4b2d"
   },
   "services/pi-api/tests/test_wsgi.py": {
-    "mtime": 1784822608.9300919,
-    "ast_hash": "c7247ea81cc46d1b6d87deb49c035c2e",
+    "mtime": 1784851910.069968,
+    "ast_hash": "4168cde7bb0771c2df756e0affa33688",
     "semantic_hash": ""
   },
   "services/pi-proxy/wake_plugin/go.mod": {
@@ -135,8 +135,8 @@
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "services/server-api/src/server_api/app.py": {
-    "mtime": 1784822566.2620797,
-    "ast_hash": "0e58715c4da4612e2bb5f80ee4f04f3f",
+    "mtime": 1784851923.0219688,
+    "ast_hash": "e982e26cb842f72a8c26cec6622011e6",
     "semantic_hash": ""
   },
   "services/server-api/src/server_api/suspend.py": {
@@ -145,13 +145,13 @@
     "semantic_hash": "a4cf8659479e0abd508f4e3206e03b21"
   },
   "services/server-api/src/server_api/wsgi.py": {
-    "mtime": 1784822577.6820834,
-    "ast_hash": "9de355377e7ae6130315363cb0d3d753",
+    "mtime": 1784851928.8659692,
+    "ast_hash": "9b9c4d5d3712c8a8a6cc8832fe245ed6",
     "semantic_hash": ""
   },
   "services/server-api/tests/test_app.py": {
-    "mtime": 1784822639.6100924,
-    "ast_hash": "59a50a7508dcb339faec99234b45967a",
+    "mtime": 1784851948.409971,
+    "ast_hash": "e0e5fe2f95bdaca36edde32c193cdb89",
     "semantic_hash": ""
   },
   "services/server-api/tests/test_suspend.py": {
@@ -160,13 +160,13 @@
     "semantic_hash": "778bbc9c81fc085785e2b1d05ab8f6bb"
   },
   "services/server-api/tests/test_wsgi.py": {
-    "mtime": 1784822649.1460927,
-    "ast_hash": "33542226844687cf21844af46ea35c61",
+    "mtime": 1784851959.005972,
+    "ast_hash": "2903c21b7e02841f713cc5161b28ca90",
     "semantic_hash": ""
   },
   "services/shared/pyproject.toml": {
-    "mtime": 1784822767.8541014,
-    "ast_hash": "06ff984e033c6936339ad64ad86a57c7",
+    "mtime": 1784849306.4458086,
+    "ast_hash": "635804cdc15c04505792be3cec740f8c",
     "semantic_hash": ""
   },
   "services/shared/src/control_plane_shared/__init__.py": {
@@ -345,8 +345,8 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1784822716.5500958,
-    "ast_hash": "93d056a64417e4981dc2144b401b5277",
+    "mtime": 1784829220.5932543,
+    "ast_hash": "55ffe5b4d8914b4e4ceef052c1f38d79",
     "semantic_hash": ""
   },
   "docs/adr/0001-direct-browser-to-api-no-relay.md": {
@@ -370,8 +370,8 @@
     "semantic_hash": "aa43bcb05748e63e613c15a1a08cb989"
   },
   "docs/adr/0005-dual-wake-paths.md": {
-    "mtime": 1784810757.7053804,
-    "ast_hash": "fddc21d030ecbd2c4c38233dd0b3f3ce",
+    "mtime": 1784829669.6012962,
+    "ast_hash": "ae9440421306220c8f3772912b63021f",
     "semantic_hash": ""
   },
   "docs/adr/0006-git-pull-deploy-with-offdevice-ui-build.md": {
@@ -435,33 +435,28 @@
     "semantic_hash": "0d3351531db0a1328a6e6530912e36f8"
   },
   "pyinfra/README.md": {
-    "mtime": 1784823688.3221614,
-    "ast_hash": "5af3bb3fb4758b1f9ecaa7050ed39069",
+    "mtime": 1784852073.297978,
+    "ast_hash": "13b9885982b5593f0a92db2eae627c60",
     "semantic_hash": ""
   },
   "services/pi-api/README.md": {
-    "mtime": 1784822700.3580947,
-    "ast_hash": "704de9386134c2b88f0509ad25a5dc30",
-    "semantic_hash": ""
-  },
-  "services/pi-proxy/README.md": {
-    "mtime": 1784810868.3693843,
-    "ast_hash": "18ba7af69a263705a8764a69f834beba",
+    "mtime": 1784852006.093975,
+    "ast_hash": "9d643cedd7656f97aaf67401b68949e2",
     "semantic_hash": ""
   },
   "services/pi-proxy/wake_plugin/README.md": {
-    "mtime": 1784823677.270161,
-    "ast_hash": "1e15e581db4f6cae6a6dba9f66ba6b94",
+    "mtime": 1784829319.0252628,
+    "ast_hash": "67621f21756f1bfb76c04046cb31e0df",
     "semantic_hash": ""
   },
   "services/server-api/README.md": {
-    "mtime": 1784822707.262095,
-    "ast_hash": "8c624ee48db03fe2a4235fa8b89b9658",
+    "mtime": 1784852020.549976,
+    "ast_hash": "cd45780d0053da819ef6146724788a8d",
     "semantic_hash": ""
   },
   "services/shared/README.md": {
-    "mtime": 1784822717.5900958,
-    "ast_hash": "5fb9ed3c5cd333afafb7ee78f55a84d7",
+    "mtime": 1784852026.3379765,
+    "ast_hash": "5c46a3b08e3556999193c6e9c341e9dc",
     "semantic_hash": ""
   },
   "services/ui/package.json": {
@@ -512,6 +507,21 @@
   "docs/adr/0013-caddy-binary-built-off-device-by-pyinfra.md": {
     "mtime": 1784824881.5222294,
     "ast_hash": "94bd8a39dd90cf2cea74b42767316e11",
+    "semantic_hash": ""
+  },
+  "services/shared/src/control_plane_shared/grafana_cloud.py": {
+    "mtime": 1784851856.6259642,
+    "ast_hash": "221dd12a68182781927465b1cf74a78d",
+    "semantic_hash": ""
+  },
+  "services/shared/tests/test_grafana_cloud.py": {
+    "mtime": 1784851866.5499651,
+    "ast_hash": "6819fd9f386aa769fdfbc55899ac2b0c",
+    "semantic_hash": ""
+  },
+  "docs/adr/0014-events-shipped-directly-to-grafana-cloud.md": {
+    "mtime": 1784851977.6459732,
+    "ast_hash": "1dfe15f857c2f0a95724d6bc43d8eb32",
     "semantic_hash": ""
   }
 }

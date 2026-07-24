@@ -435,8 +435,8 @@
     "semantic_hash": "0d3351531db0a1328a6e6530912e36f8"
   },
   "pyinfra/README.md": {
-    "mtime": 1784852073.297978,
-    "ast_hash": "13b9885982b5593f0a92db2eae627c60",
+    "mtime": 1784906477.1161041,
+    "ast_hash": "e773267e6808fc5ad317c74043a69bb3",
     "semantic_hash": ""
   },
   "services/pi-api/README.md": {
@@ -522,6 +522,11 @@
   "docs/adr/0014-events-shipped-directly-to-grafana-cloud.md": {
     "mtime": 1784851977.6459732,
     "ast_hash": "1dfe15f857c2f0a95724d6bc43d8eb32",
+    "semantic_hash": ""
+  },
+  "pyinfra/deploy.sh": {
+    "mtime": 1784906286.1760795,
+    "ast_hash": "e1bf545e949380b58cd12823af5be51b",
     "semantic_hash": ""
   }
 }
