@@ -85,17 +85,27 @@ interactive shell.
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `PI_HOST`, `PI_SSH_USER` | `pi-zero.tailnet`, `pi` | The real Pi Zero |
-| `SERVER_HOST`, `SERVER_SSH_USER` | `main-server.tailnet`, `admin` | The real main server |
+| `PI_HOST`, `PI_SSH_USER` | `pi-zero.tailnet`, `pi` | The real Pi Zero -- pyinfra's SSH target |
+| `SERVER_HOST`, `SERVER_SSH_USER` | `main-server.tailnet`, `admin` | The real main server -- pyinfra's SSH target |
+| `PI_TAILNET_HOST` | `pi-zero.your-tailnet-name.ts.net` | The Pi's real Tailscale MagicDNS name, used only to derive `UI_ORIGIN` |
+| `SERVER_TAILNET_HOST` | `main-server.your-tailnet-name.ts.net` | The server's real Tailscale MagicDNS name, used only to derive `VITE_SERVER_API_URL` |
 | `PI_TEST_HOST`, `PI_TEST_SSH_PORT`, `PI_TEST_SSH_USER` | `localhost`, `2201`, `root` | `test` group's pi stand-in (see Testing) |
 | `SERVER_TEST_HOST`, `SERVER_TEST_SSH_PORT`, `SERVER_TEST_SSH_USER` | `localhost`, `2202`, `root` | `test` group's server stand-in |
 
-`PI_HOST`/`SERVER_HOST` must be each device's real Tailscale MagicDNS name
-(`<device>.<tailnet-name>.ts.net`), not just an SSH target -- both
+`PI_HOST`/`SERVER_HOST` are pure SSH targets -- pyinfra connects to exactly
+these to run any Deploy file, including `deploy_tailscale.py` itself, so on
+a fresh device that isn't joined to the tailnet yet, this needs to be a
+plain LAN address (e.g. `192.168.0.50`), not a tailnet name. Safe to leave
+as the LAN address permanently as long as the Pi/server stay on the same
+local network as the dev machine -- no separate "bootstrap value" needed.
+
+`PI_TAILNET_HOST`/`SERVER_TAILNET_HOST` are deliberately separate: both
 `deploy_server_api.py` and `deploy_pi_api.py` derive the other's
-browser-facing origin from these two values (`https://{pi_host}`,
-`https://{server_host}`), since that's exactly what each device's own
-`tailscale serve` instance exposes it at.
+browser-facing origin from these two (`https://{pi_tailnet_host}`,
+`https://{server_tailnet_host}`), since that's exactly what each device's
+own `tailscale serve` instance exposes it at, and specifically needs the
+real MagicDNS name -- that's the only name `tailscale serve` issues a valid
+HTTPS cert for, so a LAN IP origin would break CORS/HTTPS.
 
 ### deploy_tailscale.py (`TailscaleSettings`)
 
@@ -115,8 +125,9 @@ browser-facing origin from these two values (`https://{pi_host}`,
 | `GRAFANA_CLOUD_LOKI_USER` | *(required)* | Grafana Cloud Loki basic-auth username (the stack's numeric instance/user ID) |
 | `GRAFANA_CLOUD_LOKI_API_KEY` | *(required)* | Grafana Cloud Access Policy token, scoped to `logs:write` |
 
-`VITE_SERVER_API_URL` (baked into the UI build) is `https://{SERVER_HOST}`,
-derived from `InventorySettings` rather than its own separately-set secret.
+`VITE_SERVER_API_URL` (baked into the UI build) is
+`https://{SERVER_TAILNET_HOST}`, derived from `InventorySettings` rather
+than its own separately-set secret.
 
 ### deploy_server_api.py (`DeploySourceSettings`, `ServerApiSettings`, `ServerApiSecrets`)
 
@@ -129,8 +140,9 @@ derived from `InventorySettings` rather than its own separately-set secret.
 | `GRAFANA_CLOUD_LOKI_USER` | *(required)* | Grafana Cloud Loki basic-auth username (the stack's numeric instance/user ID) |
 | `GRAFANA_CLOUD_LOKI_API_KEY` | *(required)* | Grafana Cloud Access Policy token, scoped to `logs:write` |
 
-`UI_ORIGIN` (the Server API's CORS allow-list entry) is `https://{PI_HOST}`,
-derived from `InventorySettings` rather than its own separately-set secret.
+`UI_ORIGIN` (the Server API's CORS allow-list entry) is
+`https://{PI_TAILNET_HOST}`, derived from `InventorySettings` rather than
+its own separately-set secret.
 
 After the systemd unit, this Deploy file also runs `tailscale serve --bg
 --https=443 localhost:$SERVER_API_PORT` to expose the Server API on the

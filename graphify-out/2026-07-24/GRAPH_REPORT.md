@@ -1,16 +1,16 @@
 # Graph Report - homelab  (2026-07-24)
 
 ## Corpus Check
-- 104 files · ~42,941 words
+- 104 files · ~43,290 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 553 nodes · 731 edges · 50 communities (32 shown, 18 thin omitted)
+- 553 nodes · 734 edges · 50 communities (32 shown, 18 thin omitted)
 - Extraction: 94% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 39 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `d295f143`
+- Built from commit: `4f84521f`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -100,11 +100,11 @@
 ## Communities (50 total, 18 thin omitted)
 
 ### Community 0 - "Server API Reachability"
-Cohesion: 0.06
-Nodes (21): event_logger(), create_app(), Flask, Server API: exposes a Reachable health check and a Suspend action.  Runs on the, Logs a `reachability_changed` event the first time this process     observes its, ReachabilityTracker, Suspend-to-RAM: runs the configured system command as a subprocess. This is the, Suspends the host to RAM by running the configured command. (+13 more)
+Cohesion: 0.05
+Nodes (22): event_logger(), create_app(), Flask, Server API: exposes a Reachable health check and a Suspend action.  Runs on the, Logs a `reachability_changed` event the first time this process     observes its, ReachabilityTracker, Suspend-to-RAM: runs the configured system command as a subprocess. This is the, Suspends the host to RAM by running the configured command. (+14 more)
 
 ### Community 1 - "Shared Git-Pull Deploy Helper"
-Cohesion: 0.07
+Cohesion: 0.08
 Nodes (33): BaseSettings, git_systemd_service(), Shared git-pull + systemd deploy helper.  The pattern common to both the Pi API, Pull `repo_url`@`ref` to `dest`, install/enable a systemd unit named     `unit_n, has_device_role(), linux_codename(), linux_distro_id(), FactBase (+25 more)
 
 ### Community 2 - "Pi API Wake-on-LAN"
@@ -129,7 +129,7 @@ Nodes (29): Homelab CLAUDE.md (Agent Skills Config), Control UI (concept), CONTE
 
 ### Community 7 - "Wake Plugin Go Internals"
 Cohesion: 0.10
-Nodes (24): Client, Context, Dispenser, Helper, MiddlewareHandler, ModuleInfo, Mutex, Request (+16 more)
+Nodes (23): Client, Context, Dispenser, Helper, MiddlewareHandler, ModuleInfo, Mutex, Request (+15 more)
 
 ### Community 8 - "Caddy handle_errors Fix"
 Cohesion: 0.06

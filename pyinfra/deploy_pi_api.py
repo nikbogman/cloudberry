@@ -10,11 +10,12 @@ to `pi` -- the Pi never runs a Node/npm toolchain. Targetable in isolation:
 
 `SERVER_API_ORIGIN` (baked into the UI build as `VITE_SERVER_API_URL`) is
 no longer a separate required secret -- it's derived from
-`InventorySettings.server_host`, since that's exactly the origin the
-Server API's own `tailscale serve` instance (deploy_server_api.py) exposes
-it at. One less value an operator has to keep in sync by hand across the
-two Deploy files. The UI, not this Pi's Caddy, routes to the Server API
-(ADR-0001 rules out a Pi-side relay).
+`InventorySettings.server_tailnet_host` (the server's real Tailscale
+MagicDNS name, distinct from `server_host`, which is just pyinfra's SSH
+target), since that's exactly the origin the Server API's own
+`tailscale serve` instance (deploy_server_api.py) exposes it at. The UI,
+not this Pi's Caddy, routes to the Server API (ADR-0001 rules out a
+Pi-side relay).
 
 Required dev-machine env vars (fail fast if missing, only when targeting
 `pi`/its `test` stand-in): `SERVER_MAC_ADDRESS` and the `GRAFANA_CLOUD_LOKI_*`
@@ -68,7 +69,7 @@ if has_device_role("pi"):
     # same-origin works since the Pi API shares this Caddy site.
     local.shell(
         f"cd ../services/ui && npm ci && "
-        f"VITE_SERVER_API_URL=https://{inventory.server_host} npm run build",
+        f"VITE_SERVER_API_URL=https://{inventory.server_tailnet_host} npm run build",
         print_output=True,
     )
 

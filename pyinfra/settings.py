@@ -24,16 +24,27 @@ from pydantic_settings import BaseSettings
 
 
 class InventorySettings(BaseSettings):
-    # pi_host/server_host double as each device's browser-facing origin
-    # (https://{pi_host}, https://{server_host}) now that both are fronted
-    # by their own `tailscale serve --https=443` instance (deploy_caddy.py,
-    # deploy_server_api.py) -- real values must be each device's actual
-    # Tailscale MagicDNS name (<device>.<tailnet-name>.ts.net), since
-    # pyinfra also SSHes to exactly this host to run the Deploy.
+    # Pure SSH targets -- pyinfra connects to exactly these to run any
+    # Deploy file, including deploy_tailscale.py itself (which installs and
+    # joins Tailscale in the first place, so this can't assume Tailscale is
+    # already reachable). Safe to leave as a plain LAN address permanently
+    # -- no separate "bootstrap value" needed -- as long as the Pi/server
+    # stay on the same local network as the dev machine, since that keeps
+    # working whether or not Tailscale is installed/joined yet.
     pi_host: str = "pi-zero.tailnet"
     pi_ssh_user: str = "pi"
     server_host: str = "main-server.tailnet"
     server_ssh_user: str = "admin"
+    # Each device's real Tailscale MagicDNS name
+    # (<device>.<tailnet-name>.ts.net) once joined -- deliberately separate
+    # from pi_host/server_host above. Those are SSH targets and may well be
+    # a bare LAN IP; these two are used only to derive the *other* Deploy
+    # file's CORS allow-list / build-time origin (deploy_server_api.py's
+    # UI_ORIGIN, deploy_pi_api.py's VITE_SERVER_API_URL), which specifically
+    # needs the tailnet name since that's the only thing `tailscale serve`
+    # issues a valid HTTPS cert for.
+    pi_tailnet_host: str = "pi-zero.your-tailnet-name.ts.net"
+    server_tailnet_host: str = "main-server.your-tailnet-name.ts.net"
     pi_test_host: str = "localhost"
     pi_test_ssh_port: int = 2201
     pi_test_ssh_user: str = "root"

@@ -30,13 +30,13 @@
     "semantic_hash": "572d7d748c350fe37251543f543046d5"
   },
   "pyinfra/deploy_pi_api.py": {
-    "mtime": 1784909664.280296,
-    "ast_hash": "ddf235492d4971401a7761751705385e",
+    "mtime": 1784911249.3684027,
+    "ast_hash": "74f3bcc5027169dcf44252388bdf1069",
     "semantic_hash": ""
   },
   "pyinfra/deploy_server_api.py": {
-    "mtime": 1784909649.5162947,
-    "ast_hash": "e780dcfc6162027861debb9e13dda0a3",
+    "mtime": 1784911235.1964,
+    "ast_hash": "f73cb9fe68899c25b597690cc63cc1b5",
     "semantic_hash": ""
   },
   "pyinfra/deploy_tailscale.py": {
@@ -55,8 +55,8 @@
     "semantic_hash": "9ca6a3ebaefc4db60669cb9185c05cdf"
   },
   "pyinfra/settings.py": {
-    "mtime": 1784909634.0922933,
-    "ast_hash": "b4903f2e02d48b6351fd4f715f1c3c44",
+    "mtime": 1784911221.3123941,
+    "ast_hash": "3f977fc8fa8863e11160a69898b77d86",
     "semantic_hash": ""
   },
   "services/pi-api/pyproject.toml": {
@@ -435,8 +435,8 @@
     "semantic_hash": "0d3351531db0a1328a6e6530912e36f8"
   },
   "pyinfra/README.md": {
-    "mtime": 1784910247.0923293,
-    "ast_hash": "cb35caed7383073f7ae4a21a18975e14",
+    "mtime": 1784911312.0203962,
+    "ast_hash": "db2fea60f0be85b5027a700964cc12be",
     "semantic_hash": ""
   },
   "services/pi-api/README.md": {
