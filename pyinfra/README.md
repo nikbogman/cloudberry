@@ -15,7 +15,7 @@ implementation notes and citations live in
 ```
 pyinfra/
   inventory.py                    # pi / server / test Host groups (ticket 01)
-  common.py                       # shared linux_codename()/linux_distro_id()/has_device_role() helpers
+  common.py                       # shared linux_codename()/linux_distro_id()/has_device_role()/TailscaleServeStatus helpers
   settings.py                     # pydantic-settings classes -- typed env var config
   deploy_tailscale.py             # ticket 02
   deploy_docker.py                # ticket 03
@@ -24,6 +24,8 @@ pyinfra/
   deploy_server_api.py            # ticket 06
   deploy_caddy.py                 # ticket 07, binary build+ship added by ADR-0013
   deploy.py                       # entrypoint composing everything (ticket 08)
+  deploy.sh                       # wrapper: loads secrets.sh, resolves short Deploy-file names
+  secrets.sh.example               # checked-in template -- copy to secrets.sh (gitignored)
   templates/
     api.service.j2                 # systemd unit template, both the Pi API and Server API
     caddy.service.j2               # systemd unit template for caddy (ADR-0013)
