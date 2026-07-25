@@ -40,6 +40,7 @@
   "38": "Pyinfra Host Groups",
   "39": "Control UI Favicon",
   "40": "Vite Config",
+  "41": "AssertTailnetOnlyBind",
   "45": "vite.config.ts",
   "46": "0013-caddy-binary-built-off-device-by-pyinfra.md",
   "48": "wake_plugin README",

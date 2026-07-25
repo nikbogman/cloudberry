@@ -24,7 +24,7 @@ func TestSendEventPostsALokiPushPayloadWithBasicAuth(t *testing.T) {
 	}))
 	defer server.Close()
 
-	logger := NewGrafanaCloudLogger(server.URL, testLokiUser, testLokiAPIKey, "pi-api")
+	logger := NewGrafanaCloudLogger(server.URL, testLokiUser, testLokiAPIKey, "gateway-api")
 	identity := "nicola@example.com"
 	logger.SendEvent("wake_requested", "success", &identity, nil)
 
@@ -43,8 +43,8 @@ func TestSendEventPostsALokiPushPayloadWithBasicAuth(t *testing.T) {
 		t.Fatalf("got %d streams, want 1", len(payload.Streams))
 	}
 	stream := payload.Streams[0]
-	if stream.Stream != (lokiStreamLabels{EventType: "wake_requested", Outcome: "success", App: "pi-api"}) {
-		t.Fatalf("got stream labels %+v, want event_type=wake_requested outcome=success app=pi-api", stream.Stream)
+	if stream.Stream != (lokiStreamLabels{EventType: "wake_requested", Outcome: "success", App: "gateway-api"}) {
+		t.Fatalf("got stream labels %+v, want event_type=wake_requested outcome=success app=gateway-api", stream.Stream)
 	}
 	if len(stream.Values) != 1 {
 		t.Fatalf("got %d values, want 1", len(stream.Values))
@@ -73,7 +73,7 @@ func TestSendEventIncludesExtraFieldsInTheLine(t *testing.T) {
 	}))
 	defer server.Close()
 
-	logger := NewGrafanaCloudLogger(server.URL, testLokiUser, testLokiAPIKey, "pi-api")
+	logger := NewGrafanaCloudLogger(server.URL, testLokiUser, testLokiAPIKey, "gateway-api")
 	logger.SendEvent("reachability_changed", "reachable", nil, map[string]any{"previous_state": "unreachable"})
 
 	var payload lokiPayload
@@ -95,7 +95,7 @@ func TestSendEventIncludesExtraFieldsInTheLine(t *testing.T) {
 
 func TestSendEventDoesNotPanicWhenGrafanaCloudIsUnreachable(t *testing.T) {
 	// A logging failure must never take down the caller's request path.
-	logger := NewGrafanaCloudLogger("http://127.0.0.1:1", testLokiUser, testLokiAPIKey, "pi-api")
+	logger := NewGrafanaCloudLogger("http://127.0.0.1:1", testLokiUser, testLokiAPIKey, "gateway-api")
 	identity := "nicola@example.com"
 	logger.SendEvent("wake_requested", "success", &identity, nil)
 }

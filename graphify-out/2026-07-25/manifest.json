@@ -230,8 +230,8 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1784976855.2721934,
-    "ast_hash": "08e65727c4a507d9c31cb82a8827cfdf",
+    "mtime": 1784982572.4045415,
+    "ast_hash": "6978472b37b684c2dd626d344301b793",
     "semantic_hash": ""
   },
   "docs/adr/0001-direct-browser-to-api-no-relay.md": {
@@ -395,63 +395,18 @@
     "semantic_hash": ""
   },
   "services/cmd/pi-api/main.go": {
-    "mtime": 1784976331.9001577,
-    "ast_hash": "0223a116b65132c1c0076d2d6003c294",
+    "mtime": 1784982517.9725356,
+    "ast_hash": "c6c95fca2f6f7a73d24f17438d86f8bd",
     "semantic_hash": ""
   },
   "services/cmd/server-api/main.go": {
-    "mtime": 1784976339.8641562,
-    "ast_hash": "62065f7f2ad0016909d60dcef7d91ee6",
+    "mtime": 1784982528.0845375,
+    "ast_hash": "bf017c8596bf5773cbe27b0f78fa636c",
     "semantic_hash": ""
   },
   "services/go.mod": {
     "mtime": 1784975986.7001402,
     "ast_hash": "f73cf45b05998479e93d24d9ea33b73d",
-    "semantic_hash": ""
-  },
-  "services/internal/controlplane/auth.go": {
-    "mtime": 1784976001.3441417,
-    "ast_hash": "3a174e08b8154de86e67d00dc71f56d1",
-    "semantic_hash": ""
-  },
-  "services/internal/controlplane/auth_test.go": {
-    "mtime": 1784976051.2201457,
-    "ast_hash": "50f0d273c622f8fdb7dbe6a9df92b53c",
-    "semantic_hash": ""
-  },
-  "services/internal/controlplane/bindsafety.go": {
-    "mtime": 1784976010.1241424,
-    "ast_hash": "c440591ba0e9df2acc48026d30160892",
-    "semantic_hash": ""
-  },
-  "services/internal/controlplane/bindsafety_test.go": {
-    "mtime": 1784976120.7121494,
-    "ast_hash": "bb2e8e48bda77f793ace980e16ad59f4",
-    "semantic_hash": ""
-  },
-  "services/internal/controlplane/grafanacloud.go": {
-    "mtime": 1784976120.7121494,
-    "ast_hash": "0c96711cf799500aba36d66278374a5a",
-    "semantic_hash": ""
-  },
-  "services/internal/controlplane/grafanacloud_test.go": {
-    "mtime": 1784976085.852147,
-    "ast_hash": "9c7b8cd76ad2a55284b8a4cf684e06a5",
-    "semantic_hash": ""
-  },
-  "services/internal/controlplane/httpjson.go": {
-    "mtime": 1784976036.6441448,
-    "ast_hash": "ebd94ae777b8520bd6f0dae752f448b4",
-    "semantic_hash": ""
-  },
-  "services/internal/piapi/wake.go": {
-    "mtime": 1784976165.1201453,
-    "ast_hash": "b05ddb322fcc87b8059f488a0853ffe0",
-    "semantic_hash": ""
-  },
-  "services/internal/piapi/wake_test.go": {
-    "mtime": 1784976204.2241461,
-    "ast_hash": "4a6b30fad87430f35e67876083c4f42a",
     "semantic_hash": ""
   },
   "services/internal/piapi/wol.go": {
@@ -462,16 +417,6 @@
   "services/internal/piapi/wol_test.go": {
     "mtime": 1784976177.0601456,
     "ast_hash": "c9ebf08acb682e3f0b5a173911f9ec23",
-    "semantic_hash": ""
-  },
-  "services/internal/serverapi/server.go": {
-    "mtime": 1784976244.4241478,
-    "ast_hash": "568aa450ca33c0a4a3d9a75593091d55",
-    "semantic_hash": ""
-  },
-  "services/internal/serverapi/server_test.go": {
-    "mtime": 1784976308.1561525,
-    "ast_hash": "e9a4474eae8a95dc1887d54096775b58",
     "semantic_hash": ""
   },
   "services/internal/serverapi/suspend.go": {
@@ -485,13 +430,63 @@
     "semantic_hash": ""
   },
   "docs/adr/0015-pi-api-and-server-api-rewritten-in-go-built-off-device.md": {
-    "mtime": 1784976758.9601853,
-    "ast_hash": "acc22b8a7b74efd4f2d62d9e197c32d1",
+    "mtime": 1784982642.8925471,
+    "ast_hash": "784c9a89e2d5726edd7a19590fd7c81c",
     "semantic_hash": ""
   },
   "services/README.md": {
-    "mtime": 1784976829.2961912,
-    "ast_hash": "f223fc65d5a6fe126a385a0d0e680b67",
+    "mtime": 1784982615.5525448,
+    "ast_hash": "16c84d24118b1025e93fb5bcf789a989",
+    "semantic_hash": ""
+  },
+  "services/internal/eventlog/grafanacloud.go": {
+    "mtime": 1784982413.348526,
+    "ast_hash": "62837dd31f99b94700a6a6ac8a53c3e9",
+    "semantic_hash": ""
+  },
+  "services/internal/eventlog/grafanacloud_test.go": {
+    "mtime": 1784982424.5925267,
+    "ast_hash": "77dfcc4a7fa376f483e83803936d4f48",
+    "semantic_hash": ""
+  },
+  "services/internal/piapi/handler.go": {
+    "mtime": 1784982448.1325283,
+    "ast_hash": "76eef5caf196555894d146174a97b73c",
+    "semantic_hash": ""
+  },
+  "services/internal/piapi/handler_test.go": {
+    "mtime": 1784982474.1285303,
+    "ast_hash": "21b411c7c4b71a13ad9bf0fee721b006",
+    "semantic_hash": ""
+  },
+  "services/internal/serverapi/handler.go": {
+    "mtime": 1784982493.868533,
+    "ast_hash": "0fa900f31d41327fc1a40659aa02e02e",
+    "semantic_hash": ""
+  },
+  "services/internal/serverapi/handler_test.go": {
+    "mtime": 1784982507.5725348,
+    "ast_hash": "793fd1b7dae5e82fa06f2481c834a65e",
+    "semantic_hash": ""
+  },
+  "services/internal/tailnet/auth.go": {
+    "mtime": 1784982383.7165248,
+    "ast_hash": "e8217f5a4996b42a3536c014361cbe30",
+    "semantic_hash": ""
+  },
+  "services/internal/tailnet/auth_test.go": {
+    "mtime": 1784982398.4805253,
+    "ast_hash": "7283070d08ec012cc7f8e90cc2cdbde9",
+    "semantic_hash": ""
+  },
+  "services/internal/tailnet/bindsafety.go": {
+    "mtime": 1784982389.4125247,
+    "ast_hash": "8c29000105db64a3313b6ade80fc4291",
+    "semantic_hash": ""
+  },
+  "services/internal/tailnet/bindsafety_test.go": {
+    "mtime": 1784982407.4885256,
+    "ast_hash": "455c8974695637e3b9aca1816ff18bec",
     "semantic_hash": ""
   }
 }

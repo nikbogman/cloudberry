@@ -1,14 +1,14 @@
 """Shared off-device Go build + systemd deploy helper.
 
-The pattern common to both the Pi API and Server API now that they're Go
-binaries: cross-compile locally, ship only the compiled binary, and
-install/enable a systemd unit that runs it directly -- the same
+The pattern common to both the Gateway API and Compute API now that
+they're Go binaries: cross-compile locally, ship only the compiled binary,
+and install/enable a systemd unit that runs it directly -- the same
 off-device build-then-ship shape ADR-0013 established for the
 wake_plugin-enabled Caddy binary, extended here to both control-plane
-services (ADR-0015). Neither `pi` nor `server` ever runs a Go toolchain,
-same reasoning as ADR-0013: the Pi Zero W is too weak to build on, and the
-main server has no reason to carry a build toolchain it'll only ever use
-for these two binaries.
+services (ADR-0015). Neither `gateway` nor `compute` ever runs a Go
+toolchain, same reasoning as ADR-0013: the Pi Zero W is too weak to build
+on, and the compute host has no reason to carry a build toolchain it'll
+only ever use for these two binaries.
 
 This supersedes `api_deploy.py`'s git-pull + `uv sync` model for these two
 apps: there's no source tree to check out or dependencies to install on
@@ -21,7 +21,7 @@ which raises until the operation has actually executed).
 
 Note on `--dry`: the local `go build` always runs, even under `--dry` --
 pyinfra's dry-run guarantee only covers remote operations, not a local
-build step (same caveat `deploy_caddy.py` and `deploy_pi_api.py`'s UI
+build step (same caveat `deploy_caddy.py` and `deploy_gateway_api.py`'s UI
 build already document).
 """
 
@@ -44,7 +44,7 @@ def go_binary_systemd_service(
     run_as_user: str = "root",
 ):
     """Cross-compile `package` (an import path relative to `module_dir`,
-    e.g. "./cmd/pi-api") for `goos`/`goarch`(/`goarm`) on the dev machine,
+    e.g. "./cmd/gateway-api") for `goos`/`goarch`(/`goarm`) on the dev machine,
     ship the resulting binary to `remote_binary`, install/enable a systemd
     unit named `unit_name` running it directly, and restart iff this
     Deploy changed the binary or the unit file.

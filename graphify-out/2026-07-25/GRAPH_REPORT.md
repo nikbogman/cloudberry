@@ -1,12 +1,12 @@
 # Graph Report - homelab  (2026-07-25)
 
 ## Corpus Check
-- 97 files · ~46,850 words
+- 96 files · ~47,009 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 556 nodes · 818 edges · 45 communities (30 shown, 15 thin omitted)
-- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 67 edges (avg confidence: 0.81)
+- 559 nodes · 821 edges · 46 communities (31 shown, 15 thin omitted)
+- Extraction: 92% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 61 edges (avg confidence: 0.81)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
@@ -56,6 +56,7 @@
 - Pyinfra Host Groups
 - Control UI Favicon
 - Vite Config
+- AssertTailnetOnlyBind
 - 0013-caddy-binary-built-off-device-by-pyinfra.md
 - wake_plugin README
 - deploy.sh script
@@ -96,11 +97,11 @@
 - **Three-Tier Infrastructure Testing Pattern (--check, disposable containers, idempotency)** — pyinfra_readme_doc, scratch_pyinfra_provisioning_issues_09_disposable_container_test_harness_issue, pyinfra_inventory_module, docs_agents_pyinfra_demo_doc [EXTRACTED 0.90]
 - **pyinfra's three-tier testing pattern (--dry, disposable containers, idempotency)** — pyinfra_readme_three_tier_testing, docs_agents_pyinfra_dry_flag, docs_agents_pyinfra_idempotency_mechanics, docs_agents_pyinfra_demo_highest_available_seam [EXTRACTED 1.00]
 
-## Communities (45 total, 15 thin omitted)
+## Communities (46 total, 15 thin omitted)
 
 ### Community 0 - "Server API Reachability"
-Cohesion: 0.10
-Nodes (30): contextKey, Once, EventLogger, Handler, reachabilityTracker, Suspender, GetCallerIdentity(), Handler (+22 more)
+Cohesion: 0.30
+Nodes (9): Once, EventLogger, Handler, reachabilityTracker, Suspender, Request, ResponseWriter, NewHandler() (+1 more)
 
 ### Community 1 - "Shared Git-Pull Deploy Helper"
 Cohesion: 0.07
@@ -143,8 +144,8 @@ Cohesion: 0.09
 Nodes (21): DOM, ES2023, src, vite/client, compilerOptions, allowArbitraryExtensions, allowImportingTsExtensions, erasableSyntaxOnly (+13 more)
 
 ### Community 11 - "Control Plane ADR Decisions"
-Cohesion: 0.17
-Nodes (21): EventLogger, fakeLogger, fakeWaker, Handler, loggedEvent, Waker, NewHandler(), EventLogger (+13 more)
+Cohesion: 0.14
+Nodes (24): EventLogger, fakeLogger, fakeWaker, Handler, loggedEvent, Waker, Request, ResponseWriter (+16 more)
 
 ### Community 12 - "Frontend Test Tooling"
 Cohesion: 0.10
@@ -203,16 +204,20 @@ Cohesion: 0.67
 Nodes (3): issues/<NN>-<slug>.md ticket files, .scratch/<feature-slug>/ convention, spec.md (per-feature spec/PRD)
 
 ### Community 26 - "Control Plane Services"
-Cohesion: 0.31
-Nodes (8): BindOffTailnetError, AssertTailnetOnlyBind(), appFactory(), T, TestAllowsLoopbackAndTailnetAddresses(), TestAppFactoryRefusesToStartOnOffTailnetHost(), TestAppFactoryStartsOnLoopbackHost(), TestRejectsOffTailnetAddresses()
+Cohesion: 0.16
+Nodes (21): GetCallerIdentity(), Handler, Request, remoteHost(), RequireTailnetIdentity(), RequireTailnetIdentityOrLoopback(), Handler, Request (+13 more)
 
 ### Community 39 - "Control UI Favicon"
 Cohesion: 0.33
 Nodes (5): Behavior, Configuration, Deployment, Development, UI
 
+### Community 41 - "AssertTailnetOnlyBind"
+Cohesion: 0.31
+Nodes (8): AssertTailnetOnlyBind(), appFactory(), T, TestAllowsLoopbackAndTailnetAddresses(), TestAppFactoryRefusesToStartOnOffTailnetHost(), TestAppFactoryStartsOnLoopbackHost(), TestRejectsOffTailnetAddresses(), BindOffTailnetError
+
 ### Community 46 - "0013-caddy-binary-built-off-device-by-pyinfra.md"
-Cohesion: 0.17
-Nodes (8): The Caddy binary is cross-compiled off-device and shipped by pyinfra, not hand-built on the Pi, Control-plane events ship straight to Grafana Cloud's Loki endpoint — no self-hosted agent, The Pi API, Server API, and their shared library are rewritten in Go, built off-device like the Caddy binary, Control-plane services (Go), Development, `internal/controlplane`, Pi API, Server API
+Cohesion: 0.15
+Nodes (9): The Caddy binary is cross-compiled off-device and shipped by pyinfra, not hand-built on the Pi, Control-plane events ship straight to Grafana Cloud's Loki endpoint — no self-hosted agent, The Pi API, Server API, and their shared libraries are rewritten in Go, built off-device like the Caddy binary, Control-plane services (Go), Development, `internal/eventlog`, `internal/tailnet`, Pi API (+1 more)
 
 ## Ambiguous Edges - Review These
 - `Control UI` → `.scratch/ Local Markdown Issue Tracker`  [AMBIGUOUS]
@@ -221,7 +226,7 @@ Nodes (8): The Caddy binary is cross-compiled off-device and shipped by pyinfra,
   docs/agents/pyinfra-demo.md · relation: references
 
 ## Knowledge Gaps
-- **128 isolated node(s):** `deploy.sh script`, `homelab-pyinfra`, `github.com/nikbogman/homelab/services`, `contextKey`, `lokiLine` (+123 more)
+- **129 isolated node(s):** `deploy.sh script`, `homelab-pyinfra`, `github.com/nikbogman/homelab/services`, `lokiLine`, `contextKey` (+124 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **15 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -232,13 +237,13 @@ _Questions this graph is uniquely positioned to answer:_
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **What is the exact relationship between `git_systemd_service live demo (ticket 04)` and `api_deploy.py (shared git+systemd @deploy helper)`?**
   _Edge tagged AMBIGUOUS (relation: references) - confidence is low._
-- **Why does `NewHandler()` connect `Control Plane ADR Decisions` to `Server API Reachability`, `Control Plane Services`, `WSGI Bootstrap Tests`?**
-  _High betweenness centrality (0.044) - this node is a cross-community bridge._
+- **Why does `NewHandler()` connect `Control Plane ADR Decisions` to `AssertTailnetOnlyBind`, `Control Plane Services`, `WSGI Bootstrap Tests`?**
+  _High betweenness centrality (0.045) - this node is a cross-community bridge._
 - **Why does `BuildMagicPacket()` connect `WSGI Bootstrap Tests` to `Control Plane ADR Decisions`?**
   _High betweenness centrality (0.033) - this node is a cross-community bridge._
 - **Why does `TailscaleBackendState` connect `Shared Git-Pull Deploy Helper` to `Deploy Domain Concepts`?**
-  _High betweenness centrality (0.033) - this node is a cross-community bridge._
+  _High betweenness centrality (0.032) - this node is a cross-community bridge._
 - **What connects `deploy.sh script`, `homelab-pyinfra`, `github.com/nikbogman/homelab/services` to the rest of the system?**
-  _128 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `Server API Reachability` be split into smaller, more focused modules?**
-  _Cohesion score 0.09986504723346828 - nodes in this community are weakly interconnected._
+  _129 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Shared Git-Pull Deploy Helper` be split into smaller, more focused modules?**
+  _Cohesion score 0.07180851063829788 - nodes in this community are weakly interconnected._

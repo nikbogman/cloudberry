@@ -41,8 +41,8 @@
   "39": "Control UI Favicon",
   "40": "Vite Config",
   "41": "AssertTailnetOnlyBind",
+  "42": "github.com/nikbogman/homelab/services/gateway-proxy/wake_plugin",
   "45": "vite.config.ts",
   "46": "0013-caddy-binary-built-off-device-by-pyinfra.md",
-  "48": "wake_plugin README",
   "49": "deploy.sh script"
 }

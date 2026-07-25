@@ -6,10 +6,10 @@
 # resolves a short name (e.g. "caddy") to its deploy_caddy.py file, so
 # callers don't have to keep retyping every Deploy file's "deploy" prefix.
 #
-# Usage: ./deploy.sh --limit pi --dry           # no target -> deploy.py (everything)
-#        ./deploy.sh caddy --limit pi --dry     # -> deploy_caddy.py
-#        ./deploy.sh deploy.py --limit pi       # full filename still works
-#        ./deploy.sh --version                  # flags pass through untouched
+# Usage: ./deploy.sh --limit gateway --dry           # no target -> deploy.py (everything)
+#        ./deploy.sh caddy --limit gateway --dry     # -> deploy_caddy.py
+#        ./deploy.sh deploy.py --limit gateway       # full filename still works
+#        ./deploy.sh --version                       # flags pass through untouched
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
 

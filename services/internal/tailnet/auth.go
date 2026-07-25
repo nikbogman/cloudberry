@@ -1,5 +1,5 @@
 // Package tailnet holds tailnet identity-header auth and bind-safety
-// helpers shared by the Pi API and Server API.
+// helpers shared by the Gateway API and Compute API.
 //
 // Both apps sit behind `tailscale serve`, which injects the
 // Tailscale-User-Login header for any tailnet-authenticated caller. These
@@ -17,9 +17,9 @@ const (
 	// IdentityHeader is injected by tailscale serve for any tailnet-authenticated caller.
 	IdentityHeader = "Tailscale-User-Login"
 	// LoopbackIdentity is the synthetic identity assigned to a caller on
-	// 127.0.0.1 with no identity header (ADR-0004, ADR-0012) — the Pi
+	// 127.0.0.1 with no identity header (ADR-0004, ADR-0012) — the Gateway
 	// proxy's same-device wake trigger.
-	LoopbackIdentity = "pi-proxy"
+	LoopbackIdentity = "gateway-proxy"
 )
 
 type contextKey int
@@ -41,7 +41,7 @@ func RequireTailnetIdentity(next http.Handler) http.Handler {
 
 // RequireTailnetIdentityOrLoopback is like RequireTailnetIdentity, but also
 // accepts a caller on 127.0.0.1 with no identity header (ADR-0004,
-// ADR-0012) — for the Pi proxy's same-device wake trigger. Opt in per
+// ADR-0012) — for the Gateway proxy's same-device wake trigger. Opt in per
 // route; doesn't change RequireTailnetIdentity itself.
 func RequireTailnetIdentityOrLoopback(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

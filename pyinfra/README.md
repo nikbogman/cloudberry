@@ -1,35 +1,35 @@
 # pyinfra provisioning
 
 Declarative provisioning for the homelab control plane, per
-`.scratch/pyinfra-provisioning/spec.md`. Converges the Pi Zero (`pi`) and
-the main server (`server`) to their declared state: Tailscale joined,
-Docker installed on `server`, the full Caddy config templated on `pi`, and
-both the Pi API and Server API (plus the UI's static build) deployed as
-systemd services. Domain vocabulary (Deploy, Deploy file, Host group) is
-defined in the root [`CONTEXT.md`](../CONTEXT.md); pyinfra-specific
-implementation notes and citations live in
-[`docs/agents/pyinfra.md`](../docs/agents/pyinfra.md).
+`.scratch/pyinfra-provisioning/spec.md`. Converges the Gateway (`gateway`,
+the Pi Zero) and the compute host (`compute`) to their declared state:
+Tailscale joined, Docker installed on `compute`, the full Caddy config
+templated on `gateway`, and both the Gateway API and Compute API (plus the
+UI's static build) deployed as systemd services. Domain vocabulary
+(Deploy, Deploy file, Host group) is defined in the root
+[`CONTEXT.md`](../CONTEXT.md); pyinfra-specific implementation notes and
+citations live in [`docs/agents/pyinfra.md`](../docs/agents/pyinfra.md).
 
 ## Layout
 
 ```
 pyinfra/
-  inventory.py                    # pi / server / test Host groups (ticket 01)
+  inventory.py                    # gateway / compute / test Host groups (ticket 01)
   common.py                       # shared linux_codename()/linux_distro_id()/has_device_role()/TailscaleServeStatus helpers
   settings.py                     # pydantic-settings classes -- typed env var config
   deploy_tailscale.py             # ticket 02
   deploy_docker.py                # ticket 03
   go_deploy.py                    # shared off-device Go build+ship+systemd helper (ADR-0015)
-  deploy_pi_api.py                # ticket 05 (+ UI static delivery)
-  deploy_server_api.py            # ticket 06
+  deploy_gateway_api.py           # ticket 05 (+ UI static delivery)
+  deploy_compute_api.py           # ticket 06
   deploy_caddy.py                 # ticket 07, binary build+ship added by ADR-0013
   deploy.py                       # entrypoint composing everything (ticket 08)
   deploy.sh                       # wrapper: loads secrets.sh, resolves short Deploy-file names
   secrets.sh.example               # checked-in template -- copy to secrets.sh (gitignored)
   templates/
-    binary.service.j2              # systemd unit template, both the Pi API and Server API (ADR-0015)
+    binary.service.j2              # systemd unit template, both the Gateway API and Compute API (ADR-0015)
     caddy.service.j2               # systemd unit template for caddy (ADR-0013)
-    Caddyfile.j2                  # the Pi's complete Caddy config
+    Caddyfile.j2                  # the Gateway's complete Caddy config
 ```
 
 **Run every command from inside this directory** (`cd pyinfra/` first).
@@ -49,8 +49,8 @@ An independent [uv](https://docs.astral.sh/uv/) project, but not an
 installable package (`[tool.uv] package = false` in `pyproject.toml`) --
 it's a directory of scripts pyinfra's CLI executes, not a Python package
 anything imports. Also requires a Go toolchain on the dev machine (for the
-Pi API/Server API builds, ADR-0015, and the `wake_plugin`-enabled Caddy
-build, ADR-0013) and `xcaddy` for the latter:
+Gateway API/Compute API builds, ADR-0015, and the `wake_plugin`-enabled
+Caddy build, ADR-0013) and `xcaddy` for the latter:
 
 ```sh
 cd pyinfra
@@ -87,27 +87,29 @@ interactive shell.
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `PI_HOST`, `PI_SSH_USER` | `pi-zero.tailnet`, `pi` | The real Pi Zero -- pyinfra's SSH target |
-| `SERVER_HOST`, `SERVER_SSH_USER` | `main-server.tailnet`, `admin` | The real main server -- pyinfra's SSH target |
-| `PI_TAILNET_HOST` | `pi-zero.your-tailnet-name.ts.net` | The Pi's real Tailscale MagicDNS name, used only to derive `UI_ORIGIN` |
-| `SERVER_TAILNET_HOST` | `main-server.your-tailnet-name.ts.net` | The server's real Tailscale MagicDNS name, used only to derive `VITE_SERVER_API_URL` |
-| `PI_TEST_HOST`, `PI_TEST_SSH_PORT`, `PI_TEST_SSH_USER` | `localhost`, `2201`, `root` | `test` group's pi stand-in (see Testing) |
-| `SERVER_TEST_HOST`, `SERVER_TEST_SSH_PORT`, `SERVER_TEST_SSH_USER` | `localhost`, `2202`, `root` | `test` group's server stand-in |
+| `GATEWAY_HOST`, `GATEWAY_SSH_USER` | `pi-zero.tailnet`, `pi` | The real Gateway (Pi Zero) -- pyinfra's SSH target |
+| `COMPUTE_HOST`, `COMPUTE_SSH_USER` | `main-server.tailnet`, `admin` | The real compute host -- pyinfra's SSH target |
+| `GATEWAY_TAILNET_HOST` | `pi-zero.your-tailnet-name.ts.net` | The Gateway's real Tailscale MagicDNS name, used only to derive `UI_ORIGIN` |
+| `COMPUTE_TAILNET_HOST` | `main-server.your-tailnet-name.ts.net` | The compute host's real Tailscale MagicDNS name, used only to derive `VITE_COMPUTE_API_URL` |
+| `GATEWAY_TEST_HOST`, `GATEWAY_TEST_SSH_PORT`, `GATEWAY_TEST_SSH_USER` | `localhost`, `2201`, `root` | `test` group's gateway stand-in (see Testing) |
+| `COMPUTE_TEST_HOST`, `COMPUTE_TEST_SSH_PORT`, `COMPUTE_TEST_SSH_USER` | `localhost`, `2202`, `root` | `test` group's compute stand-in |
 
-`PI_HOST`/`SERVER_HOST` are pure SSH targets -- pyinfra connects to exactly
-these to run any Deploy file, including `deploy_tailscale.py` itself, so on
-a fresh device that isn't joined to the tailnet yet, this needs to be a
-plain LAN address (e.g. `192.168.0.50`), not a tailnet name. Safe to leave
-as the LAN address permanently as long as the Pi/server stay on the same
-local network as the dev machine -- no separate "bootstrap value" needed.
+`GATEWAY_HOST`/`COMPUTE_HOST` are pure SSH targets -- pyinfra connects to
+exactly these to run any Deploy file, including `deploy_tailscale.py`
+itself, so on a fresh device that isn't joined to the tailnet yet, this
+needs to be a plain LAN address (e.g. `192.168.0.50`), not a tailnet name.
+Safe to leave as the LAN address permanently as long as the
+gateway/compute devices stay on the same local network as the dev machine
+-- no separate "bootstrap value" needed.
 
-`PI_TAILNET_HOST`/`SERVER_TAILNET_HOST` are deliberately separate: both
-`deploy_server_api.py` and `deploy_pi_api.py` derive the other's
-browser-facing origin from these two (`https://{pi_tailnet_host}`,
-`https://{server_tailnet_host}`), since that's exactly what each device's
-own `tailscale serve` instance exposes it at, and specifically needs the
-real MagicDNS name -- that's the only name `tailscale serve` issues a valid
-HTTPS cert for, so a LAN IP origin would break CORS/HTTPS.
+`GATEWAY_TAILNET_HOST`/`COMPUTE_TAILNET_HOST` are deliberately separate:
+both `deploy_compute_api.py` and `deploy_gateway_api.py` derive the
+other's browser-facing origin from these two
+(`https://{gateway_tailnet_host}`, `https://{compute_tailnet_host}`),
+since that's exactly what each device's own `tailscale serve` instance
+exposes it at, and specifically needs the real MagicDNS name -- that's the
+only name `tailscale serve` issues a valid HTTPS cert for, so a LAN IP
+origin would break CORS/HTTPS.
 
 ### deploy_tailscale.py (`TailscaleSettings`)
 
@@ -115,45 +117,45 @@ HTTPS cert for, so a LAN IP origin would break CORS/HTTPS.
 |---|---|---|
 | `TAILSCALE_AUTH_KEY` | *(required to join)* | Tailnet auth key, never committed |
 
-### deploy_pi_api.py (`PiApiSettings`, `PiApiSecrets`)
+### deploy_gateway_api.py (`GatewayApiSettings`, `GatewayApiSecrets`)
 
-Cross-compiles `services/cmd/pi-api` for the Pi Zero W (`GOOS=linux
+Cross-compiles `services/cmd/gateway-api` for the Pi Zero W (`GOOS=linux
 GOARCH=arm GOARM=6`) on the dev machine and ships only the binary --
 there's no repo to pull or ref to check out on-device anymore (ADR-0015).
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `PI_API_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address for the Pi API |
-| `SERVER_MAC_ADDRESS` | *(required)* | WoL target MAC for the Pi API |
+| `GATEWAY_API_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address for the Gateway API |
+| `COMPUTE_MAC_ADDRESS` | *(required)* | WoL target MAC for the Gateway API |
 | `GRAFANA_CLOUD_LOKI_URL` | *(required)* | Grafana Cloud's Loki push endpoint -- events are POSTed here directly (ADR-0014) |
 | `GRAFANA_CLOUD_LOKI_USER` | *(required)* | Grafana Cloud Loki basic-auth username (the stack's numeric instance/user ID) |
 | `GRAFANA_CLOUD_LOKI_API_KEY` | *(required)* | Grafana Cloud Access Policy token, scoped to `logs:write` |
 
-`VITE_SERVER_API_URL` (baked into the UI build) is
-`https://{SERVER_TAILNET_HOST}`, derived from `InventorySettings` rather
+`VITE_COMPUTE_API_URL` (baked into the UI build) is
+`https://{COMPUTE_TAILNET_HOST}`, derived from `InventorySettings` rather
 than its own separately-set secret.
 
-### deploy_server_api.py (`ServerApiSettings`, `ServerApiSecrets`)
+### deploy_compute_api.py (`ComputeApiSettings`, `ComputeApiSecrets`)
 
-Cross-compiles `services/cmd/server-api` on the dev machine and ships only
-the binary, same as the Pi API (ADR-0015) -- `GOARCH` is read from the
+Cross-compiles `services/cmd/compute-api` on the dev machine and ships only
+the binary, same as the Gateway API (ADR-0015) -- `GOARCH` is read from the
 device's real architecture (`common.DpkgArchitecture`) rather than
-hardcoded, since unlike the Pi Zero W, `server` isn't a fixed known
+hardcoded, since unlike the Pi Zero W, `compute` isn't a fixed known
 device.
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `SERVER_API_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address for the Server API |
+| `COMPUTE_API_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address for the Compute API |
 | `GRAFANA_CLOUD_LOKI_URL` | *(required)* | Grafana Cloud's Loki push endpoint -- events are POSTed here directly (ADR-0014) |
 | `GRAFANA_CLOUD_LOKI_USER` | *(required)* | Grafana Cloud Loki basic-auth username (the stack's numeric instance/user ID) |
 | `GRAFANA_CLOUD_LOKI_API_KEY` | *(required)* | Grafana Cloud Access Policy token, scoped to `logs:write` |
 
-`UI_ORIGIN` (the Server API's CORS allow-list entry) is
-`https://{PI_TAILNET_HOST}`, derived from `InventorySettings` rather than
-its own separately-set secret.
+`UI_ORIGIN` (the Compute API's CORS allow-list entry) is
+`https://{GATEWAY_TAILNET_HOST}`, derived from `InventorySettings` rather
+than its own separately-set secret.
 
 After the systemd unit, this Deploy file also runs `tailscale serve --bg
---https=443 localhost:$SERVER_API_PORT` to expose the Server API on the
+--https=443 localhost:$COMPUTE_API_PORT` to expose the Compute API on the
 tailnet (CONTEXT.md: fronted by its own `tailscale serve` instance) --
 guarded by `common.TailscaleServeStatus`, a fact that checks the raw
 `tailscale serve status --json` text for that target string, so a second
@@ -166,22 +168,22 @@ it blindly on a new device.
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `MAIN_SERVER_HOST` | `main-server.tailnet` | Host the `/server*` route forwards to |
-| `UI_PORT` | `8080` | Caddy listen port for the single UI/Pi API/`/server*` site |
-| `PI_API_PORT` | `5000` | Must match `deploy_pi_api.py`'s own `PI_API_PORT` -- read separately since each Deploy file's settings class is independent |
-| `SERVER_PROXY_PORT` | *(required)* | Port on `MAIN_SERVER_HOST` that `/server*` forwards to (path stripped) -- ADR-0011; no default since the server-side proxy it points at doesn't exist yet |
+| `COMPUTE_HOST` | `main-server.tailnet` | Host the `/server*` route forwards to |
+| `UI_PORT` | `8080` | Caddy listen port for the single UI/Gateway API/`/server*` site |
+| `GATEWAY_API_PORT` | `5000` | Must match `deploy_gateway_api.py`'s own `GATEWAY_API_PORT` -- read separately since each Deploy file's settings class is independent |
+| `COMPUTE_PROXY_PORT` | *(required)* | Port on `COMPUTE_HOST` that `/server*` forwards to (path stripped) -- ADR-0011; no default since the server-side proxy it points at doesn't exist yet |
 
 After Caddy's systemd unit, this Deploy file also runs `tailscale serve
---bg --https=443 localhost:$UI_PORT` to expose the UI/Pi API on the
+--bg --https=443 localhost:$UI_PORT` to expose the UI/Gateway API on the
 tailnet, guarded by the same `common.TailscaleServeStatus` idempotency
-check as `deploy_server_api.py` above -- same version-sensitivity caveat
+check as `deploy_compute_api.py` above -- same version-sensitivity caveat
 applies.
 
 ### Not read by pyinfra at all
 
 | Variable | Set where | Purpose |
 |---|---|---|
-| `PI_PROXY_BIND_HOST` | On the device, in Caddy's own environment | Not a dev-machine/pyinfra setting -- listed here only to avoid confusion with the pyinfra-side variables above |
+| `GATEWAY_PROXY_BIND_HOST` | On the device, in Caddy's own environment | Not a dev-machine/pyinfra setting -- listed here only to avoid confusion with the pyinfra-side variables above |
 
 ## Running a Deploy
 
@@ -202,8 +204,8 @@ filename still works if you prefer it:
 ./deploy.sh --dry
 
 # One Deploy file against one Host group
-./deploy.sh caddy --limit pi
-./deploy.sh caddy --limit pi --dry
+./deploy.sh caddy --limit gateway
+./deploy.sh caddy --limit gateway --dry
 ```
 
 pyinfra 3.x has no `--check` flag — every "`--check`" in the ticket files
@@ -236,7 +238,7 @@ containers reached over plain `@ssh` — deliberately *not* pyinfra's
 feature uses throughout (tickets 02-06) can't succeed against them
 (`docs/agents/pyinfra.md`'s Open Question #2). Using `@ssh` against a
 systemd-capable container instead exercises the *exact same connector
-path* `pi`/`server` use, so execution errors surface against the real
+path* `gateway`/`compute` use, so execution errors surface against the real
 code path, and the container survives across runs for the idempotency
 check below.
 
@@ -244,10 +246,10 @@ Stand up the two stand-in containers (needs a systemd-capable image with
 an SSH server; adjust to taste):
 
 ```sh
-docker run -d --name pi-test --privileged --cgroupns=host \
+docker run -d --name gateway-test --privileged --cgroupns=host \
   -v /sys/fs/cgroup:/sys/fs/cgroup:rw -p 2201:22 \
   jrei/systemd-debian:12
-docker run -d --name server-test --privileged --cgroupns=host \
+docker run -d --name compute-test --privileged --cgroupns=host \
   -v /sys/fs/cgroup:/sys/fs/cgroup:rw -p 2202:22 \
   jrei/systemd-debian:12
 
@@ -264,8 +266,9 @@ Then, from `pyinfra/`:
 ```
 
 Every Deploy file runs against both stand-ins (`device_role` host data makes
-`pi-test`/`server-test` behave like `pi`/`server` for gating purposes —
-see `common.has_device_role` and `inventory.py`'s module docstring). Bad package
+`gateway-test`/`compute-test` behave like `gateway`/`compute` for gating
+purposes — see `common.has_device_role` and `inventory.py`'s module
+docstring). Bad package
 names, invalid templates, and wrong command syntax surface here, against
 throwaway containers, not a physical device. `deploy_tailscale.py`
 deliberately skips the actual `tailscale up` join for `test` (only the
@@ -275,14 +278,15 @@ ephemeral container into the real tailnet.
 ### Tier 3 — idempotency, the actual correctness check
 
 Run the same Deploy twice in a row, immediately, with nothing else
-changed in between, against **both** `test` and the real `pi`/`server`:
+changed in between, against **both** `test` and the real
+`gateway`/`compute`:
 
 ```sh
 ./deploy.sh --limit test
 ./deploy.sh --limit test   # again, immediately
 
-./deploy.sh --limit pi
-./deploy.sh --limit pi     # again, immediately
+./deploy.sh --limit gateway
+./deploy.sh --limit gateway     # again, immediately
 ```
 
 **Pass condition**: the second run's `Grand total` row has an empty/`-`
@@ -301,15 +305,15 @@ helper demoed end-to-end against a real throwaway git repo and a real
 (user-mode, sandbox-only) systemd unit — first run applies, second run is
 fully idempotent, a code-only change correctly triggers a restart — and
 ticket 07's templated Caddyfile validated with a real `caddy validate`
-run. Full tiers 2 and 3 against `pi`/`server`-shaped disposable containers
+run. Full tiers 2 and 3 against `gateway`/`compute`-shaped disposable containers
 require Docker and a systemd-capable image, unavailable in the sandbox
 this feature was built in; the procedure above is what to run against
 real infrastructure.
 
 ADR-0011's `/server*` route, and ADR-0012's `call_wake_api` plugin that
 replaced `caddy-wol`, were re-validated with a real `caddy validate` run
-against a binary built with `services/pi-proxy/wake_plugin`
-compiled in, plus a live `caddy run` smoke test against a fake Pi
+against a binary built with `services/gateway-proxy/wake_plugin`
+compiled in, plus a live `caddy run` smoke test against a fake Gateway
 API and an unreachable upstream (confirmed: the wake call fires on the
 first 502, is throttled on the second, and the request still ultimately
 returns a real response). That validation pass also caught a real,
@@ -322,10 +326,10 @@ pass since it blocked verifying the very route this change touches.
 
 ## Known gaps (flagged, not silently dropped)
 
-- ~~**`tailscale serve` port mappings**~~ — closed. `deploy_server_api.py`
+- ~~**`tailscale serve` port mappings**~~ — closed. `deploy_compute_api.py`
   and `deploy_caddy.py` now both run `tailscale serve` for their respective
   loopback-bound ports (see each section above), and the two Deploy files'
-  `UI_ORIGIN`/`VITE_SERVER_API_URL` values are derived from `InventorySettings`
+  `UI_ORIGIN`/`VITE_COMPUTE_API_URL` values are derived from `InventorySettings`
   rather than hand-kept-in-sync secrets, since that's exactly what each side's
   `tailscale serve` exposes. Not yet re-verified against a real device (this
   was built without one) — see the version-sensitivity caveat in each section

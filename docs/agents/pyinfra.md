@@ -32,12 +32,12 @@ pyinfra has **no enforced discovery convention** — `inventory.py` and `deploy.
 For this repo, put everything under `pyinfra/`:
 ```
 pyinfra/
-  inventory.py                    # pi / server / test groups
+  inventory.py                    # gateway / compute / test groups
   deploy_tailscale.py             # Concern (02)
   deploy_docker.py                # Concern (03)
   go_deploy.py                    # shared @deploy helper (04, revised by ADR-0015 -- see note below)
-  deploy_pi_api.py                # Concern (05)
-  deploy_server_api.py            # Concern (06)
+  deploy_gateway_api.py           # Concern (05)
+  deploy_compute_api.py           # Concern (06)
   deploy_caddy.py                 # Concern (07)
   templates/
     Caddyfile.j2
@@ -52,15 +52,15 @@ Groups are top-level variables holding a list of host strings/tuples, or `(list,
 ```python
 # pyinfra/inventory.py
 
-pi = [
+gateway = [
     ("pi-zero.tailnet", {"ssh_user": "pi"}),
 ]
 
-server = [
+compute = [
     ("main-server.tailnet", {"ssh_user": "admin"}),
 ]
 
-# Disposable containers standing in for pi/server OS bases (ticket 09).
+# Disposable containers standing in for gateway/compute OS bases (ticket 09).
 # See "Connectors: @docker" below for what this can and cannot exercise.
 test = [
     "@docker/debian:bookworm",
@@ -137,7 +137,7 @@ files.template(
     dest="/etc/caddy/Caddyfile",
     workloads=WORKLOADS,
     ui_root="/srv/ui/dist",
-    server_api_upstream="server.tailnet:8000",
+    compute_api_upstream="compute.tailnet:8000",
 )
 ```
 Idempotency/diffing mechanism for `files.template` isn't spelled out in prose on that page; pyinfra's general model (confirmed by live testing below) is: render the template during prepare, diff against the current remote file content, and only write if different — a second run with unchanged inputs reports "No Change".
@@ -148,7 +148,7 @@ The worked example below (`git_systemd_service`) is ticket 04's original
 shape: git-pull the repo to the device, template a unit, restart on
 change. It's kept here as-is because it's still a clean illustration of
 `@deploy`, `git.repo`, and the `.did_change`-gated restart pattern. It is
-**not** what `pi-api`/`server-api` actually run anymore, though: since
+**not** what `gateway-api`/`compute-api` actually run anymore, though: since
 ADR-0015 rewrote both in Go, there's no source tree to pull or
 dependencies to install on-device, so the real current helper
 (`go_deploy.go_binary_systemd_service`) cross-compiles on the dev machine
@@ -190,15 +190,15 @@ def git_systemd_service(
         daemon_reload=unit.did_change,
     )
 ```
-Consumed from `deploy_pi_api.py` / `deploy_server_api.py`:
+Consumed from `deploy_gateway_api.py` / `deploy_compute_api.py`:
 ```python
 from api_deploy import git_systemd_service
 
 git_systemd_service(
     repo_url="git@github.com:you/homelab.git",
     ref="main",
-    dest="/srv/pi-api",
-    unit_name="pi-api.service",
+    dest="/srv/gateway-api",
+    unit_name="gateway-api.service",
     unit_src="templates/api.service.j2",
 )
 ```
@@ -221,10 +221,10 @@ Confirmed verbatim from `pyinfra --help` (installed 3.9.2) and [Using the CLI](h
 pyinfra pyinfra/inventory.py pyinfra/deploy.py
 
 # One Concern against one Host group
-pyinfra pyinfra/inventory.py pyinfra/deploy_caddy.py --limit pi
+pyinfra pyinfra/inventory.py pyinfra/deploy_caddy.py --limit gateway
 
 # Same, dry-run
-pyinfra pyinfra/inventory.py pyinfra/deploy_caddy.py --limit pi --dry
+pyinfra pyinfra/inventory.py pyinfra/deploy_caddy.py --limit gateway --dry
 
 # Ad hoc single operation, no deploy file
 pyinfra pyinfra/inventory.py server.user pyinfra home=/home/pyinfra
@@ -259,7 +259,7 @@ Live-verified (installed 3.9.2, `@local` connector, a `files.file` operation):
 
 ## Connectors
 
-- **`@ssh`** — the default; a bare hostname or `(hostname, {ssh_user, ssh_port, ssh_key, ssh_password, ...})` tuple in `inventory.py` uses it implicitly. This is what `pi` and `server` groups should use. [SSH connector](https://docs.pyinfra.com/en/3.x/connectors/ssh.html)
+- **`@ssh`** — the default; a bare hostname or `(hostname, {ssh_user, ssh_port, ssh_key, ssh_password, ...})` tuple in `inventory.py` uses it implicitly. This is what `gateway` and `compute` groups should use. [SSH connector](https://docs.pyinfra.com/en/3.x/connectors/ssh.html)
 - **`@local`** — runs against the machine running pyinfra itself; useful for ticket 05's "build the UI on the dev machine" step (`local.shell(...)` / a `@local`-targeted host in a separate small inventory, or just plain `subprocess`/`local.shell` outside the SSH-targeted deploy). [Connectors](https://docs.pyinfra.com/en/3.x/connectors.html)
 - **`@docker`** — see below (ticket 09, high priority).
 - **`@dockerssh`** — Docker containers *on a remote host*, reached over SSH to the Docker host first (`@dockerssh/remotehost:image`). Documented as **beta**. Not needed here unless the disposable containers for `test` live on a remote Docker host rather than the dev machine. [Connectors](https://docs.pyinfra.com/en/3.x/connectors.html), confirmed via installed package docstring (`pyinfra/connectors/dockerssh.py`).
@@ -351,8 +351,8 @@ systemd.service(
 from pyinfra.operations import systemd
 
 systemd.service(
-    name="Enable and restart the pi-api service",
-    service="pi-api.service",
+    name="Enable and restart the gateway-api service",
+    service="gateway-api.service",
     running=True,
     restarted=True,   # set conditionally via a previous op's .did_change, not always True
     enabled=True,
@@ -382,13 +382,13 @@ git.repo(
 ```
 - Clones to `dest` if not present; if present and `pull=True` (default), fetches and pulls `branch`.
 - `branch` accepts any ref `git checkout` accepts in practice (branch name, tag, or commit SHA) — the docs/signature only call it "branch to pull/checkout"; there is no separate `ref=`/`rev=`/`commit=` argument. For pinning to an exact commit, pass the SHA as `branch`.
-- `ssh_keyscan=True` is relevant if the target device doesn't already trust the git remote's host key (likely true for a freshly-provisioned `pi`/`server`).
+- `ssh_keyscan=True` is relevant if the target device doesn't already trust the git remote's host key (likely true for a freshly-provisioned `gateway`/`compute`).
 
 ```python
 git.repo(
-    name="Pull pi-api source",
+    name="Pull gateway-api source",
     src="git@github.com:you/homelab.git",
-    dest="/srv/pi-api",
+    dest="/srv/gateway-api",
     branch="main",       # or a pinned commit SHA
     ssh_keyscan=True,
 )
@@ -403,7 +403,7 @@ git.repo(
 - **Global arguments are prefixed with `_`** (`_sudo`, `_env`, `_if`, `_chdir`, etc.) to avoid clashing with operation-specific kwargs; only `name` is unprefixed. [Arguments](https://docs.pyinfra.com/en/3.x/arguments.html)
 - **`apt-key` is deprecated upstream**; pyinfra's `apt.key` operation documents itself as using "modern keyring approaches rather than the deprecated apt-key tool" — relevant if Docker's own apt repo setup (ticket 03) or any workload needs a signing key added. [Apt operations](https://docs.pyinfra.com/en/3.x/operations/apt.html)
 - **No built-in "install Docker engine" operation.** pyinfra ships generic `apt`/`files`/`server`/`systemd` operations, not a `docker.install`-style high-level operation — ticket 03 has to compose Docker's official apt-repo + `apt.packages` + `systemd.service` steps manually (or shell out to a vendor install script via `server.shell`), there's no shortcut documented.
-- **Image-mode `@docker` containers are single-use per run** (fresh container from the image every time, committed-and-destroyed on disconnect) — don't assume state persists across two `pyinfra ... @docker/<image>` invocations the way it would for `pi`/`server`. See the `@docker` section above.
+- **Image-mode `@docker` containers are single-use per run** (fresh container from the image every time, committed-and-destroyed on disconnect) — don't assume state persists across two `pyinfra ... @docker/<image>` invocations the way it would for `gateway`/`compute`. See the `@docker` section above.
 - **`files.template`'s Jinja2 `include`/`extends`/`import` paths resolve relative to the current working directory**, not the template file's directory — a easy-to-get-wrong detail for a multi-file Caddyfile template setup (ticket 07). [Files operations](https://docs.pyinfra.com/en/3.x/operations/files.html)
 
 ## Open questions (unresolved by docs — needs a human/future-agent decision)
@@ -412,7 +412,7 @@ git.repo(
    - (a) Pre-start long-lived containers outside pyinfra (`docker run -d ...`), capture their container IDs (env var or a small shell wrapper), and reference `@docker/<container-id>` in `inventory.py` for the `test` group — state persists naturally across two runs.
    - (b) Chain image IDs: run 1 targets `@docker/debian:bookworm`, capture the committed image ID pyinfra prints on disconnect, run 2 targets `@docker/<that-image-id>`.
    Needs a decision before ticket 09 is implemented.
-2. **systemd inside the `test` group's containers.** Confirmed (source-level) that pyinfra's own image-mode containers do not run an init system, so `systemd.service` operations from ticket 04's shared helper cannot succeed against a container spun up by `@docker/<image>` as-is. Whether the team adopts a systemd-capable base image + `--privileged`/cgroup-mount container (started outside pyinfra, referenced via existing-container mode) is unresolved and not something pyinfra documents — this is a general Docker/Ansible-Molecule technique, orthogonal to pyinfra. The spec's own fallback ("spin up containers with SSH exposed, use the normal `@ssh` connector") sidesteps the `@docker` connector's exec-based command execution entirely and would let a systemd-capable container be reached exactly like `pi`/`server` are — this may be the pragmatic choice for ticket 09 specifically because it also exercises the real `@ssh` connector path rather than `@docker`'s `docker exec` path, closer to "catch real execution errors" against the actual code path used for `pi`/`server`.
+2. **systemd inside the `test` group's containers.** Confirmed (source-level) that pyinfra's own image-mode containers do not run an init system, so `systemd.service` operations from ticket 04's shared helper cannot succeed against a container spun up by `@docker/<image>` as-is. Whether the team adopts a systemd-capable base image + `--privileged`/cgroup-mount container (started outside pyinfra, referenced via existing-container mode) is unresolved and not something pyinfra documents — this is a general Docker/Ansible-Molecule technique, orthogonal to pyinfra. The spec's own fallback ("spin up containers with SSH exposed, use the normal `@ssh` connector") sidesteps the `@docker` connector's exec-based command execution entirely and would let a systemd-capable container be reached exactly like `gateway`/`compute` are — this may be the pragmatic choice for ticket 09 specifically because it also exercises the real `@ssh` connector path rather than `@docker`'s `docker exec` path, closer to "catch real execution errors" against the actual code path used for `gateway`/`compute`.
 3. **`files.template`'s exact diffing/idempotency mechanism** (content hash vs. line-by-line diff) is not stated in prose on the Files operations page; behavior was inferred from pyinfra's general model and confirmed only for the simpler `files.file` operation via live testing, not `files.template` specifically. Low risk, but worth a quick live check (`files.template` against `@local` twice) before leaning on it for ticket 07's idempotency requirement.
 
 ## References

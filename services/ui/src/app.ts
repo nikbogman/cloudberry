@@ -9,19 +9,19 @@ const STATUS_LABELS: Record<ReachabilityState, string> = {
 const DEFAULT_POLL_INTERVAL_MS = 12_000
 
 export interface MountOptions {
-  /** Server API origin. */
-  serverApiBaseUrl: string
-  /** Pi API origin — same-origin as the UI by default, so '' (relative) works. */
-  piApiBaseUrl?: string
+  /** Compute API origin. */
+  computeApiBaseUrl: string
+  /** Gateway API origin — same-origin as the UI by default, so '' (relative) works. */
+  gatewayApiBaseUrl?: string
   intervalMs?: number
 }
 
-/** Renders the UI into `container`, starts polling the Server
- * API's health check, and wires the Wake button (Pi API)
- * and the Suspend button (Server API). Returns a cleanup function
+/** Renders the UI into `container`, starts polling the Compute
+ * API's health check, and wires the Wake button (Gateway API)
+ * and the Suspend button (Compute API). Returns a cleanup function
  * that stops polling. */
 export function mountUi(container: HTMLElement, options: MountOptions): () => void {
-  const { serverApiBaseUrl, piApiBaseUrl = '', intervalMs = DEFAULT_POLL_INTERVAL_MS } = options
+  const { computeApiBaseUrl, gatewayApiBaseUrl = '', intervalMs = DEFAULT_POLL_INTERVAL_MS } = options
 
   container.innerHTML = `
     <h1>Homelab Control</h1>
@@ -42,7 +42,7 @@ export function mountUi(container: HTMLElement, options: MountOptions): () => vo
 
   const poll = async () => {
     try {
-      const response = await fetch(`${serverApiBaseUrl}/health`)
+      const response = await fetch(`${computeApiBaseUrl}/health`)
       setState(response.ok ? 'reachable' : 'unreachable')
     } catch {
       setState('unreachable')
@@ -52,13 +52,13 @@ export function mountUi(container: HTMLElement, options: MountOptions): () => vo
   wakeButton.addEventListener('click', () => {
     // Fire-and-forget; swallow rejections so a network error here can't
     // surface as an unhandled promise rejection.
-    void fetch(`${piApiBaseUrl}/wake`, { method: 'POST' }).catch(() => {})
+    void fetch(`${gatewayApiBaseUrl}/wake`, { method: 'POST' }).catch(() => {})
   })
 
   suspendButton.addEventListener('click', () => {
     // Fire-and-forget, same rationale as the Wake button above. Suspend
-    // lives on the Server API (not the Pi API) — unlike Wake.
-    void fetch(`${serverApiBaseUrl}/suspend`, { method: 'POST' }).catch(() => {})
+    // lives on the Compute API (not the Gateway API) — unlike Wake.
+    void fetch(`${computeApiBaseUrl}/suspend`, { method: 'POST' }).catch(() => {})
   })
 
   void poll()

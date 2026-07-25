@@ -26,62 +26,64 @@ class InventorySettings(BaseSettings):
     # Deploy file, including deploy_tailscale.py itself (which installs and
     # joins Tailscale in the first place, so this can't assume Tailscale is
     # already reachable). Safe to leave as a plain LAN address permanently
-    # -- no separate "bootstrap value" needed -- as long as the Pi/server
-    # stay on the same local network as the dev machine, since that keeps
-    # working whether or not Tailscale is installed/joined yet.
-    pi_host: str = "pi-zero.tailnet"
-    pi_ssh_user: str = "pi"
-    server_host: str = "main-server.tailnet"
-    server_ssh_user: str = "admin"
+    # -- no separate "bootstrap value" needed -- as long as the
+    # gateway/compute devices stay on the same local network as the dev
+    # machine, since that keeps working whether or not Tailscale is
+    # installed/joined yet.
+    gateway_host: str = "pi-zero.tailnet"
+    gateway_ssh_user: str = "pi"
+    compute_host: str = "main-server.tailnet"
+    compute_ssh_user: str = "admin"
     # Each device's real Tailscale MagicDNS name
     # (<device>.<tailnet-name>.ts.net) once joined -- deliberately separate
-    # from pi_host/server_host above. Those are SSH targets and may well be
-    # a bare LAN IP; these two are used only to derive the *other* Deploy
-    # file's CORS allow-list / build-time origin (deploy_server_api.py's
-    # UI_ORIGIN, deploy_pi_api.py's VITE_SERVER_API_URL), which specifically
-    # needs the tailnet name since that's the only thing `tailscale serve`
-    # issues a valid HTTPS cert for.
-    pi_tailnet_host: str = "pi-zero.your-tailnet-name.ts.net"
-    server_tailnet_host: str = "main-server.your-tailnet-name.ts.net"
-    pi_test_host: str = "localhost"
-    pi_test_ssh_port: int = 2201
-    pi_test_ssh_user: str = "root"
-    server_test_host: str = "localhost"
-    server_test_ssh_port: int = 2202
-    server_test_ssh_user: str = "root"
+    # from gateway_host/compute_host above. Those are SSH targets and may
+    # well be a bare LAN IP; these two are used only to derive the *other*
+    # Deploy file's CORS allow-list / build-time origin
+    # (deploy_compute_api.py's UI_ORIGIN, deploy_gateway_api.py's
+    # VITE_COMPUTE_API_URL), which specifically needs the tailnet name
+    # since that's the only thing `tailscale serve` issues a valid HTTPS
+    # cert for.
+    gateway_tailnet_host: str = "pi-zero.your-tailnet-name.ts.net"
+    compute_tailnet_host: str = "main-server.your-tailnet-name.ts.net"
+    gateway_test_host: str = "localhost"
+    gateway_test_ssh_port: int = 2201
+    gateway_test_ssh_user: str = "root"
+    compute_test_host: str = "localhost"
+    compute_test_ssh_port: int = 2202
+    compute_test_ssh_user: str = "root"
 
 
 class TailscaleSettings(BaseSettings):
     tailscale_auth_key: str
 
 
-class PiApiSettings(BaseSettings):
-    pi_api_host: str = "127.0.0.1"
-    pi_api_port: int = 5000
+class GatewayApiSettings(BaseSettings):
+    gateway_api_host: str = "127.0.0.1"
+    gateway_api_port: int = 5000
 
 
-class PiApiSecrets(BaseSettings):
-    server_mac_address: str
+class GatewayApiSecrets(BaseSettings):
+    compute_mac_address: str
     grafana_cloud_loki_url: str
     grafana_cloud_loki_user: str
     grafana_cloud_loki_api_key: str
 
 
-class ServerApiSettings(BaseSettings):
-    server_api_host: str = "127.0.0.1"
-    server_api_port: int = 5000
+class ComputeApiSettings(BaseSettings):
+    compute_api_host: str = "127.0.0.1"
+    compute_api_port: int = 5000
 
 
-class ServerApiSecrets(BaseSettings):
+class ComputeApiSecrets(BaseSettings):
     grafana_cloud_loki_url: str
     grafana_cloud_loki_user: str
     grafana_cloud_loki_api_key: str
 
 
 class CaddySettings(BaseSettings):
-    main_server_host: str = "main-server.tailnet"
+    compute_host: str = "main-server.tailnet"
     ui_port: int = 8080
-    pi_api_port: int = 5000
+    gateway_api_port: int = 5000
     # No default (ADR-0011): the server-side proxy this points at doesn't
     # exist yet, so there's no real value to fall back to.
-    server_proxy_port: int
+    compute_proxy_port: int

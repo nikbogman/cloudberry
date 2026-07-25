@@ -27,13 +27,13 @@ actually running it (the same "highest available seam" testing philosophy
   `files.template` → `systemd.service(restarted=code_changed or
   unit.will_change, daemon_reload=unit.will_change)` — run against `@local`
   with `user_mode=True` so it needs no root (the real Control APIs use
-  system-mode units on `pi`/`server`; user-mode is a sandbox-only stand-in
-  for exercising the identical logic without privileged access).
+  system-mode units on `gateway`/`compute`; user-mode is a sandbox-only
+  stand-in for exercising the identical logic without privileged access).
 - Both used the real `templates/control-api.service.j2` unit template
   shape (minus the `User=` directive, which is invalid inside a user-mode
   unit — a systemd quirk specific to the demo's sandbox setup, not a
-  concern for the real system-mode units `deploy_control_pi_api.py`/
-  `deploy_control_server_api.py` install).
+  concern for the real system-mode units `deploy_control_gateway_api.py`/
+  `deploy_control_compute_api.py` install).
 
 ### Results
 
@@ -61,7 +61,7 @@ actually running it (the same "highest available seam" testing philosophy
 This is exactly ticket 04's required behavior — "restarts the service
 when a Deploy changes the pulled code or the unit file, and leaves it
 alone otherwise" — demonstrated end to end before
-`deploy_control_pi_api.py` (ticket 05) and `deploy_control_server_api.py`
+`deploy_control_gateway_api.py` (ticket 05) and `deploy_control_compute_api.py`
 (ticket 06) adopted the same helper.
 
 ### A note on `.will_change` vs `.did_change()`
@@ -90,7 +90,7 @@ downloaded fresh from Caddy's GitHub releases in this sandbox — no
 
 1. Rendered `templates/Caddyfile.j2` standalone (plain Jinja2, the values
    `deploy_caddy.py` would pass: two `WORKLOADS` entries, the UI
-   root/port, the Control Pi API port) to get real output, not inspected
+   root/port, the Control Gateway API port) to get real output, not inspected
    source.
 2. `caddy validate` against that rendered file with a **stock** binary
    (no plugins compiled in) fails with exactly one error: `wake_on_lan is
@@ -104,7 +104,7 @@ downloaded fresh from Caddy's GitHub releases in this sandbox — no
    call inside `handle_errors`), the **same stock binary reports `Valid
    configuration`** — confirming every directive this ticket actually
    added (the `{% for workload in workloads %}` site-block loop, and the
-   new UI/Control Pi API site's `handle`/`reverse_proxy`/
+   new UI/Control Gateway API site's `handle`/`reverse_proxy`/
    `root`/`file_server` block) is genuinely valid Caddyfile syntax, not
    just "looks right." The only unvalidated piece is the plugin-gated
    directive this file inherited unchanged from the already-verified
@@ -119,7 +119,7 @@ outside this Deploy file's scope.
 ## caddy-wake-plugin: `wake_plugin` validated live, `caddy-wol` retired
 
 ADR-0012 replaced `caddy-wol` with the in-repo `services/auto_wake_proxy/wake_plugin`
-module (the `call_wake_api` directive, calling the Control Pi API's
+module (the `call_wake_api` directive, calling the Control Gateway API's
 `/wake` instead of sending its own WoL packet). Unlike the `caddy-wol`
 line above, this one *was* actually compiled in and exercised:
 
@@ -129,7 +129,7 @@ line above, this one *was* actually compiled in and exercised:
    module yet).
 2. `caddy validate` against `templates/Caddyfile.j2` rendered with
    representative values reported `Valid configuration` with that binary.
-3. A live `caddy run` against that config, a fake Control Pi API (a
+3. A live `caddy run` against that config, a fake Control Gateway API (a
    throwaway HTTP server logging `POST /wake`), and a deliberately
    unreachable upstream: the first request to `/server*` triggered a
    `POST /wake` and returned 502 once the retry window elapsed; a second

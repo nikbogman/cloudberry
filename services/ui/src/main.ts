@@ -1,7 +1,7 @@
 import './style.css'
 import { mountUi } from './app'
 
-const serverApiBaseUrl = import.meta.env.VITE_SERVER_API_URL ?? ''
-const piApiBaseUrl = import.meta.env.VITE_PI_API_URL ?? ''
+const computeApiBaseUrl = import.meta.env.VITE_COMPUTE_API_URL ?? ''
+const gatewayApiBaseUrl = import.meta.env.VITE_GATEWAY_API_URL ?? ''
 
-mountUi(document.querySelector<HTMLDivElement>('#app')!, { serverApiBaseUrl, piApiBaseUrl })
+mountUi(document.querySelector<HTMLDivElement>('#app')!, { computeApiBaseUrl, gatewayApiBaseUrl })

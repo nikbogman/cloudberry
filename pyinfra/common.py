@@ -16,7 +16,7 @@ class DpkgArchitecture(FactBase):
     the host itself (no built-in pyinfra fact keyed to `dpkg`'s naming) so
     callers stay correct against whatever architecture a device actually
     runs, without hardcoding one. Shared by `deploy_docker.py` (Docker's
-    apt repo `arch=`) and `deploy_server_api.py`/`deploy_pi_api.py`
+    apt repo `arch=`) and `deploy_compute_api.py`/`deploy_gateway_api.py`
     (selecting the matching `GOARCH` for the off-device Go build,
     ADR-0015).
     """
@@ -52,9 +52,10 @@ def linux_codename(default: str = "bookworm") -> str:
 
 def has_device_role(*roles: str) -> bool:
     """Whether the current host has one of the given device roles
-    ("pi"/"server"), set as `device_role` host data in `inventory.py`.
-    Distinct from `host.groups`: true for both a real device and its
-    `test` stand-in, so a Deploy file's operations apply to both.
+    ("gateway"/"compute"), set as `device_role` host data in
+    `inventory.py`. Distinct from `host.groups`: true for both a real
+    device and its `test` stand-in, so a Deploy file's operations apply to
+    both.
     """
 
     return host.data.device_role in roles
