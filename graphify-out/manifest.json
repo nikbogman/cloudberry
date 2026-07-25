@@ -1,17 +1,12 @@
 {
   ".claude/settings.json": {
-    "mtime": 1784808112.1412086,
+    "mtime": 1784913343.452522,
     "ast_hash": "6f50a5949f57efa0cbeae0a943d73102",
     "semantic_hash": "6f50a5949f57efa0cbeae0a943d73102"
   },
-  "pyinfra/api_deploy.py": {
-    "mtime": 1784807409.0651717,
-    "ast_hash": "4a4e914f07354586691b8763e1fdf0f4",
-    "semantic_hash": "4a4e914f07354586691b8763e1fdf0f4"
-  },
   "pyinfra/common.py": {
-    "mtime": 1784907477.668168,
-    "ast_hash": "c9689201c7c039ac264c20fae1415791",
+    "mtime": 1784976565.2641714,
+    "ast_hash": "6769bfb457ed7392f3f875768b1f9295",
     "semantic_hash": ""
   },
   "pyinfra/deploy.py": {
@@ -25,18 +20,18 @@
     "semantic_hash": ""
   },
   "pyinfra/deploy_docker.py": {
-    "mtime": 1784754654.4455233,
-    "ast_hash": "572d7d748c350fe37251543f543046d5",
-    "semantic_hash": "572d7d748c350fe37251543f543046d5"
+    "mtime": 1784976576.108171,
+    "ast_hash": "f5978bcef54082422fe2f7561d3e12b1",
+    "semantic_hash": ""
   },
   "pyinfra/deploy_pi_api.py": {
-    "mtime": 1784911249.3684027,
-    "ast_hash": "74f3bcc5027169dcf44252388bdf1069",
+    "mtime": 1784976489.552168,
+    "ast_hash": "ce50e8ad6f2e93288d6515f6681fc4f7",
     "semantic_hash": ""
   },
   "pyinfra/deploy_server_api.py": {
-    "mtime": 1784911235.1964,
-    "ast_hash": "f73cb9fe68899c25b597690cc63cc1b5",
+    "mtime": 1784976594.624172,
+    "ast_hash": "76262629f0623f250f6b6db9aadb32ad",
     "semantic_hash": ""
   },
   "pyinfra/deploy_tailscale.py": {
@@ -55,48 +50,8 @@
     "semantic_hash": "9ca6a3ebaefc4db60669cb9185c05cdf"
   },
   "pyinfra/settings.py": {
-    "mtime": 1784911221.3123941,
-    "ast_hash": "3f977fc8fa8863e11160a69898b77d86",
-    "semantic_hash": ""
-  },
-  "services/pi-api/pyproject.toml": {
-    "mtime": 1784807245.9531631,
-    "ast_hash": "c1e72a5f126f306e3d38f9c7c7ada01a",
-    "semantic_hash": "c1e72a5f126f306e3d38f9c7c7ada01a"
-  },
-  "services/pi-api/src/pi_api/__init__.py": {
-    "mtime": 1784487349.1372871,
-    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
-    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
-  },
-  "services/pi-api/src/pi_api/app.py": {
-    "mtime": 1784851878.7299662,
-    "ast_hash": "4d16cc734e294e8673cc05a714a39f19",
-    "semantic_hash": ""
-  },
-  "services/pi-api/src/pi_api/wol.py": {
-    "mtime": 1784651263.7249599,
-    "ast_hash": "9fa703019a67e78be73a8d1107f394e3",
-    "semantic_hash": "9fa703019a67e78be73a8d1107f394e3"
-  },
-  "services/pi-api/src/pi_api/wsgi.py": {
-    "mtime": 1784851885.4699667,
-    "ast_hash": "230007e418b586533a9677bdeba49e33",
-    "semantic_hash": ""
-  },
-  "services/pi-api/tests/test_app.py": {
-    "mtime": 1784851901.3819675,
-    "ast_hash": "7a1bf0ea8a5856c230c7a87dfe35ed4b",
-    "semantic_hash": ""
-  },
-  "services/pi-api/tests/test_wol.py": {
-    "mtime": 1784807238.765163,
-    "ast_hash": "8fa397768964efea0a156f36b29d4b2d",
-    "semantic_hash": "8fa397768964efea0a156f36b29d4b2d"
-  },
-  "services/pi-api/tests/test_wsgi.py": {
-    "mtime": 1784851910.069968,
-    "ast_hash": "4168cde7bb0771c2df756e0affa33688",
+    "mtime": 1784976612.132173,
+    "ast_hash": "392d3681ca964f48693b5dd24b66396d",
     "semantic_hash": ""
   },
   "services/pi-proxy/wake_plugin/go.mod": {
@@ -123,76 +78,6 @@
     "mtime": 1784807343.197169,
     "ast_hash": "2942e6ce5c7ba2642e07ca62ecdd8dd2",
     "semantic_hash": "2942e6ce5c7ba2642e07ca62ecdd8dd2"
-  },
-  "services/server-api/pyproject.toml": {
-    "mtime": 1784807248.0451632,
-    "ast_hash": "bf341b1e9e8fcee733a9726495917bd2",
-    "semantic_hash": "bf341b1e9e8fcee733a9726495917bd2"
-  },
-  "services/server-api/src/server_api/__init__.py": {
-    "mtime": 1784486674.7612665,
-    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
-    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
-  },
-  "services/server-api/src/server_api/app.py": {
-    "mtime": 1784851923.0219688,
-    "ast_hash": "e982e26cb842f72a8c26cec6622011e6",
-    "semantic_hash": ""
-  },
-  "services/server-api/src/server_api/suspend.py": {
-    "mtime": 1784651284.184961,
-    "ast_hash": "a4cf8659479e0abd508f4e3206e03b21",
-    "semantic_hash": "a4cf8659479e0abd508f4e3206e03b21"
-  },
-  "services/server-api/src/server_api/wsgi.py": {
-    "mtime": 1784851928.8659692,
-    "ast_hash": "9b9c4d5d3712c8a8a6cc8832fe245ed6",
-    "semantic_hash": ""
-  },
-  "services/server-api/tests/test_app.py": {
-    "mtime": 1784851948.409971,
-    "ast_hash": "e0e5fe2f95bdaca36edde32c193cdb89",
-    "semantic_hash": ""
-  },
-  "services/server-api/tests/test_suspend.py": {
-    "mtime": 1784807238.769163,
-    "ast_hash": "778bbc9c81fc085785e2b1d05ab8f6bb",
-    "semantic_hash": "778bbc9c81fc085785e2b1d05ab8f6bb"
-  },
-  "services/server-api/tests/test_wsgi.py": {
-    "mtime": 1784851959.005972,
-    "ast_hash": "2903c21b7e02841f713cc5161b28ca90",
-    "semantic_hash": ""
-  },
-  "services/shared/pyproject.toml": {
-    "mtime": 1784849306.4458086,
-    "ast_hash": "635804cdc15c04505792be3cec740f8c",
-    "semantic_hash": ""
-  },
-  "services/shared/src/control_plane_shared/__init__.py": {
-    "mtime": 1784470983.762892,
-    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
-    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
-  },
-  "services/shared/src/control_plane_shared/auth.py": {
-    "mtime": 1784807506.249179,
-    "ast_hash": "0c4c6c3d8ae1595ec86fc4e41d410c66",
-    "semantic_hash": "0c4c6c3d8ae1595ec86fc4e41d410c66"
-  },
-  "services/shared/src/control_plane_shared/bind_safety.py": {
-    "mtime": 1784651251.9689589,
-    "ast_hash": "db8694215f9632b117d24a688c6071ee",
-    "semantic_hash": "db8694215f9632b117d24a688c6071ee"
-  },
-  "services/shared/tests/test_auth.py": {
-    "mtime": 1784804698.032997,
-    "ast_hash": "3d9d721fa751c6ea95dc2e9a990160d7",
-    "semantic_hash": "3d9d721fa751c6ea95dc2e9a990160d7"
-  },
-  "services/shared/tests/test_bind_safety.py": {
-    "mtime": 1784651253.580959,
-    "ast_hash": "2fb8161618f34d21246cc426200d2edd",
-    "semantic_hash": "2fb8161618f34d21246cc426200d2edd"
   },
   ".claude/CLAUDE.md": {
     "mtime": 1784808084.2452078,
@@ -345,8 +230,8 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1784829220.5932543,
-    "ast_hash": "55ffe5b4d8914b4e4ceef052c1f38d79",
+    "mtime": 1784982572.4045415,
+    "ast_hash": "6978472b37b684c2dd626d344301b793",
     "semantic_hash": ""
   },
   "docs/adr/0001-direct-browser-to-api-no-relay.md": {
@@ -425,8 +310,8 @@
     "semantic_hash": ""
   },
   "docs/agents/pyinfra.md": {
-    "mtime": 1784810757.7173805,
-    "ast_hash": "faa05b1c6fc7c7c5cecef44042f132ff",
+    "mtime": 1784976970.240201,
+    "ast_hash": "991b6b58461ad61b4f0c6da16e7e4047",
     "semantic_hash": ""
   },
   "docs/agents/triage-labels.md": {
@@ -435,28 +320,13 @@
     "semantic_hash": "0d3351531db0a1328a6e6530912e36f8"
   },
   "pyinfra/README.md": {
-    "mtime": 1784911312.0203962,
-    "ast_hash": "db2fea60f0be85b5027a700964cc12be",
-    "semantic_hash": ""
-  },
-  "services/pi-api/README.md": {
-    "mtime": 1784852006.093975,
-    "ast_hash": "9d643cedd7656f97aaf67401b68949e2",
+    "mtime": 1784976924.6801987,
+    "ast_hash": "4f72a7013425d4e1bf1ae8647906c98e",
     "semantic_hash": ""
   },
   "services/pi-proxy/wake_plugin/README.md": {
     "mtime": 1784829319.0252628,
     "ast_hash": "67621f21756f1bfb76c04046cb31e0df",
-    "semantic_hash": ""
-  },
-  "services/server-api/README.md": {
-    "mtime": 1784852020.549976,
-    "ast_hash": "cd45780d0053da819ef6146724788a8d",
-    "semantic_hash": ""
-  },
-  "services/shared/README.md": {
-    "mtime": 1784852026.3379765,
-    "ast_hash": "5c46a3b08e3556999193c6e9c341e9dc",
     "semantic_hash": ""
   },
   "services/ui/package.json": {
@@ -509,24 +379,114 @@
     "ast_hash": "94bd8a39dd90cf2cea74b42767316e11",
     "semantic_hash": ""
   },
-  "services/shared/src/control_plane_shared/grafana_cloud.py": {
-    "mtime": 1784851856.6259642,
-    "ast_hash": "221dd12a68182781927465b1cf74a78d",
-    "semantic_hash": ""
-  },
-  "services/shared/tests/test_grafana_cloud.py": {
-    "mtime": 1784851866.5499651,
-    "ast_hash": "6819fd9f386aa769fdfbc55899ac2b0c",
-    "semantic_hash": ""
-  },
   "docs/adr/0014-events-shipped-directly-to-grafana-cloud.md": {
     "mtime": 1784851977.6459732,
     "ast_hash": "1dfe15f857c2f0a95724d6bc43d8eb32",
     "semantic_hash": ""
   },
   "pyinfra/deploy.sh": {
-    "mtime": 1784906906.020127,
-    "ast_hash": "d9d78da2cd1ec9cb474fcdb28b55867d",
+    "mtime": 1784912479.5284576,
+    "ast_hash": "b56337062d7f9d18353dbad085a0eea1",
+    "semantic_hash": ""
+  },
+  "pyinfra/go_deploy.py": {
+    "mtime": 1784976474.288163,
+    "ast_hash": "bc4ad5a19fd50cd96369b343093dca15",
+    "semantic_hash": ""
+  },
+  "services/cmd/pi-api/main.go": {
+    "mtime": 1784982517.9725356,
+    "ast_hash": "c6c95fca2f6f7a73d24f17438d86f8bd",
+    "semantic_hash": ""
+  },
+  "services/cmd/server-api/main.go": {
+    "mtime": 1784982528.0845375,
+    "ast_hash": "bf017c8596bf5773cbe27b0f78fa636c",
+    "semantic_hash": ""
+  },
+  "services/go.mod": {
+    "mtime": 1784975986.7001402,
+    "ast_hash": "f73cf45b05998479e93d24d9ea33b73d",
+    "semantic_hash": ""
+  },
+  "services/internal/piapi/wol.go": {
+    "mtime": 1784976147.4641442,
+    "ast_hash": "ae6488facdf34cf96161991de7bfaba8",
+    "semantic_hash": ""
+  },
+  "services/internal/piapi/wol_test.go": {
+    "mtime": 1784976177.0601456,
+    "ast_hash": "c9ebf08acb682e3f0b5a173911f9ec23",
+    "semantic_hash": ""
+  },
+  "services/internal/serverapi/suspend.go": {
+    "mtime": 1784976264.4321501,
+    "ast_hash": "a2a9c77b7e7c38ae110126086c0acfd3",
+    "semantic_hash": ""
+  },
+  "services/internal/serverapi/suspend_test.go": {
+    "mtime": 1784976277.4841506,
+    "ast_hash": "925bd6ec446c107237239357e6bb7b39",
+    "semantic_hash": ""
+  },
+  "docs/adr/0015-pi-api-and-server-api-rewritten-in-go-built-off-device.md": {
+    "mtime": 1784982642.8925471,
+    "ast_hash": "784c9a89e2d5726edd7a19590fd7c81c",
+    "semantic_hash": ""
+  },
+  "services/README.md": {
+    "mtime": 1784982615.5525448,
+    "ast_hash": "16c84d24118b1025e93fb5bcf789a989",
+    "semantic_hash": ""
+  },
+  "services/internal/eventlog/grafanacloud.go": {
+    "mtime": 1784982413.348526,
+    "ast_hash": "62837dd31f99b94700a6a6ac8a53c3e9",
+    "semantic_hash": ""
+  },
+  "services/internal/eventlog/grafanacloud_test.go": {
+    "mtime": 1784982424.5925267,
+    "ast_hash": "77dfcc4a7fa376f483e83803936d4f48",
+    "semantic_hash": ""
+  },
+  "services/internal/piapi/handler.go": {
+    "mtime": 1784982448.1325283,
+    "ast_hash": "76eef5caf196555894d146174a97b73c",
+    "semantic_hash": ""
+  },
+  "services/internal/piapi/handler_test.go": {
+    "mtime": 1784982474.1285303,
+    "ast_hash": "21b411c7c4b71a13ad9bf0fee721b006",
+    "semantic_hash": ""
+  },
+  "services/internal/serverapi/handler.go": {
+    "mtime": 1784982493.868533,
+    "ast_hash": "0fa900f31d41327fc1a40659aa02e02e",
+    "semantic_hash": ""
+  },
+  "services/internal/serverapi/handler_test.go": {
+    "mtime": 1784982507.5725348,
+    "ast_hash": "793fd1b7dae5e82fa06f2481c834a65e",
+    "semantic_hash": ""
+  },
+  "services/internal/tailnet/auth.go": {
+    "mtime": 1784982383.7165248,
+    "ast_hash": "e8217f5a4996b42a3536c014361cbe30",
+    "semantic_hash": ""
+  },
+  "services/internal/tailnet/auth_test.go": {
+    "mtime": 1784982398.4805253,
+    "ast_hash": "7283070d08ec012cc7f8e90cc2cdbde9",
+    "semantic_hash": ""
+  },
+  "services/internal/tailnet/bindsafety.go": {
+    "mtime": 1784982389.4125247,
+    "ast_hash": "8c29000105db64a3313b6ade80fc4291",
+    "semantic_hash": ""
+  },
+  "services/internal/tailnet/bindsafety_test.go": {
+    "mtime": 1784982407.4885256,
+    "ast_hash": "455c8974695637e3b9aca1816ff18bec",
     "semantic_hash": ""
   }
 }

@@ -19,7 +19,7 @@ pyinfra/
   settings.py                     # pydantic-settings classes -- typed env var config
   deploy_tailscale.py             # ticket 02
   deploy_docker.py                # ticket 03
-  api_deploy.py                   # shared git+systemd @deploy helper (ticket 04)
+  go_deploy.py                    # shared off-device Go build+ship+systemd helper (ADR-0015)
   deploy_pi_api.py                # ticket 05 (+ UI static delivery)
   deploy_server_api.py            # ticket 06
   deploy_caddy.py                 # ticket 07, binary build+ship added by ADR-0013
@@ -27,14 +27,14 @@ pyinfra/
   deploy.sh                       # wrapper: loads secrets.sh, resolves short Deploy-file names
   secrets.sh.example               # checked-in template -- copy to secrets.sh (gitignored)
   templates/
-    api.service.j2                 # systemd unit template, both the Pi API and Server API
+    binary.service.j2              # systemd unit template, both the Pi API and Server API (ADR-0015)
     caddy.service.j2               # systemd unit template for caddy (ADR-0013)
     Caddyfile.j2                  # the Pi's complete Caddy config
 ```
 
 **Run every command from inside this directory** (`cd pyinfra/` first).
 Deploy files import from sibling modules (`from common import ...`,
-`from api_deploy import ...`) and `files.template` resolves
+`from go_deploy import ...`) and `files.template` resolves
 `templates/*.j2` relative to the current working directory — both need
 `pyinfra/` on `sys.path`/as cwd, which pyinfra only does automatically for
 the directory it's actually invoked from. (Running from the repo root
@@ -45,10 +45,12 @@ by the `cd pyinfra/` convention.)
 
 ## Setup
 
-An independent [uv](https://docs.astral.sh/uv/) project, like the two
-Flask services, but not an installable package (`[tool.uv] package =
-false` in `pyproject.toml`) -- it's a directory of scripts pyinfra's CLI
-executes, not a Python package anything imports:
+An independent [uv](https://docs.astral.sh/uv/) project, but not an
+installable package (`[tool.uv] package = false` in `pyproject.toml`) --
+it's a directory of scripts pyinfra's CLI executes, not a Python package
+anything imports. Also requires a Go toolchain on the dev machine (for the
+Pi API/Server API builds, ADR-0015, and the `wake_plugin`-enabled Caddy
+build, ADR-0013) and `xcaddy` for the latter:
 
 ```sh
 cd pyinfra
@@ -113,12 +115,14 @@ HTTPS cert for, so a LAN IP origin would break CORS/HTTPS.
 |---|---|---|
 | `TAILSCALE_AUTH_KEY` | *(required to join)* | Tailnet auth key, never committed |
 
-### deploy_pi_api.py (`DeploySourceSettings`, `PiApiSettings`, `PiApiSecrets`)
+### deploy_pi_api.py (`PiApiSettings`, `PiApiSecrets`)
+
+Cross-compiles `services/cmd/pi-api` for the Pi Zero W (`GOOS=linux
+GOARCH=arm GOARM=6`) on the dev machine and ships only the binary --
+there's no repo to pull or ref to check out on-device anymore (ADR-0015).
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `HOMELAB_REPO_URL` | `git@github.com:nikbogman/homelab.git` | Repo the Pi API is pulled from |
-| `DEPLOY_REF` | `main` | Ref/commit checked out on-device |
 | `PI_API_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address for the Pi API |
 | `SERVER_MAC_ADDRESS` | *(required)* | WoL target MAC for the Pi API |
 | `GRAFANA_CLOUD_LOKI_URL` | *(required)* | Grafana Cloud's Loki push endpoint -- events are POSTed here directly (ADR-0014) |
@@ -129,12 +133,16 @@ HTTPS cert for, so a LAN IP origin would break CORS/HTTPS.
 `https://{SERVER_TAILNET_HOST}`, derived from `InventorySettings` rather
 than its own separately-set secret.
 
-### deploy_server_api.py (`DeploySourceSettings`, `ServerApiSettings`, `ServerApiSecrets`)
+### deploy_server_api.py (`ServerApiSettings`, `ServerApiSecrets`)
+
+Cross-compiles `services/cmd/server-api` on the dev machine and ships only
+the binary, same as the Pi API (ADR-0015) -- `GOARCH` is read from the
+device's real architecture (`common.DpkgArchitecture`) rather than
+hardcoded, since unlike the Pi Zero W, `server` isn't a fixed known
+device.
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `HOMELAB_REPO_URL` | `git@github.com:nikbogman/homelab.git` | Repo the Server API is pulled from |
-| `DEPLOY_REF` | `main` | Ref/commit checked out on-device |
 | `SERVER_API_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address for the Server API |
 | `GRAFANA_CLOUD_LOKI_URL` | *(required)* | Grafana Cloud's Loki push endpoint -- events are POSTed here directly (ADR-0014) |
 | `GRAFANA_CLOUD_LOKI_USER` | *(required)* | Grafana Cloud Loki basic-auth username (the stack's numeric instance/user ID) |

@@ -40,13 +40,9 @@
   "38": "Pyinfra Host Groups",
   "39": "Control UI Favicon",
   "40": "Vite Config",
-  "41": "Package Init File",
-  "42": "Package Init File",
-  "43": "Package Init File",
-  "44": "wsgi.py (env config)",
+  "41": "AssertTailnetOnlyBind",
   "45": "vite.config.ts",
   "46": "0013-caddy-binary-built-off-device-by-pyinfra.md",
-  "47": "0014-events-shipped-directly-to-grafana-cloud.md",
   "48": "wake_plugin README",
   "49": "deploy.sh script"
 }

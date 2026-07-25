@@ -6,11 +6,9 @@ file (no `env_file`) -- ADR-0010 already considered and rejected a
 file-based secrets store; these classes are a typed wrapper around plain
 environment variables, not a new persistence mechanism.
 
-One settings class per Deploy file's needs, plus `DeploySourceSettings`
-shared by both the Pi API and Server API Deploy files (they pull the same
-repo via the same `api_deploy.git_systemd_service` helper). Fields with no
-default are required -- pydantic-settings raises a `ValidationError`
-listing every missing one at once if they're absent.
+One settings class per Deploy file's needs. Fields with no default are
+required -- pydantic-settings raises a `ValidationError` listing every
+missing one at once if they're absent.
 
 Deploy files that only need certain settings when actually targeting a
 given device (`has_device_role(...)`) construct the relevant class lazily
@@ -55,13 +53,6 @@ class InventorySettings(BaseSettings):
 
 class TailscaleSettings(BaseSettings):
     tailscale_auth_key: str
-
-
-class DeploySourceSettings(BaseSettings):
-    """Where both the Pi API and Server API Deploy files pull this repo from."""
-
-    homelab_repo_url: str = "git@github.com:nikbogman/homelab.git"
-    deploy_ref: str = "main"
 
 
 class PiApiSettings(BaseSettings):

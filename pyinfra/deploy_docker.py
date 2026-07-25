@@ -21,31 +21,17 @@ Docker's current docs pin the repo to `Architectures: $(dpkg
 --print-architecture)` rather than leaving it unbounded, since one
 `deb`/DEB822 entry serves every architecture Docker publishes -- the same
 `arch=` option on the classic one-line format pyinfra's `apt.repo`
-understands. Read from the host itself (a custom fact, since pyinfra has
-no built-in one keyed to `dpkg`'s naming -- `server.Arch` wraps `uname -m`,
-which uses different names, e.g. "x86_64" instead of "amd64") so this stays
-correct against whatever architecture `server`/`server-test` actually run,
-without hardcoding one.
+understands. Read from the host itself (`common.DpkgArchitecture`, since
+pyinfra has no built-in fact keyed to `dpkg`'s naming -- `server.Arch` wraps
+`uname -m`, which uses different names, e.g. "x86_64" instead of "amd64")
+so this stays correct against whatever architecture `server`/`server-test`
+actually run, without hardcoding one.
 """
 
 from pyinfra import host
-from pyinfra.api import FactBase
 from pyinfra.operations import apt, systemd
 
-from common import has_device_role, linux_codename, linux_distro_id
-
-
-class DpkgArchitecture(FactBase):
-    """Native apt architecture (e.g. "amd64", "arm64") per `dpkg
-    --print-architecture` -- the naming Docker's apt repo `arch=`/DEB822
-    `Architectures:` fields expect, distinct from `uname -m`'s naming.
-    """
-
-    def command(self) -> str:
-        return "dpkg --print-architecture"
-
-    def process(self, output: list[str]) -> str:
-        return "\n".join(output).strip()
+from common import DpkgArchitecture, has_device_role, linux_codename, linux_distro_id
 
 
 if has_device_role("server"):

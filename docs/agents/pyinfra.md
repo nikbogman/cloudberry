@@ -35,7 +35,7 @@ pyinfra/
   inventory.py                    # pi / server / test groups
   deploy_tailscale.py             # Concern (02)
   deploy_docker.py                # Concern (03)
-  api_deploy.py                   # shared @deploy helper (04)
+  go_deploy.py                    # shared @deploy helper (04, revised by ADR-0015 -- see note below)
   deploy_pi_api.py                # Concern (05)
   deploy_server_api.py            # Concern (06)
   deploy_caddy.py                 # Concern (07)
@@ -143,6 +143,17 @@ files.template(
 Idempotency/diffing mechanism for `files.template` isn't spelled out in prose on that page; pyinfra's general model (confirmed by live testing below) is: render the template during prepare, diff against the current remote file content, and only write if different — a second run with unchanged inputs reports "No Change".
 
 ## Reusable multi-operation units: `@deploy` (ticket 04)
+
+The worked example below (`git_systemd_service`) is ticket 04's original
+shape: git-pull the repo to the device, template a unit, restart on
+change. It's kept here as-is because it's still a clean illustration of
+`@deploy`, `git.repo`, and the `.did_change`-gated restart pattern. It is
+**not** what `pi-api`/`server-api` actually run anymore, though: since
+ADR-0015 rewrote both in Go, there's no source tree to pull or
+dependencies to install on-device, so the real current helper
+(`go_deploy.go_binary_systemd_service`) cross-compiles on the dev machine
+and ships a binary instead of `git.repo`-ing a source checkout. Same
+`@deploy`/`.will_change`-gated-restart shape, different first two steps.
 
 ```python
 from pyinfra.api import deploy

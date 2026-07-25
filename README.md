@@ -22,10 +22,10 @@ Two physical devices on the same tailnet and the same LAN broadcast domain:
 ```
 
 - **[UI](services/ui)** — the browser app. Polls reachability, offers Wake/Suspend buttons. The only user-facing surface.
-- **[Pi API](services/pi-api)** — sends a deliberate Wake-on-LAN packet when the Wake button is pressed.
-- **[Server API](services/server-api)** — exposes the Suspend action and the reachability health check the UI polls.
+- **[Pi API](services/README.md#pi-api)** — sends a deliberate Wake-on-LAN packet when the Wake button is pressed.
+- **[Server API](services/README.md#server-api)** — exposes the Suspend action and the reachability health check the UI polls.
 - **[Pi proxy](services/pi-proxy)** — a Caddy config on the Pi that reverse-proxies every workload service and transparently triggers the Pi API's wake action on any request while the server is asleep ([ADR-0012](docs/adr/0012-auto-wake-proxy-calls-control-pi-api.md)).
-- **[shared](services/shared)** — the auth and bind-safety library both Flask apps depend on.
+- **[tailnet](services/README.md#internal-tailnet)** and **[eventlog](services/README.md#internal-eventlog)** — the identity-auth/bind-safety and Grafana Cloud event-logging libraries both Go binaries depend on.
 
 Auth for every control-plane endpoint is the `Tailscale-User-Login` header injected by `tailscale serve`: tailnet membership is the entire authorization boundary, with no separate allow-list ([ADR-0004](docs/adr/0004-tailnet-membership-authorization.md)).
 
@@ -39,9 +39,11 @@ docs/adr/                architectural decisions
 docs/agents/              how agent skills should use this repo's docs
 services/
   ui/                      browser SPA (TypeScript + Vite)
-  pi-api/                  Flask app on the Pi (Wake)
-  server-api/              Flask app on the server (Suspend, health)
-  shared/                  shared Python library for the two Flask apps
+  go.mod                   one Go module for the two control-plane binaries below
+  cmd/pi-api/              Go binary on the Pi (Wake)
+  cmd/server-api/          Go binary on the server (Suspend, health)
+  internal/tailnet/        shared Go package: identity-header auth, bind-safety
+  internal/eventlog/       shared Go package: Grafana Cloud event logging
   pi-proxy/                Caddy config for transparent per-workload wake
 pyinfra/                   declarative provisioning (pyinfra) for the Pi and server
 .scratch/                  specs and issues for in-progress/planned features
@@ -55,13 +57,11 @@ The control system itself (UI, both the Pi API and Server API, the Pi proxy) is 
 
 ## Development
 
-Each Python service (`pi-api`, `server-api`, `shared`) is an independent [uv](https://docs.astral.sh/uv/) project with its own virtualenv; the two apps pull in `shared` via an editable path dependency. `ui` is a separate npm project. There's no root-level build — work inside each service's directory. See each service's README for exact commands:
+The Pi API and Server API are one Go module (`services/go.mod`) with the shared `tailnet`/`eventlog` packages and both binaries as packages underneath it — `go test ./...`/`go build ./...` from `services/` covers both. `ui` is a separate npm project. `pyinfra/` is an independent `uv` project (not an installable package). There's no single root-level build across all three. See:
 
-- [services/shared/README.md](services/shared/README.md)
-- [services/pi-api/README.md](services/pi-api/README.md)
-- [services/server-api/README.md](services/server-api/README.md)
+- [services/README.md](services/README.md)
 - [services/ui/README.md](services/ui/README.md)
-- [pyinfra/README.md](pyinfra/README.md) — also an independent `uv` project, but not an installable package
+- [pyinfra/README.md](pyinfra/README.md)
 
 ## Working with this repo as an agent
 

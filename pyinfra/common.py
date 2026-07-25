@@ -10,6 +10,24 @@ from pyinfra.api import FactBase
 from pyinfra.facts.server import LinuxDistribution
 
 
+class DpkgArchitecture(FactBase):
+    """Native apt architecture (e.g. "amd64", "arm64") per `dpkg
+    --print-architecture` -- distinct from `uname -m`'s naming. Read from
+    the host itself (no built-in pyinfra fact keyed to `dpkg`'s naming) so
+    callers stay correct against whatever architecture a device actually
+    runs, without hardcoding one. Shared by `deploy_docker.py` (Docker's
+    apt repo `arch=`) and `deploy_server_api.py`/`deploy_pi_api.py`
+    (selecting the matching `GOARCH` for the off-device Go build,
+    ADR-0015).
+    """
+
+    def command(self) -> str:
+        return "dpkg --print-architecture"
+
+    def process(self, output: list[str]) -> str:
+        return "\n".join(output).strip()
+
+
 def linux_distro_id(default: str = "debian") -> str:
     """`ID` from `/etc/os-release` (e.g. "debian" on Raspberry Pi OS,
     "ubuntu" on Ubuntu Server) -- both are Debian-family, but vendor apt

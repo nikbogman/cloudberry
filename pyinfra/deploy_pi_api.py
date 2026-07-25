@@ -1,9 +1,11 @@
 """Deploys the Pi API to `pi`, plus delivers the UI's static build.
 
-Uses the shared helper to pull this repo to a specific ref and run the
-Pi API as an enabled systemd service. Also builds the UI on the
+Cross-compiles the Pi API's Go binary on the dev machine and ships only
+the compiled binary to `pi` -- the Pi Zero W never runs a Go toolchain
+(ADR-0013, extended to this app by ADR-0015). Also builds the UI on the
 dev machine (`npm ci && npm run build`) and syncs only its static `dist/`
-to `pi` -- the Pi never runs a Node/npm toolchain. Targetable in isolation:
+to `pi` -- the Pi never runs a Node/npm toolchain either. Targetable in
+isolation:
 
     pyinfra inventory.py deploy_pi_api.py --limit pi
     pyinfra inventory.py deploy_pi_api.py --limit pi --dry
@@ -21,47 +23,47 @@ Required dev-machine env vars (fail fast if missing, only when targeting
 `pi`/its `test` stand-in): `SERVER_MAC_ADDRESS` and the `GRAFANA_CLOUD_LOKI_*`
 trio (the Pi API's own config).
 
-Note on `--dry`: the UI build (`local.shell` below) always runs,
-even under `--dry` -- pyinfra's dry-run guarantee only covers remote
-operations, not a local build step. It never touches `pi`, but isn't a
-true no-op.
+Note on `--dry`: the UI build (`local.shell` below) and the Go binary
+build (inside `go_binary_systemd_service`) always run, even under `--dry`
+-- pyinfra's dry-run guarantee only covers remote operations, not a local
+build step. Neither touches `pi`, but isn't a true no-op.
 """
 
 from pyinfra import local
 from pyinfra.operations import files
 
 from common import has_device_role
-from api_deploy import git_systemd_service
-from settings import DeploySourceSettings, InventorySettings, PiApiSecrets, PiApiSettings
+from go_deploy import go_binary_systemd_service
+from settings import InventorySettings, PiApiSecrets, PiApiSettings
 
-source = DeploySourceSettings()
 api_settings = PiApiSettings()
 inventory = InventorySettings()
-CLONE_DEST = "/srv/homelab"
-APP_DIR = f"{CLONE_DEST}/services/pi-api"
 
 if has_device_role("pi"):
     secrets = PiApiSecrets()
 
-    git_systemd_service(
-        repo_url=source.homelab_repo_url,
-        ref=source.deploy_ref,
-        dest=CLONE_DEST,
-        working_directory=APP_DIR,
+    # Pi Zero W is single-core ARM1176 (armv6) -- GOARM=6. A Pi Zero 2 W
+    # would need GOARCH=arm64 (or GOARCH=arm GOARM=7 on a 32-bit OS)
+    # instead; update this if the real device ever changes (same note as
+    # deploy_caddy.py's wake_plugin build).
+    go_binary_systemd_service(
+        module_dir="../services",
+        package="./cmd/pi-api",
+        goos="linux",
+        goarch="arm",
+        goarm="6",
+        binary_name="pi-api",
+        remote_binary="/usr/local/bin/pi-api",
         unit_name="pi-api.service",
         description="Pi API -- sends Wake-on-LAN to the main server",
-        start_command=(
-            f"uv run flask --app pi_api.wsgi run "
-            f"--host {api_settings.pi_api_host} --port {api_settings.pi_api_port}"
-        ),
         environment={
             "SERVER_MAC_ADDRESS": secrets.server_mac_address,
             "PI_API_HOST": api_settings.pi_api_host,
+            "PI_API_PORT": str(api_settings.pi_api_port),
             "GRAFANA_CLOUD_LOKI_URL": secrets.grafana_cloud_loki_url,
             "GRAFANA_CLOUD_LOKI_USER": secrets.grafana_cloud_loki_user,
             "GRAFANA_CLOUD_LOKI_API_KEY": secrets.grafana_cloud_loki_api_key,
         },
-        setup_commands=["uv sync"],
     )
 
     # VITE_SERVER_API_URL bakes in the real origin so the browser calls the

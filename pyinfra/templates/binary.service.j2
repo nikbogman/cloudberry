@@ -1,0 +1,17 @@
+[Unit]
+Description={{ description }}
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+{% for key, value in environment.items() %}
+Environment={{ key }}={{ value }}
+{% endfor %}
+ExecStart={{ binary_path }}
+Restart=on-failure
+RestartSec=5
+User={{ run_as_user }}
+
+[Install]
+WantedBy=multi-user.target
