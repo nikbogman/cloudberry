@@ -3,9 +3,9 @@
 Declarative provisioning for the homelab control plane, per
 `.scratch/pyinfra-provisioning/spec.md`. Converges the Gateway (`gateway`,
 the Pi Zero) and the compute host (`compute`) to their declared state:
-Tailscale joined, Docker installed on `compute`, the full Caddy config
-templated on `gateway`, and both the Gateway API and Compute API (plus the
-UI's static build) deployed as systemd services. Domain vocabulary
+Tailscale joined, Docker installed on `compute`, and both the Gateway API
+and Compute API (plus the UI's static build) deployed as systemd services.
+Domain vocabulary
 (Deploy, Deploy file, Host group) is defined in the root
 [`CONTEXT.md`](../CONTEXT.md); pyinfra-specific implementation notes and
 citations live in [`docs/agents/pyinfra.md`](../docs/agents/pyinfra.md).
@@ -20,16 +20,13 @@ pyinfra/
   deploy_tailscale.py             # ticket 02
   deploy_docker.py                # ticket 03
   go_deploy.py                    # shared off-device Go build+ship+systemd helper (ADR-0015)
-  deploy_gateway_api.py           # ticket 05 (+ UI static delivery)
+  deploy_gateway.py               # ticket 05 (+ UI static delivery), absorbed Caddy's job (ADR-0016)
   deploy_compute_api.py           # ticket 06
-  deploy_caddy.py                 # ticket 07, binary build+ship added by ADR-0013
   deploy.py                       # entrypoint composing everything (ticket 08)
   deploy.sh                       # wrapper: loads secrets.sh, resolves short Deploy-file names
   secrets.sh.example               # checked-in template -- copy to secrets.sh (gitignored)
   templates/
-    binary.service.j2              # systemd unit template, both the Gateway API and Compute API (ADR-0015)
-    caddy.service.j2               # systemd unit template for caddy (ADR-0013)
-    Caddyfile.j2                  # the Gateway's complete Caddy config
+    binary.service.j2              # systemd unit template, the Gateway API and Compute API (ADR-0015)
 ```
 
 **Run every command from inside this directory** (`cd pyinfra/` first).
@@ -48,9 +45,8 @@ by the `cd pyinfra/` convention.)
 An independent [uv](https://docs.astral.sh/uv/) project, but not an
 installable package (`[tool.uv] package = false` in `pyproject.toml`) --
 it's a directory of scripts pyinfra's CLI executes, not a Python package
-anything imports. Also requires a Go toolchain on the dev machine (for the
-Gateway API/Compute API builds, ADR-0015, and the `wake_plugin`-enabled
-Caddy build, ADR-0013) and `xcaddy` for the latter:
+anything imports. Also requires a Go toolchain on the dev machine, for the
+Gateway API/Compute API builds (ADR-0015):
 
 ```sh
 cd pyinfra
@@ -103,7 +99,7 @@ gateway/compute devices stay on the same local network as the dev machine
 -- no separate "bootstrap value" needed.
 
 `GATEWAY_TAILNET_HOST`/`COMPUTE_TAILNET_HOST` are deliberately separate:
-both `deploy_compute_api.py` and `deploy_gateway_api.py` derive the
+both `deploy_compute_api.py` and `deploy_gateway.py` derive the
 other's browser-facing origin from these two
 (`https://{gateway_tailnet_host}`, `https://{compute_tailnet_host}`),
 since that's exactly what each device's own `tailscale serve` instance
@@ -117,16 +113,20 @@ origin would break CORS/HTTPS.
 |---|---|---|
 | `TAILSCALE_AUTH_KEY` | *(required to join)* | Tailnet auth key, never committed |
 
-### deploy_gateway_api.py (`GatewayApiSettings`, `GatewayApiSecrets`)
+### deploy_gateway.py (`GatewaySettings`, `GatewaySecrets`)
 
-Cross-compiles `services/cmd/gateway-api` for the Pi Zero W (`GOOS=linux
+Cross-compiles `services/cmd/gateway` for the Pi Zero W (`GOOS=linux
 GOARCH=arm GOARM=6`) on the dev machine and ships only the binary --
 there's no repo to pull or ref to check out on-device anymore (ADR-0015).
+Since ADR-0016 removed Caddy from the Gateway, this is also the only
+Deploy file for the device -- no separate Caddy build/template step.
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `GATEWAY_API_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address for the Gateway API |
+| `GATEWAY_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address for the Gateway API |
 | `COMPUTE_MAC_ADDRESS` | *(required)* | WoL target MAC for the Gateway API |
+| `COMPUTE_HOST` | `main-server.tailnet` | Host the `/server*` route forwards to |
+| `COMPUTE_PROXY_PORT` | *(required)* | Port on `COMPUTE_HOST` that `/server*` forwards to (path stripped) -- [ADR-0011](../docs/adr/0011-server-owns-workload-routing.md); no default since the server-side proxy it points at doesn't exist yet |
 | `GRAFANA_CLOUD_LOKI_URL` | *(required)* | Grafana Cloud's Loki push endpoint -- events are POSTed here directly (ADR-0014) |
 | `GRAFANA_CLOUD_LOKI_USER` | *(required)* | Grafana Cloud Loki basic-auth username (the stack's numeric instance/user ID) |
 | `GRAFANA_CLOUD_LOKI_API_KEY` | *(required)* | Grafana Cloud Access Policy token, scoped to `logs:write` |
@@ -134,6 +134,15 @@ there's no repo to pull or ref to check out on-device anymore (ADR-0015).
 `VITE_COMPUTE_API_URL` (baked into the UI build) is
 `https://{COMPUTE_TAILNET_HOST}`, derived from `InventorySettings` rather
 than its own separately-set secret.
+
+After the systemd unit, this Deploy file also runs `tailscale serve --bg
+--https=443 localhost:$GATEWAY_PORT` to expose the UI/Gateway API on the
+tailnet, guarded by `common.TailscaleServeStatus`, a fact that checks the
+raw `tailscale serve status --json` text for that target string, so a
+second run is a no-op. `tailscale serve`'s exact CLI syntax/JSON shape has
+moved across Tailscale versions and isn't fully documented, so re-verify
+this against whatever `tailscale version` is actually installed before
+trusting it blindly on a new device.
 
 ### deploy_compute_api.py (`ComputeApiSettings`, `ComputeApiSecrets`)
 
@@ -164,27 +173,6 @@ across Tailscale versions and isn't fully documented, so re-verify this
 against whatever `tailscale version` is actually installed before trusting
 it blindly on a new device.
 
-### deploy_caddy.py (`CaddySettings`)
-
-| Variable | Default | Purpose |
-|---|---|---|
-| `COMPUTE_HOST` | `main-server.tailnet` | Host the `/server*` route forwards to |
-| `UI_PORT` | `8080` | Caddy listen port for the single UI/Gateway API/`/server*` site |
-| `GATEWAY_API_PORT` | `5000` | Must match `deploy_gateway_api.py`'s own `GATEWAY_API_PORT` -- read separately since each Deploy file's settings class is independent |
-| `COMPUTE_PROXY_PORT` | *(required)* | Port on `COMPUTE_HOST` that `/server*` forwards to (path stripped) -- ADR-0011; no default since the server-side proxy it points at doesn't exist yet |
-
-After Caddy's systemd unit, this Deploy file also runs `tailscale serve
---bg --https=443 localhost:$UI_PORT` to expose the UI/Gateway API on the
-tailnet, guarded by the same `common.TailscaleServeStatus` idempotency
-check as `deploy_compute_api.py` above -- same version-sensitivity caveat
-applies.
-
-### Not read by pyinfra at all
-
-| Variable | Set where | Purpose |
-|---|---|---|
-| `GATEWAY_PROXY_BIND_HOST` | On the device, in Caddy's own environment | Not a dev-machine/pyinfra setting -- listed here only to avoid confusion with the pyinfra-side variables above |
-
 ## Running a Deploy
 
 Use `./deploy.sh` in place of `uv run pyinfra inventory.py` — it loads
@@ -192,7 +180,7 @@ Use `./deploy.sh` in place of `uv run pyinfra inventory.py` — it loads
 plus whatever args you pass, so secrets never touch your interactive shell
 and you don't repeat `inventory.py` on every invocation. With no target
 given it defaults to `deploy.py` (everything); otherwise it resolves a
-short name to its `deploy_<name>.py` file (e.g. `caddy` → `deploy_caddy.py`)
+short name to its `deploy_<name>.py` file (e.g. `gateway` → `deploy_gateway.py`)
 so you don't have to keep retyping the `deploy_` prefix either — the full
 filename still works if you prefer it:
 
@@ -204,8 +192,8 @@ filename still works if you prefer it:
 ./deploy.sh --dry
 
 # One Deploy file against one Host group
-./deploy.sh caddy --limit gateway
-./deploy.sh caddy --limit gateway --dry
+./deploy.sh gateway --limit gateway
+./deploy.sh gateway --limit gateway --dry
 ```
 
 pyinfra 3.x has no `--check` flag — every "`--check`" in the ticket files
@@ -327,7 +315,7 @@ pass since it blocked verifying the very route this change touches.
 ## Known gaps (flagged, not silently dropped)
 
 - ~~**`tailscale serve` port mappings**~~ — closed. `deploy_compute_api.py`
-  and `deploy_caddy.py` now both run `tailscale serve` for their respective
+  and `deploy_gateway.py` now both run `tailscale serve` for their respective
   loopback-bound ports (see each section above), and the two Deploy files'
   `UI_ORIGIN`/`VITE_COMPUTE_API_URL` values are derived from `InventorySettings`
   rather than hand-kept-in-sync secrets, since that's exactly what each side's
@@ -340,5 +328,5 @@ pass since it blocked verifying the very route this change touches.
 - **The server-side workload proxy** that `/server*` forwards to
   (ADR-0011) doesn't exist yet — it's out of pyinfra's scope entirely
   (same boundary as the Docker Compose stacks it would front) and is a
-  manual prerequisite to build, same as the Caddy binary above, before
-  this route actually reaches anything.
+  manual prerequisite to build before this route actually reaches
+  anything.

@@ -16,7 +16,7 @@ class DpkgArchitecture(FactBase):
     the host itself (no built-in pyinfra fact keyed to `dpkg`'s naming) so
     callers stay correct against whatever architecture a device actually
     runs, without hardcoding one. Shared by `deploy_docker.py` (Docker's
-    apt repo `arch=`) and `deploy_compute_api.py`/`deploy_gateway_api.py`
+    apt repo `arch=`) and `deploy_compute_api.py`/`deploy_gateway.py`
     (selecting the matching `GOARCH` for the off-device Go build,
     ADR-0015).
     """

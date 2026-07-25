@@ -8,7 +8,7 @@ toolchain off both target devices rather than just the Gateway's. Runs it
 as an enabled systemd service, then exposes it on the tailnet over HTTPS
 via `tailscale serve` (CONTEXT.md's Compute API is "fronted by its own
 `tailscale serve` instance" -- this was previously a flagged gap, see
-README's Known gaps). Structurally similar to `deploy_gateway_api.py` but a
+README's Known gaps). Structurally similar to `deploy_gateway.py` but a
 distinct application on a distinct Host group. Targetable in isolation:
 
     pyinfra inventory.py deploy_compute_api.py --limit compute
@@ -24,14 +24,14 @@ separate required secret -- it's derived from
 `InventorySettings.gateway_tailnet_host` (the Gateway's real Tailscale
 MagicDNS name, distinct from `gateway_host`, which is just pyinfra's SSH
 target), since that's exactly the origin the Gateway's own `tailscale
-serve` instance (deploy_caddy.py) exposes the UI at.
+serve` instance (deploy_gateway.py) exposes the UI at.
 
 Required dev-machine env vars (fail fast if missing, only when targeting
 `compute`/its `test` stand-in): the `GRAFANA_CLOUD_LOKI_*` trio (the
 Compute API's own config).
 
 `GOARCH` for the off-device build isn't hardcoded -- unlike the Pi Zero W
-(a fixed, known device, see `deploy_gateway_api.py`), `compute` could
+(a fixed, known device, see `deploy_gateway.py`), `compute` could
 plausibly be amd64 or arm64 hardware, so this reads the real architecture
 from the host itself via `common.DpkgArchitecture`, the same fact
 `deploy_docker.py` already uses for the same reason.

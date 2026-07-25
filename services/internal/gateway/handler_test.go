@@ -38,9 +38,23 @@ func (f *fakeLogger) SendEvent(eventType, outcome string, identity *string, extr
 	f.events = append(f.events, loggedEvent{eventType: eventType, outcome: outcome, identity: identity})
 }
 
+// mustNewHandler builds a Handler for tests that only exercise /wake --
+// ComputeHost/ComputeProxyPort point at a closed port, since no test here
+// makes a /server* request.
 func mustNewHandler(t *testing.T, waker Waker, logger EventLogger) http.Handler {
 	t.Helper()
-	h, err := NewHandler(testMACAddress, waker, logger, "127.0.0.1")
+	return mustNewHandlerWithConfig(t, Config{
+		MACAddress:       testMACAddress,
+		BindHost:         "127.0.0.1",
+		UIRoot:           t.TempDir(),
+		ComputeHost:      "127.0.0.1",
+		ComputeProxyPort: 1,
+	}, waker, logger)
+}
+
+func mustNewHandlerWithConfig(t *testing.T, cfg Config, waker Waker, logger EventLogger) http.Handler {
+	t.Helper()
+	h, err := NewHandler(cfg, waker, logger)
 	if err != nil {
 		t.Fatalf("NewHandler failed: %v", err)
 	}
@@ -185,7 +199,8 @@ func TestWakeDoesNotGuardAgainstRepeatedRequests(t *testing.T) {
 }
 
 func TestNewHandlerRefusesOffTailnetBindHost(t *testing.T) {
-	_, err := NewHandler(testMACAddress, &fakeWaker{}, &fakeLogger{}, "0.0.0.0")
+	cfg := Config{MACAddress: testMACAddress, BindHost: "0.0.0.0", UIRoot: t.TempDir()}
+	_, err := NewHandler(cfg, &fakeWaker{}, &fakeLogger{})
 	var bindErr *tailnet.BindOffTailnetError
 	if !errors.As(err, &bindErr) {
 		t.Fatalf("got err %v, want *tailnet.BindOffTailnetError", err)
@@ -193,7 +208,8 @@ func TestNewHandlerRefusesOffTailnetBindHost(t *testing.T) {
 }
 
 func TestNewHandlerRejectsAMalformedMacAddressAtStartup(t *testing.T) {
-	_, err := NewHandler("not-a-mac", &fakeWaker{}, &fakeLogger{}, "127.0.0.1")
+	cfg := Config{MACAddress: "not-a-mac", BindHost: "127.0.0.1", UIRoot: t.TempDir()}
+	_, err := NewHandler(cfg, &fakeWaker{}, &fakeLogger{})
 	if err == nil {
 		t.Fatal("NewHandler succeeded, want error")
 	}

@@ -7,3 +7,7 @@ __pycache__/
 *.egg-info/
 node_modules/
 dist/
+
+# Private scratch plans not meant to be committed (still trackable as a
+# real path to point to)
+.scratch/gateway-caddy-merge/

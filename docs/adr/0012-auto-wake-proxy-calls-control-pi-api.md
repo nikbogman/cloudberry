@@ -1,3 +1,5 @@
+> Superseded by [ADR-0016](0016-caddy-removed-gateway-absorbs-its-job.md).
+
 # Pi proxy triggers wake via the Pi API, not its own WoL send
 
 The Pi proxy's Caddy plugin now triggers a wake by calling the Pi API's `POST /wake` over loopback HTTP, rather than building and broadcasting its own Wake-on-LAN packet. This replaces the third-party `github.com/dulli/caddy-wol` plugin with a small custom Go plugin (`services/pi-proxy/wake_plugin/`), and collapses WoL-sending to one implementation (the Pi API's `wol.py`) instead of two independently-maintained ones.

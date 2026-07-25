@@ -33,6 +33,7 @@
   "31": "WoL Broadcast Domain ADR",
   "32": "GitHub Issues Deferred",
   "33": "Deploy Concept",
+  "34": "Wake Plugin Go Module",
   "35": "Pyinfra Inventory Name",
   "36": "Control API Deploy File",
   "37": "Host Role Detection Helpers",
@@ -40,6 +41,7 @@
   "39": "Control UI Favicon",
   "40": "Vite Config",
   "41": "AssertTailnetOnlyBind",
+  "42": "github.com/nikbogman/homelab/services/gateway-proxy/wake_plugin",
   "45": "vite.config.ts",
   "46": "0013-caddy-binary-built-off-device-by-pyinfra.md",
   "49": "deploy.sh script"

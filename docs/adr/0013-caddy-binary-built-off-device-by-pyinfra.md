@@ -1,3 +1,5 @@
+> Superseded by [ADR-0016](0016-caddy-removed-gateway-absorbs-its-job.md).
+
 # The Caddy binary is cross-compiled off-device and shipped by pyinfra, not hand-built on the Pi
 
 `deploy_caddy.py` now builds the `wake_plugin`-enabled Caddy binary on the dev machine with `xcaddy`, cross-compiled for the Pi Zero W (`GOOS=linux GOARCH=arm GOARM=6`), and ships only the compiled binary to `pi` via `files.put` — the same off-device-build-then-ship shape ADR-0006 already established for the UI's Vite build. This closes the gap `pyinfra/README.md`'s "Known gaps" section and `services/pi-proxy/wake_plugin/README.md` previously flagged: provisioning the binary was a manual, undocumented prerequisite. We rejected building on the Pi itself for the same reason ADR-0006 rejected an on-device Node toolchain: the Pi Zero W is single-core and low-memory, and neither Go nor `xcaddy` need to ever run there. This adds a new dev-machine prerequisite (Go + `xcaddy` installed locally, alongside the Node/npm the UI build already requires) — not free, but consistent with the existing precedent rather than a new kind of cost.

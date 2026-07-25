@@ -21,8 +21,7 @@ which raises until the operation has actually executed).
 
 Note on `--dry`: the local `go build` always runs, even under `--dry` --
 pyinfra's dry-run guarantee only covers remote operations, not a local
-build step (same caveat `deploy_caddy.py` and `deploy_gateway_api.py`'s UI
-build already document).
+build step (same caveat `deploy_gateway.py`'s UI build already documents).
 """
 
 from pyinfra import local
@@ -44,7 +43,7 @@ def go_binary_systemd_service(
     run_as_user: str = "root",
 ):
     """Cross-compile `package` (an import path relative to `module_dir`,
-    e.g. "./cmd/gateway-api") for `goos`/`goarch`(/`goarm`) on the dev machine,
+    e.g. "./cmd/gateway") for `goos`/`goarch`(/`goarm`) on the dev machine,
     ship the resulting binary to `remote_binary`, install/enable a systemd
     unit named `unit_name` running it directly, and restart iff this
     Deploy changed the binary or the unit file.

@@ -39,7 +39,7 @@ class InventorySettings(BaseSettings):
     # from gateway_host/compute_host above. Those are SSH targets and may
     # well be a bare LAN IP; these two are used only to derive the *other*
     # Deploy file's CORS allow-list / build-time origin
-    # (deploy_compute_api.py's UI_ORIGIN, deploy_gateway_api.py's
+    # (deploy_compute_api.py's UI_ORIGIN, deploy_gateway.py's
     # VITE_COMPUTE_API_URL), which specifically needs the tailnet name
     # since that's the only thing `tailscale serve` issues a valid HTTPS
     # cert for.
@@ -65,12 +65,16 @@ class TailscaleSettings(BaseSettings):
     tailscale_auth_key: str
 
 
-class GatewayApiSettings(BaseSettings):
-    gateway_api_host: str = "127.0.0.1"
-    gateway_api_port: int = 5000
+class GatewaySettings(BaseSettings):
+    gateway_host: str = "127.0.0.1"
+    gateway_port: int = 5000
+    compute_host: str = "main-server.tailnet"
+    # No default (ADR-0011): the server-side proxy this points at doesn't
+    # exist yet, so there's no real value to fall back to.
+    compute_proxy_port: int
 
 
-class GatewayApiSecrets(BaseSettings):
+class GatewaySecrets(BaseSettings):
     compute_mac_address: str
     grafana_cloud_loki_url: str
     grafana_cloud_loki_user: str
@@ -86,12 +90,3 @@ class ComputeApiSecrets(BaseSettings):
     grafana_cloud_loki_url: str
     grafana_cloud_loki_user: str
     grafana_cloud_loki_api_key: str
-
-
-class CaddySettings(BaseSettings):
-    compute_host: str = "main-server.tailnet"
-    ui_port: int = 8080
-    gateway_api_port: int = 5000
-    # No default (ADR-0011): the server-side proxy this points at doesn't
-    # exist yet, so there's no real value to fall back to.
-    compute_proxy_port: int

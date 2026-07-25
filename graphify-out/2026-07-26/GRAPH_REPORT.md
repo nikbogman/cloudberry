@@ -1,16 +1,16 @@
-# Graph Report - homelab  (2026-07-26)
+# Graph Report - homelab  (2026-07-25)
 
 ## Corpus Check
-- 93 files · ~47,021 words
+- 96 files · ~47,157 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 547 nodes · 827 edges · 44 communities (31 shown, 13 thin omitted)
+- 560 nodes · 819 edges · 46 communities (32 shown, 14 thin omitted)
 - Extraction: 92% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 61 edges (avg confidence: 0.81)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `188496b4`
+- Built from commit: `220b97e0`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -37,6 +37,7 @@
 - WSGI Bootstrap Tests
 - Graphify Incremental Update
 - WSGI Bootstrap Tests
+- Wake Plugin Handler Tests
 - Graphify Watch Mode
 - Typed Settings Pattern
 - Issue Tracker File Convention
@@ -48,6 +49,7 @@
 - WoL Broadcast Domain ADR
 - GitHub Issues Deferred
 - Deploy Concept
+- Wake Plugin Go Module
 - Pyinfra Inventory Name
 - Control API Deploy File
 - Host Role Detection Helpers
@@ -55,20 +57,21 @@
 - Control UI Favicon
 - Vite Config
 - AssertTailnetOnlyBind
+- github.com/nikbogman/homelab/services/gateway-proxy/wake_plugin
 - 0013-caddy-binary-built-off-device-by-pyinfra.md
 - deploy.sh script
 
 ## God Nodes (most connected - your core abstractions)
 1. `Homelab README.md` - 24 edges
 2. `mustNewHandler()` - 19 edges
-3. `NewHandler()` - 19 edges
-4. `compilerOptions` - 16 edges
-5. `pyinfra Provisioning Spec` - 16 edges
-6. `mustNewHandler()` - 14 edges
-7. `authedRequest()` - 12 edges
-8. `wake_plugin Go module` - 12 edges
-9. `Issue 07: Caddy Deploy File` - 12 edges
-10. `pyinfra/deploy.py` - 10 edges
+3. `compilerOptions` - 16 edges
+4. `pyinfra Provisioning Spec` - 16 edges
+5. `mustNewHandler()` - 14 edges
+6. `authedRequest()` - 12 edges
+7. `wake_plugin Go module` - 12 edges
+8. `Issue 07: Caddy Deploy File` - 12 edges
+9. `newWakeCaller()` - 10 edges
+10. `NewHandler()` - 10 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `pyinfra/deploy_tailscale.py` --references--> `TailscaleBackendState`  [EXTRACTED]
@@ -94,19 +97,19 @@
 - **Three-Tier Infrastructure Testing Pattern (--check, disposable containers, idempotency)** — pyinfra_readme_doc, scratch_pyinfra_provisioning_issues_09_disposable_container_test_harness_issue, pyinfra_inventory_module, docs_agents_pyinfra_demo_doc [EXTRACTED 0.90]
 - **pyinfra's three-tier testing pattern (--dry, disposable containers, idempotency)** — pyinfra_readme_three_tier_testing, docs_agents_pyinfra_dry_flag, docs_agents_pyinfra_idempotency_mechanics, docs_agents_pyinfra_demo_highest_available_seam [EXTRACTED 1.00]
 
-## Communities (44 total, 13 thin omitted)
+## Communities (46 total, 14 thin omitted)
 
 ### Community 0 - "Server API Reachability"
-Cohesion: 0.30
-Nodes (9): EventLogger, Handler, reachabilityTracker, Suspender, Once, Request, ResponseWriter, NewHandler() (+1 more)
+Cohesion: 0.27
+Nodes (10): EventLogger, Handler, reachabilityTracker, Suspender, Once, Request, ResponseWriter, NewHandler() (+2 more)
 
 ### Community 1 - "Shared Git-Pull Deploy Helper"
 Cohesion: 0.07
-Nodes (32): BaseSettings, DpkgArchitecture, has_device_role(), linux_codename(), linux_distro_id(), FactBase, Helpers shared by more than one Deploy file.  Not a Deploy file itself -- define, Native apt architecture (e.g. "amd64", "arm64") per `dpkg     --print-architectu (+24 more)
+Nodes (34): BaseSettings, DpkgArchitecture, has_device_role(), linux_codename(), linux_distro_id(), FactBase, Helpers shared by more than one Deploy file.  Not a Deploy file itself -- define, Native apt architecture (e.g. "amd64", "arm64") per `dpkg     --print-architectu (+26 more)
 
 ### Community 2 - "Pi API Wake-on-LAN"
-Cohesion: 0.11
-Nodes (40): Duration, Config, EventLogger, fakeLogger, fakeWaker, Handler, loggedEvent, Waker (+32 more)
+Cohesion: 0.14
+Nodes (24): EventLogger, fakeLogger, fakeWaker, Handler, loggedEvent, Waker, Request, ResponseWriter (+16 more)
 
 ### Community 3 - "Graphify Skill Exports"
 Cohesion: 0.06
@@ -125,8 +128,8 @@ Cohesion: 0.08
 Nodes (32): Homelab CLAUDE.md (Agent Skills Config), Control UI (concept), CONTEXT.md (Domain Glossary), Identity Header (concept), Pi API (concept), Pi Proxy (concept), Reachable (concept), Server API (concept) (+24 more)
 
 ### Community 7 - "Wake Plugin Go Internals"
-Cohesion: 0.21
-Nodes (11): autoWakeThrottler, Mutex, Response, RoundTripper, copyResponse(), Handler, Request, ResponseWriter (+3 more)
+Cohesion: 0.10
+Nodes (24): Context, Dispenser, Helper, MiddlewareHandler, ModuleInfo, Mutex, Request, ResponseWriter (+16 more)
 
 ### Community 8 - "Caddy handle_errors Fix"
 Cohesion: 0.06
@@ -141,8 +144,8 @@ Cohesion: 0.09
 Nodes (21): DOM, ES2023, src, vite/client, compilerOptions, allowArbitraryExtensions, allowImportingTsExtensions, erasableSyntaxOnly (+13 more)
 
 ### Community 11 - "Control Plane ADR Decisions"
-Cohesion: 0.19
-Nodes (23): fakeLogger, fakeSuspender, loggedEvent, authedRequest(), EventLogger, Handler, Request, T (+15 more)
+Cohesion: 0.20
+Nodes (22): fakeLogger, fakeSuspender, loggedEvent, authedRequest(), EventLogger, Handler, Request, T (+14 more)
 
 ### Community 12 - "Frontend Test Tooling"
 Cohesion: 0.10
@@ -150,7 +153,7 @@ Nodes (19): jsdom, devDependencies, jsdom, typescript, vite, vitest, name, priva
 
 ### Community 13 - "Tailnet Identity Auth"
 Cohesion: 0.17
-Nodes (15): Client, GrafanaCloudLogger, lokiLine, lokiPayload, lokiStream, lokiStreamLabels, envOr(), main() (+7 more)
+Nodes (14): GrafanaCloudLogger, lokiLine, lokiPayload, lokiStream, lokiStreamLabels, envOr(), main(), mustEnv() (+6 more)
 
 ### Community 14 - "Domain Docs Conventions"
 Cohesion: 0.25
@@ -173,16 +176,20 @@ Cohesion: 0.50
 Nodes (5): .will_change vs .did_change() distinction, OperationMeta.did_change(), @docker connector, Host group, OperationMeta.will_change
 
 ### Community 19 - "WSGI Bootstrap Tests"
-Cohesion: 0.32
-Nodes (9): WakeOnLanSender, BuildMagicPacket(), NewWakeOnLanSender(), T, TestBuildMagicPacketAcceptsHyphenSeparatedMac(), TestBuildMagicPacketAcceptsLowercaseMac(), TestBuildMagicPacketHasSixLeadingFFBytes(), TestBuildMagicPacketRejectsInvalidMac() (+1 more)
+Cohesion: 0.23
+Nodes (12): WakeOnLanSender, envOr(), main(), mustEnv(), BuildMagicPacket(), NewWakeOnLanSender(), T, TestBuildMagicPacketAcceptsHyphenSeparatedMac() (+4 more)
 
 ### Community 20 - "Graphify Incremental Update"
 Cohesion: 0.50
 Nodes (3): Code-Only Fast Path (skip LLM), detect_incremental(), --update flag
 
 ### Community 21 - "WSGI Bootstrap Tests"
-Cohesion: 0.23
-Nodes (14): SystemSuspender, envOr(), main(), mustEnv(), NewSystemSuspender(), NewSystemSuspenderWithCommand(), T, TestConstructorRejectsAnEmptyCommand() (+6 more)
+Cohesion: 0.32
+Nodes (11): SystemSuspender, NewSystemSuspender(), NewSystemSuspenderWithCommand(), T, TestConstructorRejectsAnEmptyCommand(), TestDefaultCommandIsSystemctlSuspendOnly(), TestSuspendPropagatesErrorFromExitCode(), TestSuspendPropagatesErrorWhenCommandIsNotFound() (+3 more)
+
+### Community 22 - "Wake Plugin Handler Tests"
+Cohesion: 0.33
+Nodes (5): Building a Caddy binary with this module, Development, Directive, Verification performed, wake_plugin
 
 ### Community 23 - "Graphify Watch Mode"
 Cohesion: 0.67
@@ -200,6 +207,10 @@ Nodes (3): issues/<NN>-<slug>.md ticket files, .scratch/<feature-slug>/ conventi
 Cohesion: 0.16
 Nodes (21): GetCallerIdentity(), Handler, Request, remoteHost(), RequireTailnetIdentity(), RequireTailnetIdentityOrLoopback(), Handler, Request (+13 more)
 
+### Community 34 - "Wake Plugin Go Module"
+Cohesion: 0.67
+Nodes (3): T, TestHandler_ProvisionRequiresAWakeURL(), TestHandler_ServeHTTPCallsTheWakeURLAndAlwaysContinues()
+
 ### Community 39 - "Control UI Favicon"
 Cohesion: 0.33
 Nodes (5): Behavior, Configuration, Deployment, Development, UI
@@ -209,8 +220,8 @@ Cohesion: 0.31
 Nodes (8): AssertTailnetOnlyBind(), appFactory(), T, TestAllowsLoopbackAndTailnetAddresses(), TestAppFactoryRefusesToStartOnOffTailnetHost(), TestAppFactoryStartsOnLoopbackHost(), TestRejectsOffTailnetAddresses(), BindOffTailnetError
 
 ### Community 46 - "0013-caddy-binary-built-off-device-by-pyinfra.md"
-Cohesion: 0.13
-Nodes (10): The Caddy binary is cross-compiled off-device and shipped by pyinfra, not hand-built on the Pi, Control-plane events ship straight to Grafana Cloud's Loki endpoint — no self-hosted agent, The Pi API, Server API, and their shared libraries are rewritten in Go, built off-device like the Caddy binary, Caddy removed; the Gateway absorbs its job, Compute API, Control-plane services (Go), Development, Gateway API (+2 more)
+Cohesion: 0.15
+Nodes (9): The Caddy binary is cross-compiled off-device and shipped by pyinfra, not hand-built on the Pi, Control-plane events ship straight to Grafana Cloud's Loki endpoint — no self-hosted agent, The Pi API, Server API, and their shared libraries are rewritten in Go, built off-device like the Caddy binary, Compute API, Control-plane services (Go), Development, Gateway API, `internal/eventlog` (+1 more)
 
 ## Ambiguous Edges - Review These
 - `Control UI` → `.scratch/ Local Markdown Issue Tracker`  [AMBIGUOUS]
@@ -219,9 +230,9 @@ Nodes (10): The Caddy binary is cross-compiled off-device and shipped by pyinfra
   docs/agents/pyinfra-demo.md · relation: references
 
 ## Knowledge Gaps
-- **126 isolated node(s):** `deploy.sh script`, `homelab-pyinfra`, `github.com/nikbogman/homelab/services`, `lokiLine`, `contextKey` (+121 more)
+- **130 isolated node(s):** `deploy.sh script`, `homelab-pyinfra`, `github.com/nikbogman/homelab/services/gateway-proxy/wake_plugin`, `github.com/nikbogman/homelab/services`, `lokiLine` (+125 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **13 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **14 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
@@ -230,13 +241,13 @@ _Questions this graph is uniquely positioned to answer:_
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **What is the exact relationship between `git_systemd_service live demo (ticket 04)` and `api_deploy.py (shared git+systemd @deploy helper)`?**
   _Edge tagged AMBIGUOUS (relation: references) - confidence is low._
-- **Why does `NewHandler()` connect `Pi API Wake-on-LAN` to `AssertTailnetOnlyBind`, `Control Plane Services`, `WSGI Bootstrap Tests`, `Wake Plugin Go Internals`?**
-  _High betweenness centrality (0.080) - this node is a cross-community bridge._
-- **Why does `BuildMagicPacket()` connect `WSGI Bootstrap Tests` to `Pi API Wake-on-LAN`?**
+- **Why does `NewHandler()` connect `Pi API Wake-on-LAN` to `AssertTailnetOnlyBind`, `Control Plane Services`, `WSGI Bootstrap Tests`?**
   _High betweenness centrality (0.045) - this node is a cross-community bridge._
-- **Why does `AssertTailnetOnlyBind()` connect `AssertTailnetOnlyBind` to `Server API Reachability`, `Pi API Wake-on-LAN`?**
-  _High betweenness centrality (0.039) - this node is a cross-community bridge._
-- **Are the 14 inferred relationships involving `NewHandler()` (e.g. with `newComputeProxy()` and `BuildMagicPacket()`) actually correct?**
-  _`NewHandler()` has 14 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `deploy.sh script`, `homelab-pyinfra`, `github.com/nikbogman/homelab/services` to the rest of the system?**
-  _126 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `BuildMagicPacket()` connect `WSGI Bootstrap Tests` to `Pi API Wake-on-LAN`?**
+  _High betweenness centrality (0.033) - this node is a cross-community bridge._
+- **What connects `deploy.sh script`, `homelab-pyinfra`, `github.com/nikbogman/homelab/services/gateway-proxy/wake_plugin` to the rest of the system?**
+  _130 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Shared Git-Pull Deploy Helper` be split into smaller, more focused modules?**
+  _Cohesion score 0.06972789115646258 - nodes in this community are weakly interconnected._
+- **Should `Pi API Wake-on-LAN` be split into smaller, more focused modules?**
+  _Cohesion score 0.14039408866995073 - nodes in this community are weakly interconnected._
