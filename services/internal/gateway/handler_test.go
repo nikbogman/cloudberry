@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	testServerMAC = "AA:BB:CC:DD:EE:FF"
+	testMACAddress = "AA:BB:CC:DD:EE:FF"
 	testIdentity  = "nicola@example.com"
 )
 
@@ -40,7 +40,7 @@ func (f *fakeLogger) SendEvent(eventType, outcome string, identity *string, extr
 
 func mustNewHandler(t *testing.T, waker Waker, logger EventLogger) http.Handler {
 	t.Helper()
-	h, err := NewHandler(testServerMAC, waker, logger, "127.0.0.1")
+	h, err := NewHandler(testMACAddress, waker, logger, "127.0.0.1")
 	if err != nil {
 		t.Fatalf("NewHandler failed: %v", err)
 	}
@@ -72,8 +72,8 @@ func TestWakeAllowsALoopbackCallerWithNoIdentityHeader(t *testing.T) {
 	if rec.Code != http.StatusOK {
 		t.Fatalf("got status %d, want 200", rec.Code)
 	}
-	if len(waker.calls) != 1 || waker.calls[0] != testServerMAC {
-		t.Fatalf("got waker calls %v, want [%q]", waker.calls, testServerMAC)
+	if len(waker.calls) != 1 || waker.calls[0] != testMACAddress {
+		t.Fatalf("got waker calls %v, want [%q]", waker.calls, testMACAddress)
 	}
 }
 
@@ -90,8 +90,8 @@ func TestWakeStillHonorsIdentityHeaderFromANonLoopbackCaller(t *testing.T) {
 	if rec.Code != http.StatusOK {
 		t.Fatalf("got status %d, want 200", rec.Code)
 	}
-	if len(waker.calls) != 1 || waker.calls[0] != testServerMAC {
-		t.Fatalf("got waker calls %v, want [%q]", waker.calls, testServerMAC)
+	if len(waker.calls) != 1 || waker.calls[0] != testMACAddress {
+		t.Fatalf("got waker calls %v, want [%q]", waker.calls, testMACAddress)
 	}
 }
 
@@ -104,8 +104,8 @@ func TestWakeSendsMagicPacketToConfiguredMac(t *testing.T) {
 
 	h.ServeHTTP(rec, req)
 
-	if len(waker.calls) != 1 || waker.calls[0] != testServerMAC {
-		t.Fatalf("got waker calls %v, want [%q]", waker.calls, testServerMAC)
+	if len(waker.calls) != 1 || waker.calls[0] != testMACAddress {
+		t.Fatalf("got waker calls %v, want [%q]", waker.calls, testMACAddress)
 	}
 }
 
@@ -185,7 +185,7 @@ func TestWakeDoesNotGuardAgainstRepeatedRequests(t *testing.T) {
 }
 
 func TestNewHandlerRefusesOffTailnetBindHost(t *testing.T) {
-	_, err := NewHandler(testServerMAC, &fakeWaker{}, &fakeLogger{}, "0.0.0.0")
+	_, err := NewHandler(testMACAddress, &fakeWaker{}, &fakeLogger{}, "0.0.0.0")
 	var bindErr *tailnet.BindOffTailnetError
 	if !errors.As(err, &bindErr) {
 		t.Fatalf("got err %v, want *tailnet.BindOffTailnetError", err)

@@ -24,23 +24,23 @@ type EventLogger interface {
 
 // Handler serves the Gateway API's /wake action.
 type Handler struct {
-	serverMAC string
-	waker     Waker
-	logger    EventLogger
+	macAddress string
+	waker      Waker
+	logger     EventLogger
 }
 
 // NewHandler builds the Gateway API's HTTP handler. It refuses to start if
 // bindHost would expose the app off-tailnet, and fails fast on a malformed
-// serverMAC at construction rather than mid-request.
-func NewHandler(serverMAC string, waker Waker, logger EventLogger, bindHost string) (http.Handler, error) {
+// macAddress at construction rather than mid-request.
+func NewHandler(macAddress string, waker Waker, logger EventLogger, bindHost string) (http.Handler, error) {
 	if err := tailnet.AssertTailnetOnlyBind(bindHost); err != nil {
 		return nil, err
 	}
-	if _, err := BuildMagicPacket(serverMAC); err != nil {
+	if _, err := BuildMagicPacket(macAddress); err != nil {
 		return nil, err
 	}
 
-	h := &Handler{serverMAC: serverMAC, waker: waker, logger: logger}
+	h := &Handler{macAddress: macAddress, waker: waker, logger: logger}
 
 	mux := http.NewServeMux()
 	mux.Handle("POST /wake", tailnet.RequireTailnetIdentityOrLoopback(http.HandlerFunc(h.handleWake)))
@@ -51,7 +51,7 @@ func (h *Handler) handleWake(w http.ResponseWriter, r *http.Request) {
 	identity := tailnet.GetCallerIdentity(r)
 	h.logger.SendEvent("wake_requested", "requested", &identity, nil)
 
-	if err := h.waker.Send(h.serverMAC); err != nil {
+	if err := h.waker.Send(h.macAddress); err != nil {
 		h.logger.SendEvent("wake_failed", "failed", &identity, nil)
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"wake": "failed"})
 		return
