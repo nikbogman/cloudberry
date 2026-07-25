@@ -51,6 +51,14 @@ class InventorySettings(BaseSettings):
     compute_test_host: str = "localhost"
     compute_test_ssh_port: int = 2202
     compute_test_ssh_user: str = "root"
+    # Passed straight through as pyinfra's `_sudo_password` host argument.
+    # Needed on compute specifically because its sudo is aliased to sudo-rs
+    # (Ubuntu 26.04 default), which prints "sudo: interactive authentication
+    # is required" instead of "sudo-rs: ..." -- pyinfra's --use-sudo-password
+    # only recognizes the latter, so it never detects the prompt and fails
+    # outright rather than asking. Supplying the password up front bypasses
+    # that detection entirely (pyinfra uses sudo -A/askpass immediately).
+    compute_sudo_password: str | None = None
 
 
 class TailscaleSettings(BaseSettings):

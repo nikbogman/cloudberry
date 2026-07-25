@@ -27,7 +27,14 @@ gateway = [
 ]
 
 compute = [
-    (settings.compute_host, {"ssh_user": settings.compute_ssh_user, "device_role": "compute"}),
+    (
+        settings.compute_host,
+        {
+            "ssh_user": settings.compute_ssh_user,
+            "device_role": "compute",
+            "_sudo_password": settings.compute_sudo_password,
+        },
+    ),
 ]
 
 # Separate inventory identities ("gateway-test"/"compute-test") with the
