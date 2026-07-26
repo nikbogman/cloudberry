@@ -39,7 +39,7 @@ Serves the UI's static files, sends a Wake-on-LAN magic packet to the compute ho
 
 `/server/*` — reverse-proxies to `http://{COMPUTE_HOST}:{COMPUTE_PROXY_PORT}`, path-stripped, as a single blind upstream ([ADR-0011](../docs/adr/0011-server-owns-workload-routing.md)) — which path reaches which Docker service (Immich, AI agents, etc.) is entirely that host's own reverse proxy's concern. A genuine HTTP response from a live backend (including a real 502) passes straight through untouched. A Go-level transport failure (dial refused, timeout) instead triggers a wake (throttled to once per 90s, since there's exactly one compute upstream) and retries the request every 1s for up to 60s, writing through the first successful response — this is one of two wake triggers in the system, the other being the deliberate `/wake` above ([ADR-0012](../docs/adr/0012-auto-wake-proxy-calls-control-pi-api.md), superseding [ADR-0005](../docs/adr/0005-dual-wake-paths.md)'s original independent-paths design).
 
-`/` and everything else — serves the UI's static build from `/srv/ui` (no SPA/`try_files` fallback: an unknown path 404s).
+`/` and everything else — serves the UI's static build, `//go:embed`ded into this binary at build time (no separate on-device path, no SPA/`try_files` fallback: an unknown path 404s).
 
 Requires the Gateway and the compute host to share an L2 broadcast domain ([ADR-0003](../docs/adr/0003-wol-same-broadcast-domain.md)) — WoL packets don't route across subnets.
 

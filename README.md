@@ -45,6 +45,8 @@ control-plane/
   internal/tailnet/         shared Go package: identity-header auth, bind-safety
   internal/eventlog/        shared Go package: Grafana Cloud event logging
 provisioning/               declarative provisioning (pyinfra) for the gateway and compute host
+deploy.sh                   forwards to provisioning/deploy.sh -- run from the repo root
+.env.example                 checked-in template -- copy to .env (gitignored) and fill in real values
 ```
 
 ## Status

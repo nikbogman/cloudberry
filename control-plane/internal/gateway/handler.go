@@ -4,6 +4,7 @@
 package gateway
 
 import (
+	"io/fs"
 	"net/http"
 
 	"github.com/nikbogman/homelab/control-plane/internal/httpresponse"
@@ -21,9 +22,10 @@ type EventLogger interface {
 type Config struct {
 	MACAddress string
 	BindHost   string
-	// UIRoot is the directory served at "/". Passed in rather than a
-	// package-level const so tests can point it at a t.TempDir().
-	UIRoot           string
+	// UIAssets is served at "/" -- the real binary passes an embed.FS
+	// (via fs.Sub) holding the UI's build output, tests pass
+	// os.DirFS(t.TempDir()).
+	UIAssets         fs.FS
 	ComputeHost      string
 	ComputeProxyPort int
 }
@@ -50,7 +52,7 @@ func NewHandler(cfg Config, waker Waker, logger EventLogger) (http.Handler, erro
 	mux := http.NewServeMux()
 	mux.Handle("POST /wake", tailnet.RequireTailnetIdentityOrLoopback(http.HandlerFunc(h.handleWake)))
 	mux.Handle("/server/", newComputeProxy(cfg.ComputeHost, cfg.ComputeProxyPort, h.doWake))
-	mux.Handle("/", http.FileServer(http.Dir(cfg.UIRoot)))
+	mux.Handle("/", http.FileServer(http.FS(cfg.UIAssets)))
 	return mux, nil
 }
 

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/nikbogman/homelab/control-plane/internal/tailnet"
@@ -45,7 +46,7 @@ func mustNewHandler(t *testing.T, waker Waker, logger EventLogger) http.Handler 
 	return mustNewHandlerWithConfig(t, Config{
 		MACAddress:       testMACAddress,
 		BindHost:         "127.0.0.1",
-		UIRoot:           t.TempDir(),
+		UIAssets:         os.DirFS(t.TempDir()),
 		ComputeHost:      "127.0.0.1",
 		ComputeProxyPort: 1,
 	}, waker, logger)
@@ -198,7 +199,7 @@ func TestWakeDoesNotGuardAgainstRepeatedRequests(t *testing.T) {
 }
 
 func TestNewHandlerRefusesOffTailnetBindHost(t *testing.T) {
-	cfg := Config{MACAddress: testMACAddress, BindHost: "0.0.0.0", UIRoot: t.TempDir()}
+	cfg := Config{MACAddress: testMACAddress, BindHost: "0.0.0.0", UIAssets: os.DirFS(t.TempDir())}
 	_, err := NewHandler(cfg, &fakeWaker{}, &fakeLogger{})
 	var bindErr *tailnet.BindOffTailnetError
 	if !errors.As(err, &bindErr) {
@@ -207,7 +208,7 @@ func TestNewHandlerRefusesOffTailnetBindHost(t *testing.T) {
 }
 
 func TestNewHandlerRejectsAMalformedMacAddressAtStartup(t *testing.T) {
-	cfg := Config{MACAddress: "not-a-mac", BindHost: "127.0.0.1", UIRoot: t.TempDir()}
+	cfg := Config{MACAddress: "not-a-mac", BindHost: "127.0.0.1", UIAssets: os.DirFS(t.TempDir())}
 	_, err := NewHandler(cfg, &fakeWaker{}, &fakeLogger{})
 	if err == nil {
 		t.Fatal("NewHandler succeeded, want error")

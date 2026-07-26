@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Wrapper that loads secrets.sh (ADR-0010, gitignored, never
+# Wrapper that loads the repo root's .env (ADR-0010, gitignored, never
 # committed) into THIS SCRIPT'S OWN PROCESS ONLY, then execs pyinfra. The
 # vars never touch the interactive shell that invoked this script -- once
 # the process exits, nothing lingers. Also bakes in inventory.py, and
@@ -31,8 +31,8 @@ fi
 set -- "$resolved" "$@"
 
 set -a
-# shellcheck source=secrets.sh
-source secrets.sh
+# shellcheck source=../.env
+source ../.env
 set +a
 
 exec uv run pyinfra inventory.py "$@"

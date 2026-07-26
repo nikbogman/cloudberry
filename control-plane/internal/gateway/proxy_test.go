@@ -67,7 +67,7 @@ func TestProxy_AutoWakeThrottlesRepeatCallsWithinTheWindow(t *testing.T) {
 	computeHost, computeProxyPort := closedPortTarget(t)
 	waker := &fakeWaker{}
 	h := mustNewHandlerWithConfig(t, Config{
-		MACAddress: testMACAddress, BindHost: "127.0.0.1", UIRoot: t.TempDir(),
+		MACAddress: testMACAddress, BindHost: "127.0.0.1", UIAssets: os.DirFS(t.TempDir()),
 		ComputeHost: computeHost, ComputeProxyPort: computeProxyPort,
 	}, waker, &fakeLogger{})
 
@@ -86,7 +86,7 @@ func TestProxy_AutoWakeDoesNotThrottleOnceTheWindowHasElapsed(t *testing.T) {
 	computeHost, computeProxyPort := closedPortTarget(t)
 	waker := &fakeWaker{}
 	h := mustNewHandlerWithConfig(t, Config{
-		MACAddress: testMACAddress, BindHost: "127.0.0.1", UIRoot: t.TempDir(),
+		MACAddress: testMACAddress, BindHost: "127.0.0.1", UIAssets: os.DirFS(t.TempDir()),
 		ComputeHost: computeHost, ComputeProxyPort: computeProxyPort,
 	}, waker, &fakeLogger{})
 
@@ -105,7 +105,7 @@ func TestProxy_FailsOpenWhenTheWakerErrors(t *testing.T) {
 	computeHost, computeProxyPort := closedPortTarget(t)
 	waker := &fakeWaker{err: errTestWaker}
 	h := mustNewHandlerWithConfig(t, Config{
-		MACAddress: testMACAddress, BindHost: "127.0.0.1", UIRoot: t.TempDir(),
+		MACAddress: testMACAddress, BindHost: "127.0.0.1", UIAssets: os.DirFS(t.TempDir()),
 		ComputeHost: computeHost, ComputeProxyPort: computeProxyPort,
 	}, waker, &fakeLogger{})
 
@@ -140,7 +140,7 @@ func TestProxy_ARealHTTPErrorFromALiveBackendPassesThroughWithoutWaking(t *testi
 
 	waker := &fakeWaker{}
 	h := mustNewHandlerWithConfig(t, Config{
-		MACAddress: testMACAddress, BindHost: "127.0.0.1", UIRoot: t.TempDir(),
+		MACAddress: testMACAddress, BindHost: "127.0.0.1", UIAssets: os.DirFS(t.TempDir()),
 		ComputeHost: computeHost, ComputeProxyPort: computeProxyPort,
 	}, waker, &fakeLogger{})
 
@@ -169,7 +169,7 @@ func TestProxy_RetriesUntilTheBackendStartsRespondingWithinTheWindow(t *testing.
 
 	waker := &fakeWaker{}
 	h := mustNewHandlerWithConfig(t, Config{
-		MACAddress: testMACAddress, BindHost: "127.0.0.1", UIRoot: t.TempDir(),
+		MACAddress: testMACAddress, BindHost: "127.0.0.1", UIAssets: os.DirFS(t.TempDir()),
 		ComputeHost: computeHost, ComputeProxyPort: computeProxyPort,
 	}, waker, &fakeLogger{})
 
@@ -210,12 +210,12 @@ func TestProxy_RetriesUntilTheBackendStartsRespondingWithinTheWindow(t *testing.
 	}
 }
 
-func TestProxy_ServesStaticFilesFromUIRoot(t *testing.T) {
+func TestProxy_ServesStaticFilesFromUIAssets(t *testing.T) {
 	dir := t.TempDir()
 	writeFile(t, dir, "index.html", "<html>hi</html>")
 
 	h := mustNewHandlerWithConfig(t, Config{
-		MACAddress: testMACAddress, BindHost: "127.0.0.1", UIRoot: dir,
+		MACAddress: testMACAddress, BindHost: "127.0.0.1", UIAssets: os.DirFS(dir),
 		ComputeHost: "127.0.0.1", ComputeProxyPort: 1,
 	}, &fakeWaker{}, &fakeLogger{})
 
@@ -235,7 +235,7 @@ func TestProxy_DoesNotFallBackToIndexHTMLForAnUnknownPath(t *testing.T) {
 	writeFile(t, dir, "index.html", "<html>hi</html>")
 
 	h := mustNewHandlerWithConfig(t, Config{
-		MACAddress: testMACAddress, BindHost: "127.0.0.1", UIRoot: dir,
+		MACAddress: testMACAddress, BindHost: "127.0.0.1", UIAssets: os.DirFS(dir),
 		ComputeHost: "127.0.0.1", ComputeProxyPort: 1,
 	}, &fakeWaker{}, &fakeLogger{})
 

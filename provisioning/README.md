@@ -23,18 +23,23 @@ provisioning/
   deploy_gateway.py               # ticket 05 (+ UI static delivery), absorbed Caddy's job (ADR-0016)
   deploy_compute_api.py           # ticket 06
   deploy.py                       # entrypoint composing everything (ticket 08)
-  deploy.sh                       # wrapper: loads secrets.sh, resolves short Deploy-file names
-  secrets.sh.example               # checked-in template -- copy to secrets.sh (gitignored)
+  deploy.sh                       # wrapper: loads ../.env, resolves short Deploy-file names
   templates/
     binary.service.j2              # systemd unit template, the Gateway API and Compute API (ADR-0015)
+
+../deploy.sh                      # repo-root forwarder -- run from anywhere, see below
+../.env.example                    # checked-in template -- copy to ../.env (gitignored)
 ```
 
-**Run every command from inside this directory** (`cd provisioning/` first).
-Deploy files import from sibling modules (`from common import ...`,
-`from go_deploy import ...`) and `files.template` resolves
-`templates/*.j2` relative to the current working directory — both need
-`provisioning/` on `sys.path`/as cwd, which pyinfra only does automatically
-for the directory it's actually invoked from.
+**Run `./deploy.sh` from the repo root**, or `./deploy.sh` from inside
+`provisioning/` directly (`cd provisioning/` first) — both resolve to the
+same script and behave identically. Deploy files themselves still need
+`provisioning/` as cwd internally: they import from sibling modules
+(`from common import ...`, `from go_deploy import ...`) and
+`files.template` resolves `templates/*.j2` relative to the current working
+directory, both of which pyinfra only sets up automatically for the
+directory it's actually invoked from — `deploy.sh` (either copy) `cd`s
+there itself before execing pyinfra, so this is handled either way.
 
 ## Setup
 
@@ -68,12 +73,12 @@ before. No `env_file` support — ADR-0010 already rejected a file-based
 secrets store, so these classes are a typed wrapper around plain
 environment variables, not a new persistence mechanism.
 
-Copy [`secrets.sh.example`](secrets.sh.example) to `secrets.sh` (gitignored,
-never committed) and fill in real values for every required variable listed
-below. Run deploys via `./deploy.sh` (see Running a Deploy) rather than
-`uv run pyinfra` directly — it loads `secrets.sh` into its own subprocess
-and execs pyinfra, so these vars never leak into or linger in your
-interactive shell.
+Copy [`../.env.example`](../.env.example) to `../.env` (repo root,
+gitignored, never committed) and fill in real values for every required
+variable listed below. Run deploys via `./deploy.sh` (see Running a
+Deploy) rather than `uv run pyinfra` directly — it loads `.env` into its
+own subprocess and execs pyinfra, so these vars never leak into or linger
+in your interactive shell.
 
 ### inventory.py (`InventorySettings`)
 
@@ -171,10 +176,11 @@ it blindly on a new device.
 
 ## Running a Deploy
 
-Use `./deploy.sh` in place of `uv run pyinfra inventory.py` — it loads
-`secrets.sh` into its own subprocess and execs pyinfra with `inventory.py`
-plus whatever args you pass, so secrets never touch your interactive shell
-and you don't repeat `inventory.py` on every invocation. With no target
+Use `./deploy.sh` (repo root or `provisioning/`, interchangeably) in place
+of `uv run pyinfra inventory.py` — it loads `../.env` into its own
+subprocess and execs pyinfra with `inventory.py` plus whatever args you
+pass, so secrets never touch your interactive shell and you don't repeat
+`inventory.py` on every invocation. With no target
 given it defaults to `deploy.py` (everything); otherwise it resolves a
 short name to its `deploy_<name>.py` file (e.g. `gateway` → `deploy_gateway.py`)
 so you don't have to keep retyping the `deploy_` prefix either — the full

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"embed"
+	"io/fs"
 	"log"
 	"net"
 	"net/http"
@@ -10,7 +12,21 @@ import (
 	"github.com/nikbogman/homelab/control-plane/internal/gateway"
 )
 
+// uidist is populated by `npm run build` in ../../ui (vite.config.ts's
+// outDir) before this package is compiled -- provisioning/deploy_gateway.py
+// always builds the UI first. The checked-in .gitkeep placeholder is only
+// there so a fresh checkout compiles before the UI's ever been built;
+// go:embed requires the pattern to match at least one file.
+//
+//go:embed all:uidist
+var embeddedUI embed.FS
+
 func main() {
+	uiAssets, err := fs.Sub(embeddedUI, "uidist")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	host := envconfig.EnvOr("GATEWAY_HOST", "127.0.0.1")
 	port := envconfig.EnvOr("GATEWAY_PORT", "5000")
 
@@ -24,7 +40,7 @@ func main() {
 	cfg := gateway.Config{
 		MACAddress:       envconfig.MustEnv("COMPUTE_MAC_ADDRESS"),
 		BindHost:         host,
-		UIRoot:           "/srv/ui",
+		UIAssets:         uiAssets,
 		ComputeHost:      envconfig.MustEnv("COMPUTE_HOST"),
 		ComputeProxyPort: envconfig.MustEnvInt("COMPUTE_PROXY_PORT"),
 	}
