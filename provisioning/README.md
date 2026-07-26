@@ -1,7 +1,7 @@
 # pyinfra provisioning
 
 Declarative provisioning for the homelab control plane, per
-`.scratch/pyinfra-provisioning/spec.md`. Converges the Gateway (`gateway`,
+`docs/specs/pyinfra-provisioning/spec.md`. Converges the Gateway (`gateway`,
 the Pi Zero) and the compute host (`compute`) to their declared state:
 Tailscale joined, Docker installed on `compute`, and both the Gateway API
 and Compute API (plus the UI's static build) deployed as systemd services.

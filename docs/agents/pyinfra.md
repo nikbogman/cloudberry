@@ -1,10 +1,10 @@
 # pyinfra 3.x reference
 
-Ground-truth reference for implementing `.scratch/pyinfra-provisioning/issues/01-*.md` through `09-*.md` against **pyinfra 3.x** (verified against the installed `pyinfra==3.9.2` package and https://docs.pyinfra.com/en/3.x/). pyinfra 3.x is a rewrite of 1.x/2.x — do not trust blog posts, Stack Overflow, or general LLM training-data recall about pyinfra. Every claim below is cited to a docs.pyinfra.com/en/3.x/ page, or marked as derived from reading the installed package source when the docs prose doesn't spell it out.
+Ground-truth reference for implementing `docs/specs/pyinfra-provisioning/issues/01-*.md` through `09-*.md` against **pyinfra 3.x** (verified against the installed `pyinfra==3.9.2` package and https://docs.pyinfra.com/en/3.x/). pyinfra 3.x is a rewrite of 1.x/2.x — do not trust blog posts, Stack Overflow, or general LLM training-data recall about pyinfra. Every claim below is cited to a docs.pyinfra.com/en/3.x/ page, or marked as derived from reading the installed package source when the docs prose doesn't spell it out.
 
 ## Vocabulary mapping
 
-This repo's spec (`.scratch/pyinfra-provisioning/spec.md`) uses its own terms. Map them like this when reading pyinfra's docs/API:
+This repo's spec (`docs/specs/pyinfra-provisioning/spec.md`) uses its own terms. Map them like this when reading pyinfra's docs/API:
 
 | This repo's term | pyinfra's actual term | Notes |
 |---|---|---|

@@ -59,7 +59,7 @@ Infrastructure-as-code doesn't have application-level unit-test seams — the me
 2. **Disposable-container stage**: a `test` Host group in the inventory points at throwaway containers standing in for the `pi` and `server` OS bases. Deploys are applied against these first to catch real execution errors (bad package names, invalid templates, wrong command syntax) without risking the physical devices.
 3. **Idempotency on the real target**: the actual correctness test. Running a Deploy a second time immediately after the first against the real `pi`/`server` Host groups must report zero pending operations — this is how a Deploy file is verified to be correctly declarative, not merely "ran without error" once.
 
-No prior art exists in this repo for infrastructure testing (greenfield); this three-tier approach establishes the precedent. It follows the same highest-seam philosophy used in the control-system application spec (`.scratch/homelab-control-system/spec.md`) — test at the highest available boundary, mock only what's truly external — adapted to the fact that here the "external" boundary is the physical device itself, which can't be mocked away without losing the point of the test.
+No prior art exists in this repo for infrastructure testing (greenfield); this three-tier approach establishes the precedent. It follows the same highest-seam philosophy used in the control-system application spec (`docs/specs/homelab-control-system/spec.md`) — test at the highest available boundary, mock only what's truly external — adapted to the fact that here the "external" boundary is the physical device itself, which can't be mocked away without losing the point of the test.
 
 ## Out of Scope
 
@@ -75,4 +75,4 @@ No prior art exists in this repo for infrastructure testing (greenfield); this t
 - Domain vocabulary (Deploy, Deploy file, Host group) is defined in the Provisioning section of `CONTEXT.md` — use these exact terms in any implementation issues split out from this spec.
 - Architectural decisions referenced throughout (ADR-0006 through ADR-0010) live in `docs/adr/`.
 - Revisit ADR-0004-adjacent territory (bind-address enforcement) once this feature is built — right now the hard requirement from the control-system spec has no automated backstop anywhere in the codebase.
-- This spec assumes the control-system components it deploys (Control UI, Control Pi API, Control server API) are being built per `.scratch/homelab-control-system/spec.md`; this feature is about *how they get onto the devices*, not what they do once running.
+- This spec assumes the control-system components it deploys (Control UI, Control Pi API, Control server API) are being built per `docs/specs/homelab-control-system/spec.md`; this feature is about *how they get onto the devices*, not what they do once running.

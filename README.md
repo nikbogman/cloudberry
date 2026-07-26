@@ -36,6 +36,7 @@ Key architectural decisions are recorded as ADRs in [docs/adr/](docs/adr/), incl
 CONTEXT.md               domain glossary — read this first
 docs/adr/                 architectural decisions
 docs/agents/               how agent skills should use this repo's docs
+docs/specs/                 specs and issues for in-progress/planned features
 control-plane/
   ui/                       browser SPA (TypeScript + Vite)
   go.mod                    one Go module for the two control-plane binaries below
@@ -44,14 +45,13 @@ control-plane/
   internal/tailnet/         shared Go package: identity-header auth, bind-safety
   internal/eventlog/        shared Go package: Grafana Cloud event logging
 provisioning/               declarative provisioning (pyinfra) for the gateway and compute host
-.scratch/                   specs and issues for in-progress/planned features
 ```
 
 ## Status
 
-The control system itself (UI, both the Gateway API and Compute API, the Gateway proxy) is built per `.scratch/homelab-control-system/spec.md` — all five of its issues are implemented.
+The control system itself (UI, both the Gateway API and Compute API, the Gateway proxy) is built per `docs/specs/homelab-control-system/spec.md` — all five of its issues are implemented.
 
-**Declarative provisioning (pyinfra) is built** per `.scratch/pyinfra-provisioning/spec.md` — all nine of its issues are implemented in [`provisioning/`](provisioning), which converges the gateway and the compute host to their declared state (Tailscale, Docker, both the Gateway API and Compute API, the UI's static build) in one command. See [`provisioning/README.md`](provisioning/README.md) for usage, configuration, and the three-tier testing procedure. Tiers 2/3 of that procedure (disposable-container and real-device runs) still need running against real infrastructure — flagged explicitly in that README's Known gaps, not silently assumed done.
+**Declarative provisioning (pyinfra) is built** per `docs/specs/pyinfra-provisioning/spec.md` — all nine of its issues are implemented in [`provisioning/`](provisioning), which converges the gateway and the compute host to their declared state (Tailscale, Docker, both the Gateway API and Compute API, the UI's static build) in one command. See [`provisioning/README.md`](provisioning/README.md) for usage, configuration, and the three-tier testing procedure. Tiers 2/3 of that procedure (disposable-container and real-device runs) still need running against real infrastructure — flagged explicitly in that README's Known gaps, not silently assumed done.
 
 ## Development
 
@@ -63,4 +63,4 @@ The Gateway API and Compute API are one Go module (`control-plane/go.mod`) with 
 
 ## Working with this repo as an agent
 
-`CLAUDE.md` documents three agent-skill conventions used throughout this repo: an issue tracker under `.scratch/<feature-slug>/` ([docs/agents/issue-tracker.md](docs/agents/issue-tracker.md)), a five-role triage-label vocabulary ([docs/agents/triage-labels.md](docs/agents/triage-labels.md)), and single-context domain docs — this file plus `docs/adr/` ([docs/agents/domain.md](docs/agents/domain.md)).
+`CLAUDE.md` documents three agent-skill conventions used throughout this repo: an issue tracker under `docs/specs/<feature-slug>/` ([docs/agents/issue-tracker.md](docs/agents/issue-tracker.md)), a five-role triage-label vocabulary ([docs/agents/triage-labels.md](docs/agents/triage-labels.md)), and single-context domain docs — this file plus `docs/adr/` ([docs/agents/domain.md](docs/agents/domain.md)).

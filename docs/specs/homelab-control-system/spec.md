@@ -74,7 +74,7 @@ Tests should exercise external behavior at the highest available seam, not inter
 - Tailnet identity allow-listing / per-user authorization — tailnet membership alone is the authorization boundary (ADR-0004).
 - Local persistence, history stores, or databases on either device.
 - pyinfra playbook/role structure and content — provisioning tooling is confirmed but not designed in this spec.
-- GitHub Issues migration for this repo's tracker — currently using local markdown under `.scratch/`; revisit only if `gh` gets installed and configured.
+- GitHub Issues migration for this repo's tracker — currently using local markdown under `docs/specs/`; revisit only if `gh` gets installed and configured.
 
 ## Further Notes
 

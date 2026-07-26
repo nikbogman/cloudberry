@@ -34,4 +34,4 @@ npm run build         # tsc && vite build -> dist/
 
 ## Deployment
 
-Built on the dev machine (`npm run build`) and only the static `dist/` output is shipped to the Pi Zero — the Pi never runs a Node toolchain, a deliberate constraint given it's a single-core, low-memory device ([ADR-0006](../../docs/adr/0006-git-pull-deploy-with-offdevice-ui-build.md)). Automated by pyinfra's `deploy_gateway_api.py` (`../../pyinfra/deploy_gateway_api.py`, per `.scratch/pyinfra-provisioning/spec.md`), which builds the UI on the dev machine and syncs `dist/` to the Pi — see [`pyinfra/README.md`](../../pyinfra/README.md).
+Built on the dev machine (`npm run build`) and only the static `dist/` output is shipped to the Pi Zero — the Pi never runs a Node toolchain, a deliberate constraint given it's a single-core, low-memory device ([ADR-0006](../../docs/adr/0006-git-pull-deploy-with-offdevice-ui-build.md)). Automated by pyinfra's `deploy_gateway_api.py` (`../../pyinfra/deploy_gateway_api.py`, per `docs/specs/pyinfra-provisioning/spec.md`), which builds the UI on the dev machine and syncs `dist/` to the Pi — see [`pyinfra/README.md`](../../pyinfra/README.md).

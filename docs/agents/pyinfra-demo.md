@@ -4,18 +4,18 @@ Real, live verification performed for tickets whose acceptance criteria
 can't be checked by a type checker or test suite alone — infrastructure
 code's checks run through the tool's own execution engine or a real
 adjacent tool, not mocks (the same "highest available seam" philosophy
-`.scratch/pyinfra-provisioning/spec.md`'s Testing Decisions describes).
+`docs/specs/pyinfra-provisioning/spec.md`'s Testing Decisions describes).
 
 ## Ticket 04 demo: `git_systemd_service` verified live
 
-Ticket 04 (`.scratch/pyinfra-provisioning/issues/04-control-api-shared-deploy-helper.md`)
+Ticket 04 (`docs/specs/pyinfra-provisioning/issues/04-control-api-shared-deploy-helper.md`)
 requires the shared git-pull-plus-systemd-unit helper
 (`pyinfra/control_api_deploy.py`'s `git_systemd_service`) to be "demoed
 against a throwaway app/unit before either real Control API Deploy file
 adopts it." This was run for real, not assumed — no pytest/dry-run seam
 applies to a pyinfra deploy function, so the only faithful check is
 actually running it (the same "highest available seam" testing philosophy
-`.scratch/pyinfra-provisioning/spec.md`'s Testing Decisions describes).
+`docs/specs/pyinfra-provisioning/spec.md`'s Testing Decisions describes).
 
 ### Setup
 
@@ -135,7 +135,7 @@ line above, this one *was* actually compiled in and exercised:
    `POST /wake` and returned 502 once the retry window elapsed; a second
    request within the throttle window skipped the `/wake` call
    ("throttled, skipping") and still returned 502 the same way — matching
-   the fail-open, throttled design in `.scratch/caddy-wake-plugin/spec.md`.
+   the fail-open, throttled design in `docs/specs/caddy-wake-plugin/spec.md`.
 
 Step 2 is what surfaced the `handle_errors`-inside-`handle_path` bug
 documented in `pyinfra/README.md`'s "What was actually verified" section

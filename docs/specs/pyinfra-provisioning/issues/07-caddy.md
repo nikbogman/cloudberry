@@ -18,7 +18,7 @@
 Implemented in `pyinfra/deploy_caddy.py` + `pyinfra/templates/Caddyfile.j2`.
 The workload routes and the reusable `auto_wake_route` snippet are the
 templated evolution of `services/auto_wake_proxy/Caddyfile` (built by
-`.scratch/homelab-control-system/issues/05-auto-wake-proxy.md`), now
+`docs/specs/homelab-control-system/issues/05-auto-wake-proxy.md`), now
 generated from a `WORKLOADS` list instead of hand-duplicated per site, so
 adding a workload is a one-line repo edit. A new site block serves the
 Control UI's static files and path-routes `/wake` to the Control Pi API,
