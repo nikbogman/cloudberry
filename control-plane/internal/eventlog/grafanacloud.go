@@ -15,6 +15,7 @@ package eventlog
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -103,4 +104,9 @@ func (g *GrafanaCloudLogger) SendEvent(eventType, outcome string, identity *stri
 		return
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		respBody, _ := io.ReadAll(resp.Body)
+		log.Printf("failed to ship event %s to Grafana Cloud: unexpected status %d: %s", eventType, resp.StatusCode, respBody)
+	}
 }

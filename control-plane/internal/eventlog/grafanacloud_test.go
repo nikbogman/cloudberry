@@ -1,11 +1,15 @@
 package eventlog
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -90,6 +94,28 @@ func TestSendEventIncludesExtraFieldsInTheLine(t *testing.T) {
 	}
 	if gotLine.Extra["previous_state"] != "unreachable" {
 		t.Fatalf("got extra %v, want previous_state=unreachable", gotLine.Extra)
+	}
+}
+
+func TestSendEventLogsUnexpectedStatusCode(t *testing.T) {
+	// A wrong Loki URL/user/API key still gets a response, not a transport
+	// error -- this must be surfaced too, not just connection failures.
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte("invalid credentials"))
+	}))
+	defer server.Close()
+
+	var logs bytes.Buffer
+	log.SetOutput(&logs)
+	defer log.SetOutput(os.Stderr)
+
+	logger := NewGrafanaCloudLogger(server.URL, testLokiUser, testLokiAPIKey, "gateway-api")
+	logger.SendEvent("wake_requested", "success", nil, nil)
+
+	got := logs.String()
+	if !strings.Contains(got, "401") || !strings.Contains(got, "invalid credentials") {
+		t.Fatalf("got log output %q, want it to mention status 401 and the response body", got)
 	}
 }
 
