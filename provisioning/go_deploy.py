@@ -25,7 +25,7 @@ build step (same caveat `deploy_gateway.py`'s UI build already documents).
 """
 
 from pyinfra import local
-from pyinfra.operations import files, systemd
+from pyinfra.operations import files, server, systemd
 
 
 def go_binary_systemd_service(
@@ -60,12 +60,32 @@ def go_binary_systemd_service(
         print_output=True,
     )
 
+    # Uploaded to a stable staging path, kept across runs (not
+    # remote_binary directly, and never deleted) so this diff against dest
+    # stays accurate on every run -- restarted=binary.will_change below
+    # depends on that to skip restarting when the binary hasn't changed.
+    staged_binary = f"{remote_binary}.new"
     binary = files.put(
         name=f"Ship the {binary_name} binary",
         src=local_binary,
-        dest=remote_binary,
+        dest=staged_binary,
         mode="755",
     )
+
+    if binary.will_change:
+        # pyinfra's sudo upload path shells out `cp <tmp> <dest>`, which
+        # opens and truncates dest -- the kernel refuses that with ETXTBSY
+        # once remote_binary is a currently-running systemd service's own
+        # mapped executable (files.put above sidesteps this by writing to
+        # staged_binary instead). Swap it into place via a fresh temp copy
+        # + `mv`: rename only swaps the directory entry, which the kernel
+        # always allows even while the old inode is still executing, and
+        # this leaves staged_binary itself intact for the next run's diff.
+        swap_tmp = f"{remote_binary}.swap"
+        server.shell(
+            name=f"Move the staged {binary_name} binary into place",
+            commands=[f"cp {staged_binary} {swap_tmp} && mv -f {swap_tmp} {remote_binary}"],
+        )
 
     unit = files.template(
         name=f"Install unit file for {unit_name}",
