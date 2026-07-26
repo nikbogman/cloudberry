@@ -66,9 +66,18 @@ class TailscaleSettings(BaseSettings):
 
 
 class GatewaySettings(BaseSettings):
-    gateway_host: str = "127.0.0.1"
+    # Deliberately not named gateway_host/compute_host: neither class here
+    # sets an env_prefix, so those names would silently alias
+    # InventorySettings.gateway_host/compute_host (pyinfra's own SSH
+    # targets, which may be plain LAN addresses) via the shared env var.
+    # These two configure the Gateway binary itself at runtime instead:
+    # gateway_bind_host must stay loopback/tailnet-only
+    # (AssertTailnetOnlyBind rejects anything else), and gateway_proxy_host
+    # is the host it reverse-proxies /server* to, which must be reachable
+    # from the Gateway device over the tailnet.
+    gateway_bind_host: str = "127.0.0.1"
     gateway_port: int = 5000
-    compute_host: str = "main-server.tailnet"
+    gateway_proxy_host: str = "main-server.tailnet"
     # No default (ADR-0011): the server-side proxy this points at doesn't
     # exist yet, so there's no real value to fall back to.
     compute_proxy_port: int

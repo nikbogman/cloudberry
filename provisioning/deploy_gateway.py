@@ -79,9 +79,9 @@ if has_device_role("gateway"):
         description="Gateway -- serves the UI, sends Wake-on-LAN, and proxies to the compute host",
         environment={
             "COMPUTE_MAC_ADDRESS": secrets.compute_mac_address,
-            "GATEWAY_HOST": gateway_settings.gateway_host,
+            "GATEWAY_HOST": gateway_settings.gateway_bind_host,
             "GATEWAY_PORT": str(gateway_settings.gateway_port),
-            "COMPUTE_HOST": gateway_settings.compute_host,
+            "COMPUTE_HOST": gateway_settings.gateway_proxy_host,
             "COMPUTE_PROXY_PORT": str(gateway_settings.compute_proxy_port),
             "GRAFANA_CLOUD_LOKI_URL": secrets.grafana_cloud_loki_url,
             "GRAFANA_CLOUD_LOKI_USER": secrets.grafana_cloud_loki_user,
