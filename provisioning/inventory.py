@@ -14,8 +14,8 @@ the real device or a disposable stand-in. Test hosts aren't added into the
 `gateway`/`compute` groups themselves, since those groups must stay
 targetable in isolation via `--limit`, which a shared group name would
 break. See docs/agents/pyinfra.md for why `test` uses the `@ssh` connector
-rather than `@docker` image mode. pyinfra/README.md documents how to stand
-up these containers.
+rather than `@docker` image mode. provisioning/README.md documents how to
+stand up these containers.
 """
 
 from settings import InventorySettings

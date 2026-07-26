@@ -26,3 +26,24 @@ body {
 #reachability-status[data-state='unreachable'] {
   color: firebrick;
 }
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+#action-error {
+  margin-top: 0.75rem;
+  color: firebrick;
+  font-weight: 600;
+}
+
+#action-error[hidden] {
+  display: none;
+}

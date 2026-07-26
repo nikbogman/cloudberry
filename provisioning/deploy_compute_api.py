@@ -63,7 +63,7 @@ if has_device_role("compute"):
         )
 
     go_binary_systemd_service(
-        module_dir="../services",
+        module_dir="../control-plane",
         package="./cmd/compute-api",
         goos="linux",
         goarch=GOARCH_BY_DPKG_ARCH[dpkg_arch],

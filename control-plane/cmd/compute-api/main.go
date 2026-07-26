@@ -5,9 +5,9 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/nikbogman/homelab/services/internal/compute"
-	"github.com/nikbogman/homelab/services/internal/envconfig"
-	"github.com/nikbogman/homelab/services/internal/eventlog"
+	"github.com/nikbogman/homelab/control-plane/internal/compute"
+	"github.com/nikbogman/homelab/control-plane/internal/envconfig"
+	"github.com/nikbogman/homelab/control-plane/internal/eventlog"
 )
 
 func main() {

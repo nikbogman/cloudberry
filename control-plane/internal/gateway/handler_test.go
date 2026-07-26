@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/nikbogman/homelab/services/internal/tailnet"
+	"github.com/nikbogman/homelab/control-plane/internal/tailnet"
 )
 
 const (

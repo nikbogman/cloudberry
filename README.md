@@ -12,20 +12,19 @@ Two physical devices on the same tailnet and the same LAN broadcast domain:
 - **Compute host** — the workload machine (Immich, AI agents, etc.), spends most of its time suspended to RAM.
 
 ```
- Browser (tailnet) ──┬──> UI (Gateway, static)
-                      │        │
-                      │        ├──POST /wake────> Gateway API (Gateway) ──WoL──> Compute host
-                      │        │
-                      │        └──GET /health, POST /suspend──> Compute API (compute host)
+ Browser (tailnet) ──┬──> UI (Gateway, static, served by the Gateway API)
                       │
-                      └──any request──> Gateway proxy (Gateway, Caddy) ──proxies + WoL──> Compute host workloads
+                      ├──POST /wake───────────────> Gateway API (Gateway) ──WoL──> Compute host
+                      │
+                      ├──any /server* request──────> Gateway API (Gateway) ──proxies + auto-WoL──> Compute host workloads
+                      │
+                      └──GET /health, POST /suspend──> Compute API (compute host)
 ```
 
-- **[UI](services/ui)** — the browser app. Polls reachability, offers Wake/Suspend buttons. The only user-facing surface.
-- **[Gateway API](services/README.md#gateway-api)** — sends a deliberate Wake-on-LAN packet when the Wake button is pressed.
-- **[Compute API](services/README.md#compute-api)** — exposes the Suspend action and the reachability health check the UI polls.
-- **[Gateway proxy](services/gateway-proxy)** — a Caddy config on the Gateway that reverse-proxies every workload service and transparently triggers the Gateway API's wake action on any request while the compute host is asleep ([ADR-0012](docs/adr/0012-auto-wake-proxy-calls-control-pi-api.md)).
-- **[tailnet](services/README.md#internal-tailnet)** and **[eventlog](services/README.md#internal-eventlog)** — the identity-auth/bind-safety and Grafana Cloud event-logging libraries both Go binaries depend on.
+- **[UI](control-plane/ui)** — the browser app. Polls reachability, offers Wake/Suspend buttons. The only user-facing surface.
+- **[Gateway API](control-plane/README.md#gateway-api)** — one process on the Gateway that serves the UI's static files, sends a deliberate Wake-on-LAN packet when the Wake button is pressed, and reverse-proxies `/server*` to the Compute host, auto-waking it on a transport failure ([ADR-0012](docs/adr/0012-auto-wake-proxy-calls-control-pi-api.md), [ADR-0016](docs/adr/0016-caddy-removed-gateway-absorbs-its-job.md)).
+- **[Compute API](control-plane/README.md#compute-api)** — exposes the Suspend action and the reachability health check the UI polls.
+- **[tailnet](control-plane/README.md#internal-tailnet)** and **[eventlog](control-plane/README.md#internal-eventlog)** — the identity-auth/bind-safety and Grafana Cloud event-logging libraries both Go binaries depend on.
 
 Auth for every control-plane endpoint is the `Tailscale-User-Login` header injected by `tailscale serve`: tailnet membership is the entire authorization boundary, with no separate allow-list ([ADR-0004](docs/adr/0004-tailnet-membership-authorization.md)).
 
@@ -34,34 +33,33 @@ Key architectural decisions are recorded as ADRs in [docs/adr/](docs/adr/), incl
 ## Repo layout
 
 ```
-CONTEXT.md              domain glossary — read this first
-docs/adr/                architectural decisions
-docs/agents/              how agent skills should use this repo's docs
-services/
-  ui/                      browser SPA (TypeScript + Vite)
-  go.mod                   one Go module for the two control-plane binaries below
-  cmd/gateway-api/         Go binary on the Gateway (Wake)
-  cmd/compute-api/         Go binary on the compute host (Suspend, health)
-  internal/tailnet/        shared Go package: identity-header auth, bind-safety
-  internal/eventlog/       shared Go package: Grafana Cloud event logging
-  gateway-proxy/           Caddy config for transparent per-workload wake
-pyinfra/                   declarative provisioning (pyinfra) for the gateway and compute host
-.scratch/                  specs and issues for in-progress/planned features
+CONTEXT.md               domain glossary — read this first
+docs/adr/                 architectural decisions
+docs/agents/               how agent skills should use this repo's docs
+control-plane/
+  ui/                       browser SPA (TypeScript + Vite)
+  go.mod                    one Go module for the two control-plane binaries below
+  cmd/gateway/              Go binary on the Gateway (serves the UI, Wake, /server* proxy + auto-wake)
+  cmd/compute-api/          Go binary on the compute host (Suspend, health)
+  internal/tailnet/         shared Go package: identity-header auth, bind-safety
+  internal/eventlog/        shared Go package: Grafana Cloud event logging
+provisioning/               declarative provisioning (pyinfra) for the gateway and compute host
+.scratch/                   specs and issues for in-progress/planned features
 ```
 
 ## Status
 
 The control system itself (UI, both the Gateway API and Compute API, the Gateway proxy) is built per `.scratch/homelab-control-system/spec.md` — all five of its issues are implemented.
 
-**Declarative provisioning (pyinfra) is built** per `.scratch/pyinfra-provisioning/spec.md` — all nine of its issues are implemented in [`pyinfra/`](pyinfra), which converges the gateway and the compute host to their declared state (Tailscale, Docker, Caddy, both the Gateway API and Compute API, the UI's static build) in one command. See [`pyinfra/README.md`](pyinfra/README.md) for usage, configuration, and the three-tier testing procedure. Tiers 2/3 of that procedure (disposable-container and real-device runs) and the Caddy binary's own provisioning still need running against real infrastructure — flagged explicitly in that README's Known gaps, not silently assumed done.
+**Declarative provisioning (pyinfra) is built** per `.scratch/pyinfra-provisioning/spec.md` — all nine of its issues are implemented in [`provisioning/`](provisioning), which converges the gateway and the compute host to their declared state (Tailscale, Docker, both the Gateway API and Compute API, the UI's static build) in one command. See [`provisioning/README.md`](provisioning/README.md) for usage, configuration, and the three-tier testing procedure. Tiers 2/3 of that procedure (disposable-container and real-device runs) still need running against real infrastructure — flagged explicitly in that README's Known gaps, not silently assumed done.
 
 ## Development
 
-The Gateway API and Compute API are one Go module (`services/go.mod`) with the shared `tailnet`/`eventlog` packages and both binaries as packages underneath it — `go test ./...`/`go build ./...` from `services/` covers both. `ui` is a separate npm project. `pyinfra/` is an independent `uv` project (not an installable package). There's no single root-level build across all three. See:
+The Gateway API and Compute API are one Go module (`control-plane/go.mod`) with the shared `tailnet`/`eventlog` packages and both binaries as packages underneath it — `go test ./...`/`go build ./...` from `control-plane/` covers both. `ui` is a separate npm project. `provisioning/` is an independent `uv` project (not an installable package). There's no single root-level build across all three. See:
 
-- [services/README.md](services/README.md)
-- [services/ui/README.md](services/ui/README.md)
-- [pyinfra/README.md](pyinfra/README.md)
+- [control-plane/README.md](control-plane/README.md)
+- [control-plane/ui/README.md](control-plane/ui/README.md)
+- [provisioning/README.md](provisioning/README.md)
 
 ## Working with this repo as an agent
 

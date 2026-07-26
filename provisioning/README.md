@@ -13,7 +13,7 @@ citations live in [`docs/agents/pyinfra.md`](../docs/agents/pyinfra.md).
 ## Layout
 
 ```
-pyinfra/
+provisioning/
   inventory.py                    # gateway / compute / test Host groups (ticket 01)
   common.py                       # shared linux_codename()/linux_distro_id()/has_device_role()/TailscaleServeStatus helpers
   settings.py                     # pydantic-settings classes -- typed env var config
@@ -29,16 +29,12 @@ pyinfra/
     binary.service.j2              # systemd unit template, the Gateway API and Compute API (ADR-0015)
 ```
 
-**Run every command from inside this directory** (`cd pyinfra/` first).
+**Run every command from inside this directory** (`cd provisioning/` first).
 Deploy files import from sibling modules (`from common import ...`,
 `from go_deploy import ...`) and `files.template` resolves
 `templates/*.j2` relative to the current working directory — both need
-`pyinfra/` on `sys.path`/as cwd, which pyinfra only does automatically for
-the directory it's actually invoked from. (Running from the repo root
-with `pyinfra/`-prefixed paths, as `docs/agents/pyinfra.md`'s generic
-examples show, would also put a directory literally named `pyinfra` next
-to the real installed `pyinfra` package on `sys.path` — avoided entirely
-by the `cd pyinfra/` convention.)
+`provisioning/` on `sys.path`/as cwd, which pyinfra only does automatically
+for the directory it's actually invoked from.
 
 ## Setup
 
@@ -49,7 +45,7 @@ anything imports. Also requires a Go toolchain on the dev machine, for the
 Gateway API/Compute API builds (ADR-0015):
 
 ```sh
-cd pyinfra
+cd provisioning
 uv sync
 ```
 
@@ -115,7 +111,7 @@ origin would break CORS/HTTPS.
 
 ### deploy_gateway.py (`GatewaySettings`, `GatewaySecrets`)
 
-Cross-compiles `services/cmd/gateway` for the Pi Zero W (`GOOS=linux
+Cross-compiles `control-plane/cmd/gateway` for the Pi Zero W (`GOOS=linux
 GOARCH=arm GOARM=6`) on the dev machine and ships only the binary --
 there's no repo to pull or ref to check out on-device anymore (ADR-0015).
 Since ADR-0016 removed Caddy from the Gateway, this is also the only
@@ -146,7 +142,7 @@ trusting it blindly on a new device.
 
 ### deploy_compute_api.py (`ComputeApiSettings`, `ComputeApiSecrets`)
 
-Cross-compiles `services/cmd/compute-api` on the dev machine and ships only
+Cross-compiles `control-plane/cmd/compute-api` on the dev machine and ships only
 the binary, same as the Gateway API (ADR-0015) -- `GOARCH` is read from the
 device's real architecture (`common.DpkgArchitecture`) rather than
 hardcoded, since unlike the Pi Zero W, `compute` isn't a fixed known
@@ -247,7 +243,7 @@ docker run -d --name compute-test --privileged --cgroupns=host \
 # via `docker exec`, then `systemctl start ssh` inside each container).
 ```
 
-Then, from `pyinfra/`:
+Then, from `provisioning/`:
 
 ```sh
 ./deploy.sh --limit test

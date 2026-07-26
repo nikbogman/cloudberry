@@ -52,7 +52,7 @@ if has_device_role("gateway"):
     # would need GOARCH=arm64 (or GOARCH=arm GOARM=7 on a 32-bit OS)
     # instead; update this if the real device ever changes.
     go_binary_systemd_service(
-        module_dir="../services",
+        module_dir="../control-plane",
         package="./cmd/gateway",
         goos="linux",
         goarch="arm",
@@ -77,14 +77,14 @@ if has_device_role("gateway"):
     # Compute API directly (ADR-0001). VITE_GATEWAY_API_URL is left unset --
     # same-origin works since the Gateway serves both the UI and /wake.
     local.shell(
-        f"cd ../services/ui && npm ci && "
+        f"cd ../control-plane/ui && npm ci && "
         f"VITE_COMPUTE_API_URL=https://{inventory.compute_tailnet_host} npm run build",
         print_output=True,
     )
 
     files.sync(
         name="Sync the UI's static build to gateway",
-        src="../services/ui/dist",
+        src="../control-plane/ui/dist",
         dest="/srv/ui",
         delete=True,
     )

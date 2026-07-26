@@ -1,6 +1,6 @@
 # Control-plane services (Go)
 
-One Go module (`go.mod` in this directory, `github.com/nikbogman/homelab/services`) covering the Gateway API, Compute API, and the `tailnet`/`eventlog` libraries they share. See [ADR-0015](../docs/adr/0015-pi-api-and-server-api-rewritten-in-go-built-off-device.md) for why this is Go rather than the original Flask apps, and why it's one module rather than three.
+One Go module (`go.mod` in this directory, `github.com/nikbogman/homelab/control-plane`) covering the Gateway API, Compute API, and the `tailnet`/`eventlog` libraries they share. See [ADR-0015](../docs/adr/0015-pi-api-and-server-api-rewritten-in-go-built-off-device.md) for why this is Go rather than the original Flask apps, and why it's one module rather than three.
 
 ```
 cmd/gateway/main.go      thin entrypoint: env → wiring → ListenAndServe
@@ -54,7 +54,7 @@ Requires the Gateway and the compute host to share an L2 broadcast domain ([ADR-
 | `GATEWAY_HOST` | no (default `127.0.0.1`) | Bind address. Asserted at startup to be loopback or a tailnet address ([`tailnet.AssertTailnetOnlyBind`](internal/tailnet/bindsafety.go)) — the process refuses to start if this would expose it off-tailnet. |
 | `GATEWAY_PORT` | no (default `5000`) | Port to listen on. |
 
-Deployed as a systemd unit on the Pi Zero, not Docker ([ADR-0007](../docs/adr/0007-systemd-not-docker-for-control-apis.md)). The binary is cross-compiled for the Pi Zero W on the dev machine and shipped — it never runs a Go toolchain itself ([ADR-0015](../docs/adr/0015-pi-api-and-server-api-rewritten-in-go-built-off-device.md)). Automated by pyinfra's `deploy_gateway.py` (`../pyinfra/deploy_gateway.py`) — see [`pyinfra/README.md`](../pyinfra/README.md).
+Deployed as a systemd unit on the Pi Zero, not Docker ([ADR-0007](../docs/adr/0007-systemd-not-docker-for-control-apis.md)). The binary is cross-compiled for the Pi Zero W on the dev machine and shipped — it never runs a Go toolchain itself ([ADR-0015](../docs/adr/0015-pi-api-and-server-api-rewritten-in-go-built-off-device.md)). Automated by pyinfra's `deploy_gateway.py` (`../provisioning/deploy_gateway.py`) — see [`provisioning/README.md`](../provisioning/README.md).
 
 ## Compute API
 
@@ -76,7 +76,7 @@ Suspend-to-RAM is the only sleep state this app can trigger — no code path any
 | `COMPUTE_API_HOST` | no (default `127.0.0.1`) | Bind address. Asserted at startup to be loopback or a tailnet address — the process refuses to start if this would expose it off-tailnet. |
 | `COMPUTE_API_PORT` | no (default `5000`) | Port to listen on. |
 
-Deployed as a systemd unit on the compute host, not Docker — chosen so this app stays controllable even while Docker itself is being redeployed ([ADR-0007](../docs/adr/0007-systemd-not-docker-for-control-apis.md)). Built off-device and shipped as a binary, same as the Gateway API ([ADR-0015](../docs/adr/0015-pi-api-and-server-api-rewritten-in-go-built-off-device.md)). Automated by pyinfra's `deploy_compute_api.py` (`../pyinfra/deploy_compute_api.py`).
+Deployed as a systemd unit on the compute host, not Docker — chosen so this app stays controllable even while Docker itself is being redeployed ([ADR-0007](../docs/adr/0007-systemd-not-docker-for-control-apis.md)). Built off-device and shipped as a binary, same as the Gateway API ([ADR-0015](../docs/adr/0015-pi-api-and-server-api-rewritten-in-go-built-off-device.md)). Automated by pyinfra's `deploy_compute_api.py` (`../provisioning/deploy_compute_api.py`).
 
 ## `internal/tailnet`
 

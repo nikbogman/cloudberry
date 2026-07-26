@@ -1,5 +1,5 @@
 .venv/
-pyinfra/secrets.sh
+provisioning/secrets.sh
 __pycache__/
 *.pyc
 .mypy_cache/

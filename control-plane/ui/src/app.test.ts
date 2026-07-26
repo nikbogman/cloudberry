@@ -16,6 +16,14 @@ function suspendButton(): HTMLButtonElement {
   return document.querySelector('#suspend-button')!
 }
 
+function refreshButton(): HTMLButtonElement {
+  return document.querySelector('#refresh-button')!
+}
+
+function actionError(): HTMLElement {
+  return document.querySelector('#action-error')!
+}
+
 function stubFetch(status: number): ReturnType<typeof vi.fn> {
   const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status }))
   vi.stubGlobal('fetch', fetchMock)
@@ -55,7 +63,7 @@ describe('mountUi', () => {
     await vi.waitFor(() => expect(statusElement().dataset.state).toBe('reachable'))
 
     expect(statusElement().textContent).toBe('Reachable')
-    expect(fetch).toHaveBeenCalledWith(`${COMPUTE_API_BASE_URL}/health`)
+    expect(fetch).toHaveBeenCalledWith(`${COMPUTE_API_BASE_URL}/health`, { signal: expect.any(AbortSignal) })
   })
 
   it('shows Unreachable when the health check fails to connect', async () => {
@@ -189,5 +197,98 @@ describe('mountUi', () => {
     suspendButton().click()
 
     expect(fetchMock).toHaveBeenCalledWith(`${COMPUTE_API_BASE_URL}/suspend`, { method: 'POST' })
+  })
+
+  it('shows a loading label and disables the button while wake is in flight', async () => {
+    let resolveWake!: (value: Response) => void
+    const fetchMock = vi.fn((url: string) => {
+      if (url.endsWith('/wake')) return new Promise<Response>((resolve) => (resolveWake = resolve))
+      return new Promise<Response>(() => {}) // health check never resolves; keep state 'checking'
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    unmount = mountUi(container, { computeApiBaseUrl: COMPUTE_API_BASE_URL })
+    expect(statusElement().dataset.state).toBe('checking')
+
+    wakeButton().click()
+    expect(wakeButton().textContent).toBe('Waking…')
+    expect(wakeButton().disabled).toBe(true)
+    expect(suspendButton().disabled).toBe(true)
+    expect(refreshButton().disabled).toBe(true)
+
+    resolveWake(new Response(null, { status: 200 }))
+    await vi.waitFor(() => expect(wakeButton().textContent).toBe('Wake'))
+    expect(wakeButton().disabled).toBe(false)
+  })
+
+  it('shows a visible error when the wake request fails to reach the server', async () => {
+    stubFetch(502)
+    unmount = mountUi(container, { computeApiBaseUrl: COMPUTE_API_BASE_URL, gatewayApiBaseUrl: GATEWAY_API_BASE_URL })
+    await vi.waitFor(() => expect(statusElement().dataset.state).toBe('unreachable'))
+
+    const fetchMock = vi.fn().mockRejectedValue(new Error('network error'))
+    vi.stubGlobal('fetch', fetchMock)
+
+    wakeButton().click()
+    await vi.waitFor(() => expect(actionError().hidden).toBe(false))
+    expect(actionError().textContent).toBe('Wake failed: could not reach the server.')
+  })
+
+  it('shows a visible error when the suspend request returns a non-2xx status', async () => {
+    stubFetch(200)
+    unmount = mountUi(container, { computeApiBaseUrl: COMPUTE_API_BASE_URL })
+    await vi.waitFor(() => expect(statusElement().dataset.state).toBe('reachable'))
+
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 500 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    suspendButton().click()
+    await vi.waitFor(() => expect(actionError().hidden).toBe(false))
+    expect(actionError().textContent).toBe('Suspend failed (HTTP 500).')
+  })
+
+  it('clears a previous action error on the next action attempt', async () => {
+    stubFetch(200)
+    unmount = mountUi(container, { computeApiBaseUrl: COMPUTE_API_BASE_URL })
+    await vi.waitFor(() => expect(statusElement().dataset.state).toBe('reachable'))
+
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network error')))
+    suspendButton().click()
+    await vi.waitFor(() => expect(actionError().hidden).toBe(false))
+
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 200 })))
+    suspendButton().click()
+    expect(actionError().hidden).toBe(true)
+  })
+
+  it('re-polls immediately when the refresh button is clicked', async () => {
+    const fetchMock = stubFetch(200)
+
+    unmount = mountUi(container, { computeApiBaseUrl: COMPUTE_API_BASE_URL, intervalMs: 60_000 })
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+
+    refreshButton().click()
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2))
+  })
+
+  it('aborts a health check that hangs past the timeout, marking the server unreachable', async () => {
+    const abortedSignals: AbortSignal[] = []
+    const fetchMock = vi.fn((_url: string, init?: RequestInit) => {
+      const signal = init?.signal as AbortSignal
+      return new Promise<Response>((_resolve, reject) => {
+        signal.addEventListener('abort', () => {
+          abortedSignals.push(signal)
+          reject(new DOMException('aborted', 'AbortError'))
+        })
+      })
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    unmount = mountUi(container, { computeApiBaseUrl: COMPUTE_API_BASE_URL })
+    expect(statusElement().dataset.state).toBe('checking')
+
+    await vi.advanceTimersByTimeAsync(5_000)
+    await vi.waitFor(() => expect(statusElement().dataset.state).toBe('unreachable'))
+    expect(abortedSignals).toHaveLength(1)
   })
 })
