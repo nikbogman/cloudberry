@@ -1,6 +1,3 @@
-// Wake-on-LAN: builds and broadcasts the magic packet that wakes the
-// compute host. BuildMagicPacket is pure and tested directly;
-// WakeOnLanSender.Send is the seam mocked in handler tests.
 package gateway
 
 import (
@@ -17,8 +14,8 @@ const (
 	defaultWakeOnLANPort = 9
 )
 
-// BuildMagicPacket builds a Wake-on-LAN magic packet for macAddress, which
-// may be colon- or hyphen-separated and of either case.
+// BuildMagicPacket accepts a MAC address that's colon- or hyphen-separated,
+// in either case.
 func BuildMagicPacket(macAddress string) ([]byte, error) {
 	cleaned := strings.NewReplacer(":", "", "-", "").Replace(macAddress)
 	macBytes, err := hex.DecodeString(cleaned)
@@ -48,7 +45,6 @@ func NewWakeOnLanSender() *WakeOnLanSender {
 	return &WakeOnLanSender{broadcastAddress: defaultBroadcastAddr, port: defaultWakeOnLANPort}
 }
 
-// Send builds and broadcasts a WoL magic packet for macAddress.
 func (s *WakeOnLanSender) Send(macAddress string) error {
 	packet, err := BuildMagicPacket(macAddress)
 	if err != nil {

@@ -1,5 +1,5 @@
 // Package tailnet holds tailnet identity-header auth and bind-safety
-// helpers shared by the Gateway API and Compute API.
+// helpers.
 //
 // Both apps sit behind `tailscale serve`, which injects the
 // Tailscale-User-Login header for any tailnet-authenticated caller. These
@@ -14,7 +14,6 @@ import (
 )
 
 const (
-	// IdentityHeader is injected by tailscale serve for any tailnet-authenticated caller.
 	IdentityHeader = "Tailscale-User-Login"
 	// LoopbackIdentity is the synthetic identity assigned to a caller on
 	// 127.0.0.1 with no identity header (ADR-0004, ADR-0012) — the

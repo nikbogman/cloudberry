@@ -1,10 +1,5 @@
 package gateway
 
-// Note: wake_plugin's per-URL/per-target throttle isolation test
-// (TestCall_DoesNotThrottleDifferentURLs) has no equivalent here -- this
-// service has exactly one compute upstream, so "isolation between two
-// independent throttle keys" isn't a scenario that exists anymore.
-
 import (
 	"errors"
 	"net"
@@ -71,14 +66,10 @@ func TestProxy_AutoWakeThrottlesRepeatCallsWithinTheWindow(t *testing.T) {
 
 	computeHost, computeProxyPort := closedPortTarget(t)
 	waker := &fakeWaker{}
-	logger := &fakeLogger{}
-	h, err := NewHandler(Config{
+	h := mustNewHandlerWithConfig(t, Config{
 		MACAddress: testMACAddress, BindHost: "127.0.0.1", UIRoot: t.TempDir(),
 		ComputeHost: computeHost, ComputeProxyPort: computeProxyPort,
-	}, waker, logger)
-	if err != nil {
-		t.Fatalf("NewHandler failed: %v", err)
-	}
+	}, waker, &fakeLogger{})
 
 	h.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/server/foo", nil))
 	h.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/server/bar", nil))
@@ -94,13 +85,10 @@ func TestProxy_AutoWakeDoesNotThrottleOnceTheWindowHasElapsed(t *testing.T) {
 
 	computeHost, computeProxyPort := closedPortTarget(t)
 	waker := &fakeWaker{}
-	h, err := NewHandler(Config{
+	h := mustNewHandlerWithConfig(t, Config{
 		MACAddress: testMACAddress, BindHost: "127.0.0.1", UIRoot: t.TempDir(),
 		ComputeHost: computeHost, ComputeProxyPort: computeProxyPort,
 	}, waker, &fakeLogger{})
-	if err != nil {
-		t.Fatalf("NewHandler failed: %v", err)
-	}
 
 	h.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/server/foo", nil))
 	time.Sleep(20 * time.Millisecond)
@@ -116,13 +104,10 @@ func TestProxy_FailsOpenWhenTheWakerErrors(t *testing.T) {
 
 	computeHost, computeProxyPort := closedPortTarget(t)
 	waker := &fakeWaker{err: errTestWaker}
-	h, err := NewHandler(Config{
+	h := mustNewHandlerWithConfig(t, Config{
 		MACAddress: testMACAddress, BindHost: "127.0.0.1", UIRoot: t.TempDir(),
 		ComputeHost: computeHost, ComputeProxyPort: computeProxyPort,
 	}, waker, &fakeLogger{})
-	if err != nil {
-		t.Fatalf("NewHandler failed: %v", err)
-	}
 
 	done := make(chan struct{})
 	rec := httptest.NewRecorder()
@@ -154,13 +139,10 @@ func TestProxy_ARealHTTPErrorFromALiveBackendPassesThroughWithoutWaking(t *testi
 	computeHost, computeProxyPort := splitHostPort(t, backend.URL)
 
 	waker := &fakeWaker{}
-	h, err := NewHandler(Config{
+	h := mustNewHandlerWithConfig(t, Config{
 		MACAddress: testMACAddress, BindHost: "127.0.0.1", UIRoot: t.TempDir(),
 		ComputeHost: computeHost, ComputeProxyPort: computeProxyPort,
 	}, waker, &fakeLogger{})
-	if err != nil {
-		t.Fatalf("NewHandler failed: %v", err)
-	}
 
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/server/foo", nil))
@@ -186,13 +168,10 @@ func TestProxy_RetriesUntilTheBackendStartsRespondingWithinTheWindow(t *testing.
 	}))
 
 	waker := &fakeWaker{}
-	h, err := NewHandler(Config{
+	h := mustNewHandlerWithConfig(t, Config{
 		MACAddress: testMACAddress, BindHost: "127.0.0.1", UIRoot: t.TempDir(),
 		ComputeHost: computeHost, ComputeProxyPort: computeProxyPort,
 	}, waker, &fakeLogger{})
-	if err != nil {
-		t.Fatalf("NewHandler failed: %v", err)
-	}
 
 	// Start the real backend on the same address shortly after the first
 	// attempt fails, simulating the compute host waking up mid-retry-loop.
@@ -235,13 +214,10 @@ func TestProxy_ServesStaticFilesFromUIRoot(t *testing.T) {
 	dir := t.TempDir()
 	writeFile(t, dir, "index.html", "<html>hi</html>")
 
-	h, err := NewHandler(Config{
+	h := mustNewHandlerWithConfig(t, Config{
 		MACAddress: testMACAddress, BindHost: "127.0.0.1", UIRoot: dir,
 		ComputeHost: "127.0.0.1", ComputeProxyPort: 1,
 	}, &fakeWaker{}, &fakeLogger{})
-	if err != nil {
-		t.Fatalf("NewHandler failed: %v", err)
-	}
 
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/", nil))
@@ -258,13 +234,10 @@ func TestProxy_DoesNotFallBackToIndexHTMLForAnUnknownPath(t *testing.T) {
 	dir := t.TempDir()
 	writeFile(t, dir, "index.html", "<html>hi</html>")
 
-	h, err := NewHandler(Config{
+	h := mustNewHandlerWithConfig(t, Config{
 		MACAddress: testMACAddress, BindHost: "127.0.0.1", UIRoot: dir,
 		ComputeHost: "127.0.0.1", ComputeProxyPort: 1,
 	}, &fakeWaker{}, &fakeLogger{})
-	if err != nil {
-		t.Fatalf("NewHandler failed: %v", err)
-	}
 
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/some/spa/route", nil))

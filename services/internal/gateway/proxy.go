@@ -11,62 +11,54 @@ import (
 	"sync"
 	"time"
 
+	"github.com/nikbogman/homelab/services/internal/httpresponse"
 	"github.com/nikbogman/homelab/services/internal/tailnet"
 )
 
-// proxyRetryWindow/proxyRetryInterval govern the auto-wake retry loop: on a
-// transport failure reaching the compute host, retry every proxyRetryInterval
-// for up to proxyRetryWindow before giving up. Package vars, not consts, so
-// tests can shrink them.
+// Package vars, not consts, so tests can shrink them.
 var (
 	proxyRetryWindow   = 60 * time.Second
 	proxyRetryInterval = 1 * time.Second
 	autoWakeThrottle   = 90 * time.Second
 )
 
-// autoWakeThrottler triggers doWake at most once per autoWakeThrottle
-// window. There is exactly one compute upstream in this service, so a
-// single timestamp is enough -- no per-target keying needed (contrast
-// wake_plugin's now-deleted per-URL map).
+// There is exactly one compute upstream in this service, so
+// autoWakeThrottler needs only a single timestamp -- no per-target keying.
 type autoWakeThrottler struct {
 	doWake func(identity string) error
 	now    func() time.Time
 
 	mu      sync.Mutex
-	primed  bool
 	lastRun time.Time
 }
 
-// trigger calls doWake synchronously, unless a call already ran within the
-// throttle window. doWake's own error is intentionally ignored: the caller
-// (a proxied request retry loop) must never fail because of a wake
-// attempt's outcome -- it only cares that a wake was attempted at all
-// before it starts retrying.
+// trigger's own doWake error is intentionally ignored: the caller (a
+// proxied request retry loop) must never fail because of a wake attempt's
+// outcome -- it only cares that a wake was attempted at all before it
+// starts retrying.
 func (t *autoWakeThrottler) trigger() {
 	t.mu.Lock()
 	now := t.now()
-	if t.primed && now.Sub(t.lastRun) < autoWakeThrottle {
+	if !t.lastRun.IsZero() && now.Sub(t.lastRun) < autoWakeThrottle {
 		t.mu.Unlock()
 		return
 	}
-	t.primed = true
 	t.lastRun = now
 	t.mu.Unlock()
 
 	_ = t.doWake(tailnet.LoopbackIdentity)
 }
 
-// newComputeProxy builds the /server* route: a reverse proxy to
-// computeHost:computeProxyPort with the "/server" prefix stripped. A
-// Go-level transport failure (dial refused, timeout) triggers the
-// throttled auto-wake and retries the request until it succeeds or
-// proxyRetryWindow elapses; a genuine HTTP response from a live backend
-// (including a real 502) is passed straight through untouched.
-func newComputeProxy(computeHost string, computeProxyPort int, h *Handler) http.Handler {
+// newComputeProxy: a Go-level transport failure (dial refused, timeout)
+// triggers the throttled auto-wake and retries the request until it
+// succeeds or proxyRetryWindow elapses; a genuine HTTP response from a
+// live backend (including a real 502) is passed straight through
+// untouched.
+func newComputeProxy(computeHost string, computeProxyPort int, doWake func(identity string) error) http.Handler {
 	target := &url.URL{Scheme: "http", Host: net.JoinHostPort(computeHost, strconv.Itoa(computeProxyPort))}
 	proxy := httputil.NewSingleHostReverseProxy(target)
 
-	throttle := &autoWakeThrottler{doWake: h.doWake, now: time.Now}
+	throttle := &autoWakeThrottler{doWake: doWake, now: time.Now}
 
 	proxy.ErrorHandler = func(w http.ResponseWriter, outreq *http.Request, err error) {
 		throttle.trigger()
@@ -102,7 +94,7 @@ func retryUntilReachable(w http.ResponseWriter, outreq *http.Request, transport 
 
 		res, err := transport.RoundTrip(attempt)
 		if err == nil {
-			copyResponse(w, res)
+			httpresponse.Copy(w, res)
 			return
 		}
 
@@ -112,15 +104,4 @@ func retryUntilReachable(w http.ResponseWriter, outreq *http.Request, transport 
 		}
 		time.Sleep(proxyRetryInterval)
 	}
-}
-
-func copyResponse(w http.ResponseWriter, res *http.Response) {
-	defer res.Body.Close()
-	for key, values := range res.Header {
-		for _, value := range values {
-			w.Header().Add(key, value)
-		}
-	}
-	w.WriteHeader(res.StatusCode)
-	_, _ = io.Copy(w, res.Body)
 }

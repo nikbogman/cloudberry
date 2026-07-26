@@ -9,17 +9,13 @@ const STATUS_LABELS: Record<ReachabilityState, string> = {
 const DEFAULT_POLL_INTERVAL_MS = 12_000
 
 export interface MountOptions {
-  /** Compute API origin. */
   computeApiBaseUrl: string
-  /** Gateway API origin — same-origin as the UI by default, so '' (relative) works. */
+  /** Same-origin as the UI by default, so '' (relative) works. */
   gatewayApiBaseUrl?: string
   intervalMs?: number
 }
 
-/** Renders the UI into `container`, starts polling the Compute
- * API's health check, and wires the Wake button (Gateway API)
- * and the Suspend button (Compute API). Returns a cleanup function
- * that stops polling. */
+/** Returns a cleanup function that stops polling. */
 export function mountUi(container: HTMLElement, options: MountOptions): () => void {
   const { computeApiBaseUrl, gatewayApiBaseUrl = '', intervalMs = DEFAULT_POLL_INTERVAL_MS } = options
 
@@ -56,8 +52,7 @@ export function mountUi(container: HTMLElement, options: MountOptions): () => vo
   })
 
   suspendButton.addEventListener('click', () => {
-    // Fire-and-forget, same rationale as the Wake button above. Suspend
-    // lives on the Compute API (not the Gateway API) — unlike Wake.
+    // Suspend lives on the Compute API (not the Gateway API) — unlike Wake.
     void fetch(`${computeApiBaseUrl}/suspend`, { method: 'POST' }).catch(() => {})
   })
 

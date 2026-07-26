@@ -8,6 +8,8 @@ cmd/compute-api/main.go   same, for compute-api
 
 internal/tailnet/         shared: tailnet identity-header auth, bind-safety
 internal/eventlog/        shared: Grafana Cloud event logging
+internal/httpresponse/    shared: JSON response writing, response pass-through
+internal/envconfig/       shared: env-var lookup helpers used by cmd/* entrypoints
 internal/gateway/         Gateway API's own logic (static file serving, the /wake handler and WoL packet building, the /server* proxy with auto-wake)
 internal/compute/         Compute API's own logic (CORS, reachability tracking, /health, /suspend, suspend command)
 ```

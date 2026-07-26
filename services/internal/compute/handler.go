@@ -1,34 +1,28 @@
-// Package compute implements the Compute API: exposes a Reachable health
-// check and a Suspend action.
-//
-// Runs on the compute host behind its own tailscale serve instance, a
-// distinct origin from the UI — hence the CORS allow-list.
+// Package compute runs on the compute host behind its own tailscale serve
+// instance, a distinct origin from the UI -- hence the CORS allow-list.
 package compute
 
 import (
-	"encoding/json"
 	"net/http"
 	"sync"
 
+	"github.com/nikbogman/homelab/services/internal/httpresponse"
 	"github.com/nikbogman/homelab/services/internal/tailnet"
 )
 
-// Suspender suspends the host to RAM.
 type Suspender interface {
 	Suspend() error
 }
 
-// EventLogger ships a structured audit event.
 type EventLogger interface {
 	SendEvent(eventType, outcome string, identity *string, extra map[string]any)
 }
 
-// reachabilityTracker logs a reachability_changed event the first time this
-// process observes itself as reachable. sync.Once (rather than a plain
-// bool) matters here: net/http serves requests concurrently by default,
-// unlike Flask's dev server, so "log exactly once" needs real
-// synchronization. It's the only "changed" edge this app can ever witness:
-// it can't log going *un*reachable, since it's asleep while that's true.
+// sync.Once (rather than a plain bool) matters here: net/http serves
+// requests concurrently by default, so "log exactly once" needs real
+// synchronization. This is also the only "changed" edge this app can ever
+// witness: it can't log going *un*reachable, since it's asleep while that's
+// true.
 type reachabilityTracker struct {
 	once sync.Once
 }
@@ -39,7 +33,6 @@ func (t *reachabilityTracker) noteReachable(logger EventLogger) {
 	})
 }
 
-// Handler serves the Compute API's /health and /suspend actions.
 type Handler struct {
 	uiOrigin     string
 	suspender    Suspender
@@ -47,8 +40,8 @@ type Handler struct {
 	reachability reachabilityTracker
 }
 
-// NewHandler builds the Compute API's HTTP handler. It refuses to start if
-// bindHost would expose the app off-tailnet.
+// NewHandler refuses to start if bindHost would expose the app
+// off-tailnet.
 func NewHandler(uiOrigin string, suspender Suspender, logger EventLogger, bindHost string) (http.Handler, error) {
 	if err := tailnet.AssertTailnetOnlyBind(bindHost); err != nil {
 		return nil, err
@@ -91,7 +84,7 @@ func (h *Handler) withCORS(next http.Handler) http.Handler {
 
 func (h *Handler) handleHealth(w http.ResponseWriter, r *http.Request) {
 	h.reachability.noteReachable(h.logger)
-	writeJSON(w, http.StatusOK, map[string]bool{"reachable": true})
+	httpresponse.WriteJSON(w, http.StatusOK, map[string]bool{"reachable": true})
 }
 
 func (h *Handler) handleSuspend(w http.ResponseWriter, r *http.Request) {
@@ -100,16 +93,10 @@ func (h *Handler) handleSuspend(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.suspender.Suspend(); err != nil {
 		h.logger.SendEvent("suspend_failed", "failed", &identity, nil)
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"suspend": "failed"})
+		httpresponse.WriteJSON(w, http.StatusInternalServerError, map[string]string{"suspend": "failed"})
 		return
 	}
 
 	h.logger.SendEvent("suspend_succeeded", "succeeded", &identity, nil)
-	writeJSON(w, http.StatusOK, map[string]string{"suspend": "succeeded"})
-}
-
-func writeJSON(w http.ResponseWriter, status int, v any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	_ = json.NewEncoder(w).Encode(v)
+	httpresponse.WriteJSON(w, http.StatusOK, map[string]string{"suspend": "succeeded"})
 }

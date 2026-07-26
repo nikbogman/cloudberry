@@ -1,13 +1,12 @@
-// Structured event shipping straight to Grafana Cloud's Loki endpoint.
+// Package eventlog ships structured events straight to Grafana Cloud's
+// Loki endpoint. No local collector in front of this -- Grafana Cloud
+// doesn't run one on your behalf (Alloy is always self-hosted), and this
+// repo has nothing else worth standing up and maintaining a whole agent
+// process for (ADR-0014).
 //
-// No local collector in front of this -- Grafana Cloud doesn't run one on
-// your behalf (Alloy is always self-hosted), and this repo has nothing else
-// worth standing up and maintaining a whole agent process for (ADR-0014).
-// Sends events as a Loki push-API payload directly, authenticated with the
-// stack's own Loki basic-auth credentials. event_type/outcome/app are
-// stream labels; identity/extra ride in the log line itself, since Loki
-// labels are meant for low-cardinality dimensions, not free-form identity
-// strings.
+// event_type/outcome/app are stream labels; identity/extra ride in the log
+// line itself, since Loki labels are meant for low-cardinality dimensions,
+// not free-form identity strings.
 //
 // A logging failure here must never break the caller's actual action, so
 // SendEvent swallows transport errors.
@@ -24,7 +23,6 @@ import (
 
 const defaultTimeout = 5 * time.Second
 
-// GrafanaCloudLogger ships structured events to Grafana Cloud's Loki push endpoint.
 type GrafanaCloudLogger struct {
 	lokiURL string
 	user    string
@@ -33,8 +31,6 @@ type GrafanaCloudLogger struct {
 	client  *http.Client
 }
 
-// NewGrafanaCloudLogger builds a logger for app, POSTing to lokiURL with
-// Loki basic-auth credentials (lokiUser, lokiAPIKey).
 func NewGrafanaCloudLogger(lokiURL, lokiUser, lokiAPIKey, app string) *GrafanaCloudLogger {
 	return &GrafanaCloudLogger{
 		lokiURL: lokiURL,
@@ -65,10 +61,8 @@ type lokiLine struct {
 	Extra    map[string]any `json:"extra"`
 }
 
-// SendEvent ships one event to Grafana Cloud. identity may be nil (marshals
-// as JSON null); extra may be nil (marshals as an empty JSON object).
-// Transport failures are logged and swallowed -- never returned -- so a
-// Grafana Cloud outage never blocks the caller's actual action.
+// SendEvent: identity may be nil (marshals as JSON null); extra may be nil
+// (marshals as an empty JSON object).
 func (g *GrafanaCloudLogger) SendEvent(eventType, outcome string, identity *string, extra map[string]any) {
 	if extra == nil {
 		extra = map[string]any{}

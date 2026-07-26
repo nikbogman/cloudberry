@@ -11,18 +11,15 @@ var (
 	tailscaleIPv6Range = netip.MustParsePrefix("fd7a:115c:a1e0::/48")
 )
 
-// BindOffTailnetError is raised when a host would bind an app somewhere
-// reachable off-tailnet.
 type BindOffTailnetError struct {
 	msg string
 }
 
 func (e *BindOffTailnetError) Error() string { return e.msg }
 
-// AssertTailnetOnlyBind returns a *BindOffTailnetError unless host is
-// loopback or a tailnet address. Allowed: loopback, and Tailscale's own
-// address ranges (the CGNAT IPv4 range it assigns nodes, and its IPv6 ULA
-// range).
+// AssertTailnetOnlyBind allows loopback and Tailscale's own address ranges
+// (the CGNAT IPv4 range it assigns nodes, and its IPv6 ULA range) --
+// nothing else.
 func AssertTailnetOnlyBind(host string) error {
 	if host == "localhost" {
 		return nil

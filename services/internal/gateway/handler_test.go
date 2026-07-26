@@ -11,7 +11,7 @@ import (
 
 const (
 	testMACAddress = "AA:BB:CC:DD:EE:FF"
-	testIdentity  = "nicola@example.com"
+	testIdentity   = "nicola@example.com"
 )
 
 type fakeWaker struct {
@@ -38,9 +38,8 @@ func (f *fakeLogger) SendEvent(eventType, outcome string, identity *string, extr
 	f.events = append(f.events, loggedEvent{eventType: eventType, outcome: outcome, identity: identity})
 }
 
-// mustNewHandler builds a Handler for tests that only exercise /wake --
-// ComputeHost/ComputeProxyPort point at a closed port, since no test here
-// makes a /server* request.
+// mustNewHandler points ComputeHost/ComputeProxyPort at a closed port,
+// since no test here makes a /server* request.
 func mustNewHandler(t *testing.T, waker Waker, logger EventLogger) http.Handler {
 	t.Helper()
 	return mustNewHandlerWithConfig(t, Config{
