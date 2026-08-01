@@ -1,3 +1,0 @@
-# systemd units for the Pi API and Server API, not Docker
-
-The Pi API and Server API run as systemd services, installed and managed by pyinfra, rather than as Docker containers. This is a deliberate deviation from the rest of the homelab, where workloads (Immich, AI agents, and future stacks) run as Docker Compose services — a future reader might reasonably expect everything to be containerized. We chose systemd because these are small, single-purpose Python services with no dependency isolation needs, and running them outside Docker means they're unaffected by the Docker engine restarting or being reconfigured — relevant because the Server API needs to stay controllable even if Docker itself is being redeployed.

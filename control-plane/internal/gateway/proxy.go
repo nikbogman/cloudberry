@@ -22,8 +22,8 @@ var (
 	autoWakeThrottle   = 90 * time.Second
 )
 
-// There is exactly one compute upstream in this service, so
-// autoWakeThrottler needs only a single timestamp -- no per-target keying.
+// autoWakeThrottler tracks a single timestamp, not one per target -- there
+// is exactly one compute upstream in this service.
 type autoWakeThrottler struct {
 	doWake func(identity string) error
 	now    func() time.Time
@@ -32,10 +32,8 @@ type autoWakeThrottler struct {
 	lastRun time.Time
 }
 
-// trigger's own doWake error is intentionally ignored: the caller (a
-// proxied request retry loop) must never fail because of a wake attempt's
-// outcome -- it only cares that a wake was attempted at all before it
-// starts retrying.
+// trigger discards doWake's error: the retry loop that calls it only needs
+// a wake attempted, not confirmation that it succeeded.
 func (t *autoWakeThrottler) trigger() {
 	t.mu.Lock()
 	now := t.now()
@@ -49,11 +47,11 @@ func (t *autoWakeThrottler) trigger() {
 	_ = t.doWake(tailnet.LoopbackIdentity)
 }
 
-// newComputeProxy: a Go-level transport failure (dial refused, timeout)
-// triggers the throttled auto-wake and retries the request until it
-// succeeds or proxyRetryWindow elapses; a genuine HTTP response from a
-// live backend (including a real 502) is passed straight through
-// untouched.
+// newComputeProxy reverse-proxies to the compute host. A Go-level transport
+// failure (dial refused, timeout) triggers the throttled auto-wake and
+// retries the request until it succeeds or proxyRetryWindow elapses; a
+// genuine HTTP response from a live backend (including a real 502) passes
+// straight through untouched.
 func newComputeProxy(computeHost string, computeProxyPort int, doWake func(identity string) error) http.Handler {
 	target := &url.URL{Scheme: "http", Host: net.JoinHostPort(computeHost, strconv.Itoa(computeProxyPort))}
 	proxy := httputil.NewSingleHostReverseProxy(target)

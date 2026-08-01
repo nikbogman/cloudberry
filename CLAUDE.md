@@ -1,17 +1,3 @@
-## Agent skills
-
-### Issue tracker
-
-Issues and specs live as markdown files under `docs/specs/<feature-slug>/`. See `docs/agents/issue-tracker.md`.
-
-### Triage labels
-
-Default five-role vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`), recorded as a `Status:` line per file. See `docs/agents/triage-labels.md`.
-
-### Domain docs
-
-Single-context: `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
-
 ## graphify
 
 This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.

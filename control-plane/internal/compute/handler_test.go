@@ -80,7 +80,7 @@ func TestHealthCheckReportsReachableWithValidIdentity(t *testing.T) {
 }
 
 func TestHealthCheckRequiresNoExtraCredentialsBeyondIdentityHeader(t *testing.T) {
-	// No allow-list of specific identities — tailnet membership alone is sufficient.
+	// No allow-list of specific identities -- tailnet membership alone is sufficient.
 	h := mustNewHandler(t, &fakeSuspender{}, &fakeLogger{})
 	req := httptest.NewRequest(http.MethodGet, "/health", nil)
 	req.Header.Set(tailnet.IdentityHeader, "anyone-on-the-tailnet@example.com")
@@ -229,7 +229,7 @@ func TestSuspendReturns500AndLogsFailedWhenSuspenderFails(t *testing.T) {
 }
 
 func TestSuspendDoesNotGuardAgainstRepeatedRequests(t *testing.T) {
-	// The API always attempts the action — the UI's disabled state is the only guard.
+	// The API always attempts the action -- the UI's disabled state is the only guard.
 	suspender := &fakeSuspender{}
 	h := mustNewHandler(t, suspender, &fakeLogger{})
 

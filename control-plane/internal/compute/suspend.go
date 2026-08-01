@@ -5,8 +5,8 @@ import (
 	"os/exec"
 )
 
-// DefaultSuspendCommand suspends to RAM only. No code path in this app, or
-// anywhere else in it, can trigger a full shutdown (ACPI S5).
+// DefaultSuspendCommand suspends to RAM only. No code path in this app can
+// trigger a full shutdown (ACPI S5).
 var DefaultSuspendCommand = []string{"systemctl", "suspend"}
 
 var runCommand = func(name string, args ...string) error {

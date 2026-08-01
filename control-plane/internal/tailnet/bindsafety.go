@@ -21,6 +21,9 @@ func (e *BindOffTailnetError) Error() string { return e.msg }
 // (the CGNAT IPv4 range it assigns nodes, and its IPv6 ULA range) --
 // nothing else.
 func AssertTailnetOnlyBind(host string) error {
+	// Handled directly rather than through the LookupHost path below:
+	// "localhost" isn't a parseable IP, and always resolves to loopback
+	// anyway, so there's nothing a DNS/hosts-file lookup would add.
 	if host == "localhost" {
 		return nil
 	}

@@ -23,6 +23,8 @@ func BuildMagicPacket(macAddress string) ([]byte, error) {
 		return nil, fmt.Errorf("invalid MAC address: %q", macAddress)
 	}
 
+	// Wake-on-LAN magic packet: a 6-byte 0xFF sync stream followed by the
+	// target MAC repeated 16 times, per the standard.
 	packet := make([]byte, 0, 6+6*macRepetitions)
 	for i := 0; i < 6; i++ {
 		packet = append(packet, 0xff)
@@ -65,6 +67,8 @@ func (s *WakeOnLanSender) Send(macAddress string) error {
 	if err != nil {
 		return err
 	}
+	// SO_BROADCAST must be set explicitly; the kernel refuses to send to a
+	// broadcast address like 255.255.255.255 otherwise.
 	var setsockoptErr error
 	if err := rawConn.Control(func(fd uintptr) {
 		setsockoptErr = syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_BROADCAST, 1)

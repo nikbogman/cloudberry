@@ -42,6 +42,10 @@ export function mountUi(container: HTMLElement, options: MountOptions): () => vo
   let pollInFlight = false
   let actionPending = false
 
+  // Each button is disabled whenever its action wouldn't make sense given
+  // the last known reachability state, plus whenever any action/poll is
+  // already in flight (actionPending and pollInFlight are tracked
+  // separately since a poll may land while an action is pending, or vice versa).
   const applyButtonState = () => {
     wakeButton.disabled = actionPending || reachability === 'reachable'
     suspendButton.disabled = actionPending || reachability === 'unreachable'
@@ -111,7 +115,7 @@ export function mountUi(container: HTMLElement, options: MountOptions): () => vo
   })
 
   suspendButton.addEventListener('click', () => {
-    // Suspend lives on the Compute API (not the Gateway API) — unlike Wake.
+    // Suspend lives on the Compute API (not the Gateway API) -- unlike Wake.
     void runAction(suspendButton, 'Suspend', 'Suspending…', () =>
       fetch(`${computeApiBaseUrl}/suspend`, { method: 'POST' }),
     )

@@ -14,7 +14,7 @@ Never invoked automatically -- only run by hand from the dev machine (ADR-0009).
 
 from pyinfra import local
 
-local.include("deploy_tailscale.py")
+# local.include("deploy_tailscale.py")
 local.include("deploy_compute_api.py")
 local.include("deploy_docker.py")
 local.include("deploy_gateway.py")

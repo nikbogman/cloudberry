@@ -1,5 +1,0 @@
-# Tailnet membership is the entire authorization boundary
-
-Both the Pi API and Server API treat a valid `Tailscale-User-Login` identity header as sufficient to perform any action — there is no allow-list checking *which* tailnet identities may wake or suspend the server. We chose this over adding an allow-list because this is a single-user tailnet; an allow-list would be defense-in-depth with no current threat it defends against. This is a boundary worth reopening if the tailnet is ever shared with other people or devices whose access shouldn't extend to controlling the server.
-
-**Amendment (ADR-0012):** the Pi API's `/wake` also accepts a caller on `127.0.0.1`, without the identity header, so the Pi proxy's Caddy plugin can trigger a wake directly. This is a narrower exception than an identity allow-list — it's a same-device trust boundary (only another process on the Pi Zero itself can reach loopback), not a second set of tailnet identities permitted to act. The single-user-tailnet reasoning above is unaffected: this doesn't grant any *additional* tailnet identity the ability to wake or suspend the server.

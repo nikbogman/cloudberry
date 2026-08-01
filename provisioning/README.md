@@ -1,7 +1,6 @@
 # pyinfra provisioning
 
-Declarative provisioning for the homelab control plane, per
-`docs/specs/pyinfra-provisioning/spec.md`. Converges the Gateway (`gateway`,
+Declarative provisioning for the homelab control plane. Converges the Gateway (`gateway`,
 the Pi Zero) and the compute host (`compute`) to their declared state:
 Tailscale joined, Docker installed on `compute`, and both the Gateway API
 and Compute API (plus the UI's static build) deployed as systemd services.
@@ -14,18 +13,18 @@ citations live in [`docs/agents/pyinfra.md`](../docs/agents/pyinfra.md).
 
 ```
 provisioning/
-  inventory.py                    # gateway / compute / test Host groups (ticket 01)
+  inventory.py                    # gateway / compute / test Host groups
   common.py                       # shared linux_codename()/linux_distro_id()/has_device_role()/TailscaleServeStatus helpers
   settings.py                     # pydantic-settings classes -- typed env var config
-  deploy_tailscale.py             # ticket 02
-  deploy_docker.py                # ticket 03
-  go_deploy.py                    # shared off-device Go build+ship+systemd helper (ADR-0015)
-  deploy_gateway.py               # ticket 05 (+ UI static delivery), absorbed Caddy's job (ADR-0016)
-  deploy_compute_api.py           # ticket 06
-  deploy.py                       # entrypoint composing everything (ticket 08)
+  deploy_tailscale.py
+  deploy_docker.py
+  go_deploy.py                    # shared off-device Go build+ship+systemd helper
+  deploy_gateway.py               # cross-compiles + ships the Gateway API binary and the UI's static build
+  deploy_compute_api.py
+  deploy.py                       # entrypoint composing everything
   deploy.sh                       # wrapper: loads ../.env, resolves short Deploy-file names
   templates/
-    binary.service.j2              # systemd unit template, the Gateway API and Compute API (ADR-0015)
+    binary.service.j2              # systemd unit template, the Gateway API and Compute API
 
 ../deploy.sh                      # repo-root forwarder -- run from anywhere, see below
 ../.env.example                    # checked-in template -- copy to ../.env (gitignored)
@@ -47,7 +46,7 @@ An independent [uv](https://docs.astral.sh/uv/) project, but not an
 installable package (`[tool.uv] package = false` in `pyproject.toml`) --
 it's a directory of scripts pyinfra's CLI executes, not a Python package
 anything imports. Also requires a Go toolchain on the dev machine, for the
-Gateway API/Compute API builds (ADR-0015):
+Gateway API/Compute API builds:
 
 ```sh
 cd provisioning
@@ -56,9 +55,9 @@ uv sync
 
 ## Configuration
 
-Nothing operator-specific is hardcoded (ticket 01) — real addresses,
+Nothing operator-specific is hardcoded — real addresses,
 secrets, and deployment refs are all read from the dev machine's
-environment at Deploy time (ADR-0010), via typed
+environment at Deploy time, via typed
 [`pydantic-settings`](https://docs.pydantic.dev/latest/concepts/pydantic_settings/)
 classes in `settings.py` rather than each Deploy file parsing
 `os.environ` by hand. Ports and similar fields are coerced to their real
@@ -69,8 +68,7 @@ need a required setting when actually targeting a given device construct
 that class lazily inside the relevant `has_device_role(...)` guard, so
 running one Deploy file in isolation still never demands env vars an
 unrelated one needs — the same "targetable in isolation" contract as
-before. No `env_file` support — ADR-0010 already rejected a file-based
-secrets store, so these classes are a typed wrapper around plain
+before. No `env_file` support — these classes are a typed wrapper around plain
 environment variables, not a new persistence mechanism.
 
 Copy [`../.env.example`](../.env.example) to `../.env` (repo root,
@@ -110,27 +108,32 @@ origin would break CORS/HTTPS.
 
 ### deploy_tailscale.py (`TailscaleSettings`)
 
+Bold variables are required.
+
 | Variable | Default | Purpose |
 |---|---|---|
-| `TAILSCALE_AUTH_KEY` | *(required to join)* | Tailnet auth key, never committed |
+| **`TAILSCALE_AUTH_KEY`** | — | Tailnet auth key, never committed; only required the first time the device joins the tailnet |
 
 ### deploy_gateway.py (`GatewaySettings`, `GatewaySecrets`)
 
 Cross-compiles `control-plane/cmd/gateway` for the Pi Zero W (`GOOS=linux
 GOARCH=arm GOARM=6`) on the dev machine and ships only the binary --
-there's no repo to pull or ref to check out on-device anymore (ADR-0015).
-Since ADR-0016 removed Caddy from the Gateway, this is also the only
-Deploy file for the device -- no separate Caddy build/template step.
+there's no repo to pull or ref to check out on-device anymore. This is
+the only Deploy file for the device: the Gateway API binary does static
+serving, WoL, and proxying in one process (see [`ARCHITECTURE.md`](../ARCHITECTURE.md)),
+so there's no separate build/template step for anything else.
+
+Bold variables are required.
 
 | Variable | Default | Purpose |
 |---|---|---|
 | `GATEWAY_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address for the Gateway API |
-| `COMPUTE_MAC_ADDRESS` | *(required)* | WoL target MAC for the Gateway API |
+| **`COMPUTE_MAC_ADDRESS`** | — | WoL target MAC for the Gateway API |
 | `COMPUTE_HOST` | `main-server.tailnet` | Host the `/server*` route forwards to |
-| `COMPUTE_PROXY_PORT` | *(required)* | Port on `COMPUTE_HOST` that `/server*` forwards to (path stripped) -- [ADR-0011](../docs/adr/0011-server-owns-workload-routing.md); no default since the server-side proxy it points at doesn't exist yet |
-| `GRAFANA_CLOUD_LOKI_URL` | *(required)* | Grafana Cloud's Loki push endpoint -- events are POSTed here directly (ADR-0014) |
-| `GRAFANA_CLOUD_LOKI_USER` | *(required)* | Grafana Cloud Loki basic-auth username (the stack's numeric instance/user ID) |
-| `GRAFANA_CLOUD_LOKI_API_KEY` | *(required)* | Grafana Cloud Access Policy token, scoped to `logs:write` |
+| **`COMPUTE_PROXY_PORT`** | — | Port on `COMPUTE_HOST` that `/server*` forwards to (path stripped); no default since the server-side proxy it points at doesn't exist yet |
+| **`GRAFANA_CLOUD_LOKI_URL`** | — | Grafana Cloud's Loki push endpoint -- events are POSTed here directly |
+| **`GRAFANA_CLOUD_LOKI_USER`** | — | Grafana Cloud Loki basic-auth username (the stack's numeric instance/user ID) |
+| **`GRAFANA_CLOUD_LOKI_API_KEY`** | — | Grafana Cloud Access Policy token, scoped to `logs:write` |
 
 `VITE_COMPUTE_API_URL` (baked into the UI build) is
 `https://{COMPUTE_TAILNET_HOST}`, derived from `InventorySettings` rather
@@ -148,17 +151,19 @@ trusting it blindly on a new device.
 ### deploy_compute_api.py (`ComputeApiSettings`, `ComputeApiSecrets`)
 
 Cross-compiles `control-plane/cmd/compute-api` on the dev machine and ships only
-the binary, same as the Gateway API (ADR-0015) -- `GOARCH` is read from the
+the binary, same as the Gateway API -- `GOARCH` is read from the
 device's real architecture (`common.DpkgArchitecture`) rather than
 hardcoded, since unlike the Pi Zero W, `compute` isn't a fixed known
 device.
 
+Bold variables are required.
+
 | Variable | Default | Purpose |
 |---|---|---|
 | `COMPUTE_API_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address for the Compute API |
-| `GRAFANA_CLOUD_LOKI_URL` | *(required)* | Grafana Cloud's Loki push endpoint -- events are POSTed here directly (ADR-0014) |
-| `GRAFANA_CLOUD_LOKI_USER` | *(required)* | Grafana Cloud Loki basic-auth username (the stack's numeric instance/user ID) |
-| `GRAFANA_CLOUD_LOKI_API_KEY` | *(required)* | Grafana Cloud Access Policy token, scoped to `logs:write` |
+| **`GRAFANA_CLOUD_LOKI_URL`** | — | Grafana Cloud's Loki push endpoint -- events are POSTed here directly |
+| **`GRAFANA_CLOUD_LOKI_USER`** | — | Grafana Cloud Loki basic-auth username (the stack's numeric instance/user ID) |
+| **`GRAFANA_CLOUD_LOKI_API_KEY`** | — | Grafana Cloud Access Policy token, scoped to `logs:write` |
 
 `UI_ORIGIN` (the Compute API's CORS allow-list entry) is
 `https://{GATEWAY_TAILNET_HOST}`, derived from `InventorySettings` rather
@@ -198,16 +203,16 @@ filename still works if you prefer it:
 ./deploy.sh gateway --limit gateway --dry
 ```
 
-pyinfra 3.x has no `--check` flag — every "`--check`" in the ticket files
-means `--dry` (`docs/agents/pyinfra.md`'s Gotchas). `deploy.py` never runs
+pyinfra 3.x has no `--check` flag — use `--dry` instead
+(`docs/agents/pyinfra.md`'s Gotchas). `deploy.py` never runs
 on its own: no CI config, cron job, or git hook in this repo invokes it
-(ADR-0009) -- it's a human, from the dev machine, every time.
+-- it's a human, from the dev machine, every time.
 
-## Testing (ticket 09)
+## Testing
 
 No pytest/mypy seam applies to infrastructure code — the checks below run
-through pyinfra's own execution engine, the same "highest available seam"
-philosophy the spec's Testing Decisions describe. Three tiers, and this is
+through pyinfra's own execution engine, the "highest available seam"
+philosophy this repo follows for infrastructure code. Three tiers, and this is
 the precedent future Deploy files in this repo should follow:
 
 ### Tier 1 — `--dry`
@@ -225,7 +230,7 @@ what tiers 2 and 3 are for.
 containers reached over plain `@ssh` — deliberately *not* pyinfra's
 `@docker` connector. `@docker` image-mode containers run no init system
 (`tail -f /dev/null` as PID 1), so the `systemd.service` operations this
-feature uses throughout (tickets 02-06) can't succeed against them
+feature uses throughout can't succeed against them
 (`docs/agents/pyinfra.md`'s Open Question #2). Using `@ssh` against a
 systemd-capable container instead exercises the *exact same connector
 path* `gateway`/`compute` use, so execution errors surface against the real
@@ -289,30 +294,15 @@ run and check its per-operation change counts.
 
 ### What was actually verified while building this feature
 
-`docs/agents/pyinfra-demo.md` records the live verification performed for
-pieces with no other test seam: ticket 04's shared `git_systemd_service`
+Live verification was performed for
+pieces with no other test seam: the shared `git_systemd_service`
 helper demoed end-to-end against a real throwaway git repo and a real
 (user-mode, sandbox-only) systemd unit — first run applies, second run is
-fully idempotent, a code-only change correctly triggers a restart — and
-ticket 07's templated Caddyfile validated with a real `caddy validate`
-run. Full tiers 2 and 3 against `gateway`/`compute`-shaped disposable containers
+fully idempotent, a code-only change correctly triggers a restart. Full
+tiers 2 and 3 against `gateway`/`compute`-shaped disposable containers
 require Docker and a systemd-capable image, unavailable in the sandbox
 this feature was built in; the procedure above is what to run against
 real infrastructure.
-
-ADR-0011's `/server*` route, and ADR-0012's `call_wake_api` plugin that
-replaced `caddy-wol`, were re-validated with a real `caddy validate` run
-against a binary built with `services/gateway-proxy/wake_plugin`
-compiled in, plus a live `caddy run` smoke test against a fake Gateway
-API and an unreachable upstream (confirmed: the wake call fires on the
-first 502, is throttled on the second, and the request still ultimately
-returns a real response). That validation pass also caught a real,
-pre-existing bug: `handle_errors` cannot be nested inside `handle_path`
-(Caddy rejects it as "not an ordered HTTP handler") — `handle_errors` now
-lives at the site's top level, matched against `orig_uri` so it still only
-fires for `/server*`. This bug predates ADR-0012 and was independent of
-`caddy-wol` vs. `call_wake_api`; it's fixed as part of this validation
-pass since it blocked verifying the very route this change touches.
 
 ## Known gaps (flagged, not silently dropped)
 
@@ -325,10 +315,9 @@ pass since it blocked verifying the very route this change touches.
   was built without one) — see the version-sensitivity caveat in each section
   above before trusting it blindly on first use.
 - **Bind-address enforcement** (the "never bound off-tailnet" hard
-  requirement) is not checked by pyinfra, exactly as `spec.md` already
-  notes as an explicit, deferred gap.
+  requirement) is not checked by pyinfra — an explicit, deferred gap.
 - **The server-side workload proxy** that `/server*` forwards to
-  (ADR-0011) doesn't exist yet — it's out of pyinfra's scope entirely
+  doesn't exist yet — it's out of pyinfra's scope entirely
   (same boundary as the Docker Compose stacks it would front) and is a
   manual prerequisite to build before this route actually reaches
   anything.

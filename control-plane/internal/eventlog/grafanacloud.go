@@ -1,8 +1,7 @@
 // Package eventlog ships structured events straight to Grafana Cloud's
-// Loki endpoint. No local collector in front of this -- Grafana Cloud
-// doesn't run one on your behalf (Alloy is always self-hosted), and this
-// repo has nothing else worth standing up and maintaining a whole agent
-// process for (ADR-0014).
+// Loki endpoint. No local collector in front of this: Grafana Cloud
+// doesn't run one for you (Alloy is always self-hosted), and standing up
+// a whole agent process just for this repo isn't worth it (ADR-0014).
 //
 // event_type/outcome/app are stream labels; identity/extra ride in the log
 // line itself, since Loki labels are meant for low-cardinality dimensions,
@@ -48,7 +47,9 @@ type lokiPayload struct {
 
 type lokiStream struct {
 	Stream lokiStreamLabels `json:"stream"`
-	Values [][2]string      `json:"values"`
+	// Values is Loki's push-API entry format: each element is a
+	// [unix-nano-timestamp, log line] pair, both encoded as strings.
+	Values [][2]string `json:"values"`
 }
 
 type lokiStreamLabels struct {
@@ -62,8 +63,8 @@ type lokiLine struct {
 	Extra    map[string]any `json:"extra"`
 }
 
-// SendEvent: identity may be nil (marshals as JSON null); extra may be nil
-// (marshals as an empty JSON object).
+// SendEvent ships an event to Grafana Cloud. identity may be nil (marshals
+// as JSON null); extra may be nil (marshals as an empty JSON object).
 func (g *GrafanaCloudLogger) SendEvent(eventType, outcome string, identity *string, extra map[string]any) {
 	if extra == nil {
 		extra = map[string]any{}

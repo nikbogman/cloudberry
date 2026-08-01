@@ -32,7 +32,7 @@ func TestSuspendRunsTheDefaultCommand(t *testing.T) {
 }
 
 func TestDefaultCommandIsSystemctlSuspendOnly(t *testing.T) {
-	// Suspend-to-RAM only — never a full shutdown (ACPI S5).
+	// Suspend-to-RAM only -- never a full shutdown (ACPI S5).
 	want := []string{"systemctl", "suspend"}
 	if !reflect.DeepEqual(DefaultSuspendCommand, want) {
 		t.Fatalf("got %v, want %v", DefaultSuspendCommand, want)

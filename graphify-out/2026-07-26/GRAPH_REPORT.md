@@ -1,16 +1,16 @@
-# Graph Report - homelab  (2026-07-25)
+# Graph Report - homelab  (2026-07-26)
 
 ## Corpus Check
-- 96 files · ~47,157 words
+- 96 files · ~47,381 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 560 nodes · 819 edges · 46 communities (32 shown, 14 thin omitted)
-- Extraction: 92% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 61 edges (avg confidence: 0.81)
+- 538 nodes · 723 edges · 64 communities (33 shown, 31 thin omitted)
+- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 60 edges (avg confidence: 0.79)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `220b97e0`
+- Built from commit: `a901f618`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -23,7 +23,6 @@
 - Caddy Deploy ADR Decisions
 - Homelab Domain Glossary
 - Wake Plugin Go Internals
-- Caddy handle_errors Fix
 - Control Plane Shared Middleware
 - Frontend TS Config
 - Control Plane ADR Decisions
@@ -49,118 +48,127 @@
 - WoL Broadcast Domain ADR
 - GitHub Issues Deferred
 - Deploy Concept
-- Wake Plugin Go Module
+- handle_errors-inside-handle_path bug found & fixed
 - Pyinfra Inventory Name
 - Control API Deploy File
 - Host Role Detection Helpers
 - Pyinfra Host Groups
 - Control UI Favicon
-- Vite Config
 - AssertTailnetOnlyBind
-- github.com/nikbogman/homelab/services/gateway-proxy/wake_plugin
+- github.com/nikbogman/homelab/control-plane
+- deploy.sh
+- Homelab Control System
+- Declarative Provisioning with pyinfra
 - 0013-caddy-binary-built-off-device-by-pyinfra.md
-- deploy.sh script
+- 01 — Pre-existing bug found and fixed: `handle_errors` nested inside `handle_path`
+- 01 — Control-plane auth & logging scaffold
+- 02 — Reachability status (health check + UI display)
+- 03 — Wake action (Control Pi API + UI Wake button)
+- 04 — Suspend action (Control server API + UI Suspend button)
+- 05 — Auto-wake proxy for workload services
+- 01 — Inventory scaffold
+- 02 — Tailscale deploy file
+- 03 — Docker deploy file
+- 04 — Shared git-pull + systemd deploy helper
+- 05 — Control Pi API deploy file (+ Control UI static delivery)
+- 06 — Control server API deploy file
+- 07 — Caddy deploy file
+- 08 — Deploy entrypoint
+- 09 — Disposable-container test harness & idempotency verification
+- ADR-0009: Manual-Only Deploy Trigger
+- ADR-0006: Git-Pull Deploy Model, Control UI Built Off-Device
+- ADR-0007: systemd Units for Control APIs, Not Docker
 
 ## God Nodes (most connected - your core abstractions)
-1. `Homelab README.md` - 24 edges
+1. `Homelab README.md` - 20 edges
 2. `mustNewHandler()` - 19 edges
 3. `compilerOptions` - 16 edges
-4. `pyinfra Provisioning Spec` - 16 edges
+4. `mustNewHandlerWithConfig()` - 15 edges
 5. `mustNewHandler()` - 14 edges
-6. `authedRequest()` - 12 edges
-7. `wake_plugin Go module` - 12 edges
-8. `Issue 07: Caddy Deploy File` - 12 edges
-9. `newWakeCaller()` - 10 edges
-10. `NewHandler()` - 10 edges
+6. `NewHandler()` - 13 edges
+7. `authedRequest()` - 12 edges
+8. `NewHandler()` - 9 edges
+9. `Handler` - 8 edges
+10. `NewGrafanaCloudLogger()` - 8 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `pyinfra/deploy_tailscale.py` --references--> `TailscaleBackendState`  [EXTRACTED]
-  .scratch/pyinfra-provisioning/issues/02-tailscale.md → pyinfra/deploy_tailscale.py
-- `pyinfra Provisioning Spec` --references--> `ADR-0008: Full Caddyfile as Single Declarative Source of Truth`  [EXTRACTED]
-  .scratch/pyinfra-provisioning/spec.md → docs/adr/0008-full-caddyfile-single-source-of-truth.md
-- `Homelab README.md` --references--> `pyinfra/deploy.py`  [INFERRED]
-  README.md → .scratch/pyinfra-provisioning/issues/08-deploy-entrypoint.md
-- `git_systemd_service live demo (ticket 04)` --references--> `api_deploy.py (shared git+systemd @deploy helper)`  [AMBIGUOUS]
-  docs/agents/pyinfra-demo.md → pyinfra/README.md
-- `Issue 05: Control Pi API Deploy File` --references--> `ADR-0006: Git-Pull Deploy Model, Control UI Built Off-Device`  [EXTRACTED]
-  .scratch/pyinfra-provisioning/issues/05-control-pi-api.md → docs/adr/0006-git-pull-deploy-with-offdevice-ui-build.md
+- `Homelab CLAUDE.md (Agent Skills Config)` --references--> `CONTEXT.md (Domain Glossary)`  [EXTRACTED]
+  CLAUDE.md → CONTEXT.md
+- `Homelab README.md` --references--> `CONTEXT.md (Domain Glossary)`  [EXTRACTED]
+  README.md → CONTEXT.md
+- `Homelab README.md` --references--> `ADR-0001: Direct Browser-to-API Calls, No Pi-Side Relay`  [EXTRACTED]
+  README.md → docs/adr/0001-direct-browser-to-api-no-relay.md
+- `Homelab README.md` --references--> `ADR-0002: Suspend-to-RAM Only, No Full Shutdown`  [EXTRACTED]
+  README.md → docs/adr/0002-suspend-only-no-shutdown.md
+- `ADR-0002: Suspend-to-RAM Only, No Full Shutdown` --rationale_for--> `Suspend (concept)`  [INFERRED]
+  docs/adr/0002-suspend-only-no-shutdown.md → CONTEXT.md
 
 ## Import Cycles
 - None detected.
 
 ## Hyperedges (group relationships)
 - **graphify /graphify Pipeline Steps** — claude_skills_graphify_skill_step0_github_clone, claude_skills_graphify_skill_step1_ensure_installed, claude_skills_graphify_skill_step2_detect_files, claude_skills_graphify_skill_step3_extraction, claude_skills_graphify_skill_step4_build_graph, claude_skills_graphify_skill_step5_label_communities, claude_skills_graphify_skill_step6_obsidian_html, claude_skills_graphify_skill_step9_manifest_cleanup [EXTRACTED 1.00]
-- **Control Plane Ticket Build Sequence (01-05)** — scratch_homelab_control_system_issues_01_control_plane_auth_logging_scaffold_identity_middleware, scratch_homelab_control_system_issues_02_reachability_status_health_check_endpoint, scratch_homelab_control_system_issues_03_wake_action_wake_button, scratch_homelab_control_system_issues_04_suspend_action_suspend_button, scratch_homelab_control_system_issues_05_auto_wake_proxy_caddy_wol_config [EXTRACTED 1.00]
-- **Auto-Wake Proxy Redesign (caddy-wol -> wake_plugin)** — scratch_caddy_wake_plugin_spec_caddy_wol, scratch_caddy_wake_plugin_spec_wake_plugin_module, scratch_caddy_wake_plugin_spec_adr_0012, scratch_homelab_control_system_issues_05_auto_wake_proxy_caddy_wol_config [INFERRED 0.85]
-- **Deploy Entrypoint Composes All Deploy Files** — pyinfra_deploy_module, pyinfra_deploy_tailscale_module, pyinfra_deploy_docker_module, pyinfra_deploy_control_pi_api_module, pyinfra_deploy_control_server_api_module, pyinfra_deploy_caddy_module [EXTRACTED 1.00]
-- **Shared git-pull+systemd Helper Reused by Both Control API Deploy Files** — pyinfra_control_api_deploy_git_systemd_service, pyinfra_deploy_control_pi_api_module, pyinfra_deploy_control_server_api_module [EXTRACTED 1.00]
-- **Three-Tier Infrastructure Testing Pattern (--check, disposable containers, idempotency)** — pyinfra_readme_doc, scratch_pyinfra_provisioning_issues_09_disposable_container_test_harness_issue, pyinfra_inventory_module, docs_agents_pyinfra_demo_doc [EXTRACTED 0.90]
-- **pyinfra's three-tier testing pattern (--dry, disposable containers, idempotency)** — pyinfra_readme_three_tier_testing, docs_agents_pyinfra_dry_flag, docs_agents_pyinfra_idempotency_mechanics, docs_agents_pyinfra_demo_highest_available_seam [EXTRACTED 1.00]
 
-## Communities (46 total, 14 thin omitted)
+## Communities (64 total, 31 thin omitted)
 
 ### Community 0 - "Server API Reachability"
-Cohesion: 0.27
-Nodes (10): EventLogger, Handler, reachabilityTracker, Suspender, Once, Request, ResponseWriter, NewHandler() (+2 more)
+Cohesion: 0.08
+Nodes (32): Homelab CLAUDE.md (Agent Skills Config), Control UI (concept), CONTEXT.md (Domain Glossary), Identity Header (concept), Pi API (concept), Pi Proxy (concept), Reachable (concept), Server API (concept) (+24 more)
 
 ### Community 1 - "Shared Git-Pull Deploy Helper"
 Cohesion: 0.07
-Nodes (34): BaseSettings, DpkgArchitecture, has_device_role(), linux_codename(), linux_distro_id(), FactBase, Helpers shared by more than one Deploy file.  Not a Deploy file itself -- define, Native apt architecture (e.g. "amd64", "arm64") per `dpkg     --print-architectu (+26 more)
+Nodes (31): BaseSettings, DpkgArchitecture, has_device_role(), linux_codename(), linux_distro_id(), FactBase, Helpers shared by more than one Deploy file.  Not a Deploy file itself -- define, Native apt architecture (e.g. "amd64", "arm64") per `dpkg     --print-architectu (+23 more)
 
 ### Community 2 - "Pi API Wake-on-LAN"
 Cohesion: 0.14
-Nodes (24): EventLogger, fakeLogger, fakeWaker, Handler, loggedEvent, Waker, Request, ResponseWriter (+16 more)
+Nodes (26): Request, ResponseWriter, NewHandler(), EventLogger, Handler, T, mustNewHandler(), mustNewHandlerWithConfig() (+18 more)
 
 ### Community 3 - "Graphify Skill Exports"
 Cohesion: 0.06
 Nodes (37): Graphify Slash-Command Trigger, FalkorDB Export, MCP stdio Server, Neo4j Export, Wiki Export, Confidence Score Rubric, Hyperedges Rule, Node ID Format Rule (+29 more)
 
 ### Community 4 - "Deploy Domain Concepts"
-Cohesion: 0.13
-Nodes (34): Deploy (concept), Deploy File (concept), Host Group (concept), ADR-0001: Direct Browser-to-API Calls, No Pi-Side Relay, ADR-0006: Git-Pull Deploy Model, Control UI Built Off-Device, ADR-0007: systemd Units for Control APIs, Not Docker, ADR-0009: Manual-Only Deploy Trigger, ADR-0010: Secrets via Dev-Machine Environment Variables (+26 more)
+Cohesion: 0.67
+Nodes (3): Deploy (concept), Deploy File (concept), Host Group (concept)
 
 ### Community 5 - "Caddy Deploy ADR Decisions"
-Cohesion: 0.10
-Nodes (24): ADR-0009 (deploy.py never runs automatically), @deploy decorator, Caddyfile.j2 validated with real caddy binary (ticket 07), docs/agents/pyinfra-demo.md, git_systemd_service live demo (ticket 04), handle_errors-inside-handle_path bug found & fixed, "Highest available seam" testing philosophy, wake_plugin validated live, caddy-wol retired (+16 more)
+Cohesion: 0.40
+Nodes (5): @deploy decorator, Deploy file, files.template operation, git.repo operation, systemd.service operation
 
 ### Community 6 - "Homelab Domain Glossary"
-Cohesion: 0.08
-Nodes (32): Homelab CLAUDE.md (Agent Skills Config), Control UI (concept), CONTEXT.md (Domain Glossary), Identity Header (concept), Pi API (concept), Pi Proxy (concept), Reachable (concept), Server API (concept) (+24 more)
+Cohesion: 0.20
+Nodes (12): EventLogger, Handler, reachabilityTracker, Suspender, Request, ResponseWriter, NewHandler(), Copy() (+4 more)
 
 ### Community 7 - "Wake Plugin Go Internals"
-Cohesion: 0.10
-Nodes (24): Context, Dispenser, Helper, MiddlewareHandler, ModuleInfo, Mutex, Request, ResponseWriter (+16 more)
-
-### Community 8 - "Caddy handle_errors Fix"
-Cohesion: 0.06
-Nodes (34): ADR-0011, caddy validate Verification, handle_errors Site-Level Fix, handle_errors directive, handle_path directive, docs/agents/pyinfra-demo.md, ADR-0004 Loopback Auth Amendment, ADR-0005 (superseded framing) (+26 more)
+Cohesion: 0.22
+Nodes (9): Handler, Request, ResponseWriter, newComputeProxy(), retryUntilReachable(), autoWakeThrottler, Mutex, RoundTripper (+1 more)
 
 ### Community 9 - "Control Plane Shared Middleware"
-Cohesion: 0.11
-Nodes (26): Grafana Alloy Logging Client, Off-Tailnet Bind Assertion, control_plane_shared package (services/shared), Identity-Header Auth Decorator/Middleware, Control UI Polling (10-15s), CORS Allow-List, Health-Check Endpoint, Control UI Wake Button (+18 more)
+Cohesion: 0.37
+Nodes (14): closedPortTarget(), T, splitHostPort(), TestProxy_ARealHTTPErrorFromALiveBackendPassesThroughWithoutWaking(), TestProxy_AutoWakeDoesNotThrottleOnceTheWindowHasElapsed(), TestProxy_AutoWakeThrottlesRepeatCallsWithinTheWindow(), TestProxy_DoesNotFallBackToIndexHTMLForAnUnknownPath(), TestProxy_FailsOpenWhenTheWakerErrors() (+6 more)
 
 ### Community 10 - "Frontend TS Config"
 Cohesion: 0.09
-Nodes (21): DOM, ES2023, src, vite/client, compilerOptions, allowArbitraryExtensions, allowImportingTsExtensions, erasableSyntaxOnly (+13 more)
+Nodes (21): compilerOptions, allowArbitraryExtensions, allowImportingTsExtensions, erasableSyntaxOnly, lib, module, moduleDetection, moduleResolution (+13 more)
 
 ### Community 11 - "Control Plane ADR Decisions"
-Cohesion: 0.20
-Nodes (22): fakeLogger, fakeSuspender, loggedEvent, authedRequest(), EventLogger, Handler, Request, T (+14 more)
+Cohesion: 0.19
+Nodes (23): fakeLogger, fakeSuspender, loggedEvent, authedRequest(), EventLogger, Handler, Request, T (+15 more)
 
 ### Community 12 - "Frontend Test Tooling"
 Cohesion: 0.10
-Nodes (19): jsdom, devDependencies, jsdom, typescript, vite, vitest, name, private (+11 more)
+Nodes (19): devDependencies, jsdom, typescript, vite, vitest, name, private, scripts (+11 more)
 
 ### Community 13 - "Tailnet Identity Auth"
-Cohesion: 0.17
-Nodes (14): GrafanaCloudLogger, lokiLine, lokiPayload, lokiStream, lokiStreamLabels, envOr(), main(), mustEnv() (+6 more)
+Cohesion: 0.14
+Nodes (17): Client, main(), main(), EnvOr(), MustEnv(), MustEnvInt(), NewGrafanaCloudLogger(), T (+9 more)
 
 ### Community 14 - "Domain Docs Conventions"
 Cohesion: 0.25
 Nodes (8): CONTEXT.md, docs/adr/ (ADR directory), ADR conflict flagging practice, /domain-modeling skill, Glossary vocabulary discipline, /grill-with-docs skill, /improve-codebase-architecture skill, Single-context repo convention
 
 ### Community 15 - "Control UI App Mounting"
-Cohesion: 0.22
+Cohesion: 0.18
 Nodes (4): MountOptions, mountUi(), ReachabilityState, STATUS_LABELS
 
 ### Community 16 - "Graphify Query Traversal"
@@ -176,8 +184,8 @@ Cohesion: 0.50
 Nodes (5): .will_change vs .did_change() distinction, OperationMeta.did_change(), @docker connector, Host group, OperationMeta.will_change
 
 ### Community 19 - "WSGI Bootstrap Tests"
-Cohesion: 0.23
-Nodes (12): WakeOnLanSender, envOr(), main(), mustEnv(), BuildMagicPacket(), NewWakeOnLanSender(), T, TestBuildMagicPacketAcceptsHyphenSeparatedMac() (+4 more)
+Cohesion: 0.32
+Nodes (9): BuildMagicPacket(), NewWakeOnLanSender(), T, TestBuildMagicPacketAcceptsHyphenSeparatedMac(), TestBuildMagicPacketAcceptsLowercaseMac(), TestBuildMagicPacketHasSixLeadingFFBytes(), TestBuildMagicPacketRejectsInvalidMac(), TestBuildMagicPacketRepeatsMacSixteenTimes() (+1 more)
 
 ### Community 20 - "Graphify Incremental Update"
 Cohesion: 0.50
@@ -187,17 +195,13 @@ Nodes (3): Code-Only Fast Path (skip LLM), detect_incremental(), --update flag
 Cohesion: 0.32
 Nodes (11): SystemSuspender, NewSystemSuspender(), NewSystemSuspenderWithCommand(), T, TestConstructorRejectsAnEmptyCommand(), TestDefaultCommandIsSystemctlSuspendOnly(), TestSuspendPropagatesErrorFromExitCode(), TestSuspendPropagatesErrorWhenCommandIsNotFound() (+3 more)
 
-### Community 22 - "Wake Plugin Handler Tests"
-Cohesion: 0.33
-Nodes (5): Building a Caddy binary with this module, Development, Directive, Verification performed, wake_plugin
-
 ### Community 23 - "Graphify Watch Mode"
 Cohesion: 0.67
 Nodes (3): Debounce (3s default), graphify.watch background watcher, --watch flag
 
 ### Community 24 - "Typed Settings Pattern"
-Cohesion: 0.67
-Nodes (3): ADR-0010 (typed env-var settings, no file-based secrets store), settings.py (typed pydantic-settings config), Typed pydantic-settings config pattern
+Cohesion: 0.33
+Nodes (5): Behavior, Configuration, Deployment, Development, UI
 
 ### Community 25 - "Issue Tracker File Convention"
 Cohesion: 0.67
@@ -207,47 +211,53 @@ Nodes (3): issues/<NN>-<slug>.md ticket files, .scratch/<feature-slug>/ conventi
 Cohesion: 0.16
 Nodes (21): GetCallerIdentity(), Handler, Request, remoteHost(), RequireTailnetIdentity(), RequireTailnetIdentityOrLoopback(), Handler, Request (+13 more)
 
-### Community 34 - "Wake Plugin Go Module"
+### Community 29 - "Deploy Entrypoint"
 Cohesion: 0.67
-Nodes (3): T, TestHandler_ProvisionRequiresAWakeURL(), TestHandler_ServeHTTPCallsTheWakeURLAndAlwaysContinues()
+Nodes (3): Caddyfile.j2 validated with real caddy binary (ticket 07), git_systemd_service live demo (ticket 04), "Highest available seam" testing philosophy
 
-### Community 39 - "Control UI Favicon"
-Cohesion: 0.33
-Nodes (5): Behavior, Configuration, Deployment, Development, UI
+### Community 36 - "Control API Deploy File"
+Cohesion: 0.22
+Nodes (8): Custom Caddy wake plugin (replaces caddy-wol), Further Notes, Implementation Decisions, Out of Scope, Problem Statement, Solution, Testing Decisions, User Stories
 
 ### Community 41 - "AssertTailnetOnlyBind"
 Cohesion: 0.31
 Nodes (8): AssertTailnetOnlyBind(), appFactory(), T, TestAllowsLoopbackAndTailnetAddresses(), TestAppFactoryRefusesToStartOnOffTailnetHost(), TestAppFactoryStartsOnLoopbackHost(), TestRejectsOffTailnetAddresses(), BindOffTailnetError
 
-### Community 46 - "0013-caddy-binary-built-off-device-by-pyinfra.md"
-Cohesion: 0.15
-Nodes (9): The Caddy binary is cross-compiled off-device and shipped by pyinfra, not hand-built on the Pi, Control-plane events ship straight to Grafana Cloud's Loki endpoint — no self-hosted agent, The Pi API, Server API, and their shared libraries are rewritten in Go, built off-device like the Caddy binary, Compute API, Control-plane services (Go), Development, Gateway API, `internal/eventlog` (+1 more)
+### Community 44 - "Homelab Control System"
+Cohesion: 0.22
+Nodes (8): Further Notes, Homelab Control System, Implementation Decisions, Out of Scope, Problem Statement, Solution, Testing Decisions, User Stories
 
-## Ambiguous Edges - Review These
-- `Control UI` → `.scratch/ Local Markdown Issue Tracker`  [AMBIGUOUS]
-  .scratch/homelab-control-system/spec.md · relation: conceptually_related_to
-- `git_systemd_service live demo (ticket 04)` → `api_deploy.py (shared git+systemd @deploy helper)`  [AMBIGUOUS]
-  docs/agents/pyinfra-demo.md · relation: references
+### Community 45 - "Declarative Provisioning with pyinfra"
+Cohesion: 0.22
+Nodes (8): Declarative Provisioning with pyinfra, Further Notes, Implementation Decisions, Out of Scope, Problem Statement, Solution, Testing Decisions, User Stories
+
+### Community 46 - "0013-caddy-binary-built-off-device-by-pyinfra.md"
+Cohesion: 0.06
+Nodes (25): Compute API, Control-plane services (Go), Development, Gateway API, `internal/eventlog`, `internal/tailnet`, The Caddy binary is cross-compiled off-device and shipped by pyinfra, not hand-built on the Pi, Control-plane events ship straight to Grafana Cloud's Loki endpoint — no self-hosted agent (+17 more)
+
+### Community 47 - "01 — Pre-existing bug found and fixed: `handle_errors` nested inside `handle_path`"
+Cohesion: 0.40
+Nodes (4): 01 — Pre-existing bug found and fixed: `handle_errors` nested inside `handle_path`, Fix, Verification, What was found
 
 ## Knowledge Gaps
-- **130 isolated node(s):** `deploy.sh script`, `homelab-pyinfra`, `github.com/nikbogman/homelab/services/gateway-proxy/wake_plugin`, `github.com/nikbogman/homelab/services`, `lokiLine` (+125 more)
+- **152 isolated node(s):** `github.com/nikbogman/homelab/control-plane`, `lokiLine`, `contextKey`, `name`, `private` (+147 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **14 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **31 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **What is the exact relationship between `Control UI` and `.scratch/ Local Markdown Issue Tracker`?**
-  _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
-- **What is the exact relationship between `git_systemd_service live demo (ticket 04)` and `api_deploy.py (shared git+systemd @deploy helper)`?**
-  _Edge tagged AMBIGUOUS (relation: references) - confidence is low._
-- **Why does `NewHandler()` connect `Pi API Wake-on-LAN` to `AssertTailnetOnlyBind`, `Control Plane Services`, `WSGI Bootstrap Tests`?**
-  _High betweenness centrality (0.045) - this node is a cross-community bridge._
+- **Why does `NewHandler()` connect `Pi API Wake-on-LAN` to `AssertTailnetOnlyBind`, `Control Plane Services`, `WSGI Bootstrap Tests`, `Wake Plugin Go Internals`?**
+  _High betweenness centrality (0.079) - this node is a cross-community bridge._
 - **Why does `BuildMagicPacket()` connect `WSGI Bootstrap Tests` to `Pi API Wake-on-LAN`?**
-  _High betweenness centrality (0.033) - this node is a cross-community bridge._
-- **What connects `deploy.sh script`, `homelab-pyinfra`, `github.com/nikbogman/homelab/services/gateway-proxy/wake_plugin` to the rest of the system?**
-  _130 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _High betweenness centrality (0.047) - this node is a cross-community bridge._
+- **Why does `AssertTailnetOnlyBind()` connect `AssertTailnetOnlyBind` to `Pi API Wake-on-LAN`, `Homelab Domain Glossary`?**
+  _High betweenness centrality (0.039) - this node is a cross-community bridge._
+- **Are the 8 inferred relationships involving `mustNewHandlerWithConfig()` (e.g. with `NewHandler()` and `TestProxy_ARealHTTPErrorFromALiveBackendPassesThroughWithoutWaking()`) actually correct?**
+  _`mustNewHandlerWithConfig()` has 8 INFERRED edges - model-reasoned connections that need verification._
+- **What connects `github.com/nikbogman/homelab/control-plane`, `lokiLine`, `contextKey` to the rest of the system?**
+  _152 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Server API Reachability` be split into smaller, more focused modules?**
+  _Cohesion score 0.0846774193548387 - nodes in this community are weakly interconnected._
 - **Should `Shared Git-Pull Deploy Helper` be split into smaller, more focused modules?**
-  _Cohesion score 0.06972789115646258 - nodes in this community are weakly interconnected._
-- **Should `Pi API Wake-on-LAN` be split into smaller, more focused modules?**
-  _Cohesion score 0.14039408866995073 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07474747474747474 - nodes in this community are weakly interconnected._

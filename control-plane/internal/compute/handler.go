@@ -18,11 +18,10 @@ type EventLogger interface {
 	SendEvent(eventType, outcome string, identity *string, extra map[string]any)
 }
 
-// sync.Once (rather than a plain bool) matters here: net/http serves
-// requests concurrently by default, so "log exactly once" needs real
-// synchronization. This is also the only "changed" edge this app can ever
-// witness: it can't log going *un*reachable, since it's asleep while that's
-// true.
+// sync.Once beats a plain bool here: net/http serves requests concurrently,
+// so "log exactly once" needs real synchronization. It's also the only
+// reachability edge this app can ever observe -- it can't log going
+// *un*reachable, since it's asleep whenever that's true.
 type reachabilityTracker struct {
 	once sync.Once
 }
@@ -56,9 +55,9 @@ func NewHandler(uiOrigin string, suspender Suspender, logger EventLogger, bindHo
 }
 
 // withCORS allows only h.uiOrigin. A mismatched Origin gets no CORS headers
-// at all — the request still proceeds server-side; the browser is what
-// blocks it. OPTIONS preflight requests are answered directly, since
-// real cross-origin POSTs (e.g. /suspend) trigger them.
+// at all -- the request still proceeds server-side; the browser is what
+// blocks it. OPTIONS preflight is answered directly here, since /suspend
+// (a real cross-origin POST) triggers it.
 func (h *Handler) withCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")

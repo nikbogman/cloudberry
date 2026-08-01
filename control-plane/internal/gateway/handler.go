@@ -36,13 +36,11 @@ type Handler struct {
 	logger     EventLogger
 }
 
-// NewHandler refuses to start if cfg.BindHost would expose the app
-// off-tailnet, and fails fast on a malformed MAC address at construction
-// rather than mid-request.
 func NewHandler(cfg Config, waker Waker, logger EventLogger) (http.Handler, error) {
 	if err := tailnet.AssertTailnetOnlyBind(cfg.BindHost); err != nil {
 		return nil, err
 	}
+	// Fail fast at startup rather than on the first /wake request.
 	if _, err := BuildMagicPacket(cfg.MACAddress); err != nil {
 		return nil, err
 	}
@@ -50,6 +48,8 @@ func NewHandler(cfg Config, waker Waker, logger EventLogger) (http.Handler, erro
 	h := &Handler{macAddress: cfg.MACAddress, waker: waker, logger: logger}
 
 	mux := http.NewServeMux()
+	// Loopback exemption lets the compute proxy below trigger auto-wake
+	// in-process without a tailnet identity header.
 	mux.Handle("POST /wake", tailnet.RequireTailnetIdentityOrLoopback(http.HandlerFunc(h.handleWake)))
 	mux.Handle("/server/", newComputeProxy(cfg.ComputeHost, cfg.ComputeProxyPort, h.doWake))
 	mux.Handle("/", http.FileServer(http.FS(cfg.UIAssets)))

@@ -7,16 +7,15 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/nikbogman/homelab/control-plane/internal/envconfig"
+	"github.com/nikbogman/homelab/control-plane/internal/env"
 	"github.com/nikbogman/homelab/control-plane/internal/eventlog"
 	"github.com/nikbogman/homelab/control-plane/internal/gateway"
 )
 
-// uidist is populated by `npm run build` in ../../ui (vite.config.ts's
-// outDir) before this package is compiled -- provisioning/deploy_gateway.py
-// always builds the UI first. The checked-in .gitkeep placeholder is only
-// there so a fresh checkout compiles before the UI's ever been built;
-// go:embed requires the pattern to match at least one file.
+// uidist is populated by `npm run build` in ../../ui; deploy_gateway.py
+// always runs that build first. The checked-in .gitkeep exists only so a
+// fresh checkout compiles before the UI's been built -- go:embed requires
+// at least one matching file.
 //
 //go:embed all:uidist
 var embeddedUI embed.FS
@@ -27,22 +26,22 @@ func main() {
 		log.Fatal(err)
 	}
 
-	host := envconfig.EnvOr("GATEWAY_HOST", "127.0.0.1")
-	port := envconfig.EnvOr("GATEWAY_PORT", "5000")
+	host := env.EnvOr("GATEWAY_HOST", "127.0.0.1")
+	port := env.EnvOr("GATEWAY_PORT", "5000")
 
 	logger := eventlog.NewGrafanaCloudLogger(
-		envconfig.MustEnv("GRAFANA_CLOUD_LOKI_URL"),
-		envconfig.MustEnv("GRAFANA_CLOUD_LOKI_USER"),
-		envconfig.MustEnv("GRAFANA_CLOUD_LOKI_API_KEY"),
+		env.MustEnv("GRAFANA_CLOUD_LOKI_URL"),
+		env.MustEnv("GRAFANA_CLOUD_LOKI_USER"),
+		env.MustEnv("GRAFANA_CLOUD_LOKI_API_KEY"),
 		"gateway",
 	)
 
 	cfg := gateway.Config{
-		MACAddress:       envconfig.MustEnv("COMPUTE_MAC_ADDRESS"),
+		MACAddress:       env.MustEnv("COMPUTE_MAC_ADDRESS"),
 		BindHost:         host,
 		UIAssets:         uiAssets,
-		ComputeHost:      envconfig.MustEnv("COMPUTE_HOST"),
-		ComputeProxyPort: envconfig.MustEnvInt("COMPUTE_PROXY_PORT"),
+		ComputeHost:      env.MustEnv("COMPUTE_HOST"),
+		ComputeProxyPort: env.MustEnvInt("COMPUTE_PROXY_PORT"),
 	}
 
 	handler, err := gateway.NewHandler(cfg, gateway.NewWakeOnLanSender(), logger)
