@@ -22,8 +22,7 @@ var (
 	autoWakeThrottle   = 90 * time.Second
 )
 
-// autoWakeThrottler tracks a single timestamp, not one per target -- there
-// is exactly one compute upstream in this service.
+// Single timestamp: exactly one compute upstream exists.
 type autoWakeThrottler struct {
 	doWake func(identity string) error
 	now    func() time.Time
@@ -32,8 +31,7 @@ type autoWakeThrottler struct {
 	lastRun time.Time
 }
 
-// trigger discards doWake's error: the retry loop that calls it only needs
-// a wake attempted, not confirmation that it succeeded.
+// Error discarded -- callers only need a wake attempted, not confirmed.
 func (t *autoWakeThrottler) trigger() {
 	t.mu.Lock()
 	now := t.now()
@@ -47,11 +45,9 @@ func (t *autoWakeThrottler) trigger() {
 	_ = t.doWake(tailnet.LoopbackIdentity)
 }
 
-// newComputeProxy reverse-proxies to the compute host. A Go-level transport
-// failure (dial refused, timeout) triggers the throttled auto-wake and
-// retries the request until it succeeds or proxyRetryWindow elapses; a
-// genuine HTTP response from a live backend (including a real 502) passes
-// straight through untouched.
+// newComputeProxy reverse-proxies to the compute host. A transport failure
+// triggers throttled auto-wake and retries until proxyRetryWindow elapses;
+// a real HTTP response (even a 502) passes through untouched.
 func newComputeProxy(computeHost string, computeProxyPort int, doWake func(identity string) error) http.Handler {
 	target := &url.URL{Scheme: "http", Host: net.JoinHostPort(computeHost, strconv.Itoa(computeProxyPort))}
 	proxy := httputil.NewSingleHostReverseProxy(target)
@@ -66,11 +62,9 @@ func newComputeProxy(computeHost string, computeProxyPort int, doWake func(ident
 	return http.StripPrefix("/server", proxy)
 }
 
-// retryUntilReachable re-issues outreq (already director-rewritten to the
-// compute host by the failed ReverseProxy attempt) every proxyRetryInterval
-// for up to proxyRetryWindow, writing the first successful response
-// straight through to w. Buffers outreq's body once up front so each retry
-// attempt can replay it.
+// retryUntilReachable retries outreq every proxyRetryInterval up to
+// proxyRetryWindow, writing the first success through to w. The body is
+// buffered once so each retry can replay it.
 func retryUntilReachable(w http.ResponseWriter, outreq *http.Request, transport http.RoundTripper) {
 	if transport == nil {
 		transport = http.DefaultTransport

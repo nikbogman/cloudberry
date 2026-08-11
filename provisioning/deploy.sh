@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
-# Wrapper that loads the repo root's .env (ADR-0010, gitignored, never
-# committed) into THIS SCRIPT'S OWN PROCESS ONLY, then execs pyinfra. The
-# vars never touch the interactive shell that invoked this script -- once
-# the process exits, nothing lingers. Also bakes in inventory.py, and
-# resolves a short name (e.g. "gateway") to its deploy_gateway.py file, so
-# callers don't have to keep retyping every Deploy file's "deploy" prefix.
+# Loads the repo root's .env into this script's own process (never the
+# interactive shell), execs pyinfra with inventory.py, and resolves a
+# short name (e.g. "gateway") to its deploy_gateway.py file.
 #
 # Usage: ./deploy.sh --limit gateway --dry           # no target -> deploy.py (everything)
 #        ./deploy.sh gateway --limit gateway --dry   # -> deploy_gateway.py

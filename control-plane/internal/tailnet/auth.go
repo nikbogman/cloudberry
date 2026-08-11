@@ -1,9 +1,6 @@
 // Package tailnet holds tailnet identity-header auth and bind-safety
-// helpers.
-//
-// Both apps sit behind `tailscale serve`, which injects the
-// Tailscale-User-Login header for any tailnet-authenticated caller. These
-// helpers only check the header is present, not which identity it names.
+// helpers. `tailscale serve` injects Tailscale-User-Login for any
+// tailnet-authenticated caller; these helpers only check it's present.
 package tailnet
 
 import (
@@ -15,12 +12,10 @@ import (
 
 const (
 	IdentityHeader = "Tailscale-User-Login"
-	// LoopbackIdentity is the synthetic identity assigned to a caller on
-	// 127.0.0.1 with no identity header (ADR-0004, ADR-0012) -- the
-	// Gateway API's own same-device auto-wake trigger. Kept as the literal
-	// value "gateway" for continuity with existing Grafana Cloud event
-	// history (ADR-0016), even though the separate Caddy-based Gateway
-	// proxy process that name originally referred to is gone.
+	// LoopbackIdentity is assigned to a caller on 127.0.0.1 with no
+	// identity header -- the Gateway API's own same-device auto-wake
+	// trigger. Kept as "gateway" for continuity with existing event
+	// history.
 	LoopbackIdentity = "gateway"
 )
 
@@ -41,10 +36,8 @@ func RequireTailnetIdentity(next http.Handler) http.Handler {
 	})
 }
 
-// RequireTailnetIdentityOrLoopback is like RequireTailnetIdentity, but also
-// accepts a caller on 127.0.0.1 with no identity header (ADR-0004,
-// ADR-0012) -- for the Gateway API's own same-device auto-wake trigger. Opt
-// in per route; doesn't change RequireTailnetIdentity itself.
+// RequireTailnetIdentityOrLoopback also accepts a caller on 127.0.0.1 with
+// no identity header, for the Gateway API's own auto-wake trigger.
 func RequireTailnetIdentityOrLoopback(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		identity := strings.TrimSpace(r.Header.Get(IdentityHeader))

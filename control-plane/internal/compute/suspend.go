@@ -23,8 +23,8 @@ func NewSystemSuspender() *SystemSuspender {
 	return &SystemSuspender{command: DefaultSuspendCommand}
 }
 
-// NewSystemSuspenderWithCommand is only intended for tests: it errors on
-// an empty command, failing fast at construction rather than mid-request.
+// NewSystemSuspenderWithCommand is for tests: it errors on an empty
+// command, failing fast at construction rather than mid-request.
 func NewSystemSuspenderWithCommand(command []string) (*SystemSuspender, error) {
 	if len(command) == 0 {
 		return nil, errors.New("suspend command must not be empty")

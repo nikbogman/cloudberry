@@ -17,13 +17,11 @@ type BindOffTailnetError struct {
 
 func (e *BindOffTailnetError) Error() string { return e.msg }
 
-// AssertTailnetOnlyBind allows loopback and Tailscale's own address ranges
-// (the CGNAT IPv4 range it assigns nodes, and its IPv6 ULA range) --
-// nothing else.
+// AssertTailnetOnlyBind allows only loopback and Tailscale's own address
+// ranges (CGNAT IPv4, ULA IPv6).
 func AssertTailnetOnlyBind(host string) error {
-	// Handled directly rather than through the LookupHost path below:
-	// "localhost" isn't a parseable IP, and always resolves to loopback
-	// anyway, so there's nothing a DNS/hosts-file lookup would add.
+	// "localhost" isn't a parseable IP but always resolves to loopback,
+	// so skip the lookup below.
 	if host == "localhost" {
 		return nil
 	}

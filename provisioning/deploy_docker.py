@@ -1,31 +1,17 @@
-"""Installs and enables the Docker engine on `server`.
-
-So workload Compose stacks (Immich, AI agents, etc.) have an engine to run
-on. Targetable in isolation:
+"""Installs and enables the Docker engine on `server`, for workload
+Compose stacks (Immich, AI agents, etc.). Targetable in isolation:
 
     pyinfra inventory.py deploy_docker.py --limit server
     pyinfra inventory.py deploy_docker.py --limit server --dry
 
-Applies to the `test` stand-in too -- safe to run twice, so a bad package
-name surfaces there first. Never applies to `pi`: the Pi Zero doesn't run
-Docker workloads.
+Applies to the `test` stand-in too; never to `pi`, which runs no Docker
+workloads.
 
-pyinfra has no built-in "install Docker engine" operation, so this composes
-Docker's official apt-repo instructions
-(https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository,
-also covering https://docs.docker.com/engine/install/debian/ -- `server`
-runs Ubuntu Server, so the repo path is read from the host's actual distro
-ID rather than hardcoded) from the generic apt/systemd operations.
-
-Docker's current docs pin the repo to `Architectures: $(dpkg
---print-architecture)` rather than leaving it unbounded, since one
-`deb`/DEB822 entry serves every architecture Docker publishes -- the same
-`arch=` option on the classic one-line format pyinfra's `apt.repo`
-understands. Read from the host itself (`common.DpkgArchitecture`, since
-pyinfra has no built-in fact keyed to `dpkg`'s naming -- `server.Arch` wraps
-`uname -m`, which uses different names, e.g. "x86_64" instead of "amd64")
-so this stays correct against whatever architecture `server`/`server-test`
-actually run, without hardcoding one.
+pyinfra has no built-in "install Docker" operation, so this composes
+Docker's official apt-repo instructions from apt/systemd primitives.
+Distro ID and architecture are read from the host (`common.linux_distro_id`,
+`common.DpkgArchitecture`) rather than hardcoded, since `server` isn't a
+fixed, known image.
 """
 
 from pyinfra import host

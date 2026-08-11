@@ -1,9 +1,5 @@
-"""Helpers shared by more than one Deploy file.
-
-Not a Deploy file itself -- defines no operations, only fact-derived
-helpers and a `device_role` guard -- so it's imported, never passed to
-the `pyinfra` CLI directly.
-"""
+"""Fact-derived helpers and the `device_role` guard shared by Deploy
+files. Imported only -- never passed to the pyinfra CLI directly."""
 
 from pyinfra import host
 from pyinfra.api import FactBase
@@ -11,14 +7,10 @@ from pyinfra.facts.server import LinuxDistribution
 
 
 class DpkgArchitecture(FactBase):
-    """Native apt architecture (e.g. "amd64", "arm64") per `dpkg
-    --print-architecture` -- distinct from `uname -m`'s naming. Read from
-    the host itself (no built-in pyinfra fact keyed to `dpkg`'s naming) so
-    callers stay correct against whatever architecture a device actually
-    runs, without hardcoding one. Shared by `deploy_docker.py` (Docker's
-    apt repo `arch=`) and `deploy_compute_api.py`/`deploy_gateway.py`
-    (selecting the matching `GOARCH` for the off-device Go build,
-    ADR-0015).
+    """`dpkg --print-architecture` output (e.g. "amd64") -- pyinfra has no
+    built-in fact for it, and `server.Arch` wraps `uname -m`'s different
+    naming. Used by deploy_docker.py and the Go deploy files to target the
+    host's real architecture instead of hardcoding one.
     """
 
     def command(self) -> str:
@@ -29,11 +21,8 @@ class DpkgArchitecture(FactBase):
 
 
 def linux_distro_id(default: str = "debian") -> str:
-    """`ID` from `/etc/os-release` (e.g. "debian" on Raspberry Pi OS,
-    "ubuntu" on Ubuntu Server) -- both are Debian-family, but vendor apt
-    repos (Docker, etc.) are hosted under distinct per-distro paths that
-    key off this, not the codename. Falls back to `default` if the fact
-    can't determine it.
+    """`ID` from `/etc/os-release` (e.g. "debian", "ubuntu") -- vendor apt
+    repos key off this, not the codename. Falls back to `default`.
     """
 
     release_meta = host.get_fact(LinuxDistribution)["release_meta"]
@@ -41,9 +30,8 @@ def linux_distro_id(default: str = "debian") -> str:
 
 
 def linux_codename(default: str = "bookworm") -> str:
-    """Debian-family codename (e.g. "bookworm" on Raspberry Pi OS, "noble"
-    on Ubuntu Server) for apt source lines. Falls back to `default` if the
-    fact can't determine it.
+    """Debian-family codename (e.g. "bookworm", "noble") for apt source
+    lines. Falls back to `default`.
     """
 
     release_meta = host.get_fact(LinuxDistribution)["release_meta"]
@@ -51,29 +39,21 @@ def linux_codename(default: str = "bookworm") -> str:
 
 
 def has_device_role(*roles: str) -> bool:
-    """Whether the current host has one of the given device roles
-    ("gateway"/"compute"), set as `device_role` host data in
-    `inventory.py`. Distinct from `host.groups`: true for both a real
-    device and its `test` stand-in, so a Deploy file's operations apply to
-    both.
+    """Whether the current host has one of the given `device_role`s
+    (set in inventory.py). Unlike `host.groups`, true for both a real
+    device and its `test` stand-in.
     """
 
     return host.data.device_role in roles
 
 
 class TailscaleServeStatus(FactBase):
-    """Raw `tailscale serve status --json` output (or `"{}"` if unset, not
-    installed, or not yet joined) -- `|| true` keeps that from failing the
-    fact gather. The shape isn't officially documented and has changed
-    across Tailscale versions -- Tailscale's own docs even note that plain
-    `tailscale serve status` and `... --json` can disagree -- so callers
-    check for a target string's (e.g. "localhost:5000") presence in this
-    raw text rather than parsing a specific key path, which is more
-    resilient to that drift than a strict schema parse. Lives here rather
-    than in `deploy_tailscale.py` because that file's top level has
-    side-effecting operations (installing/joining Tailscale) that would
-    re-run if another Deploy file imported from it -- this module is
-    side-effect-free by design (see module docstring).
+    """Raw `tailscale serve status --json` output (`"{}"` if unset,
+    uninstalled, or unjoined). The JSON shape is undocumented and has
+    drifted across Tailscale versions, so callers check for a target
+    string (e.g. "localhost:5000") in this raw text rather than parsing a
+    key path. Kept here, not in deploy_tailscale.py, because that file's
+    top level has side-effecting operations that would re-run on import.
     """
 
     def command(self) -> str:

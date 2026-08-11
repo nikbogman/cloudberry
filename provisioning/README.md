@@ -1,13 +1,6 @@
 # pyinfra provisioning
 
-Declarative provisioning for the homelab control plane. Converges the Gateway (`gateway`,
-the Pi Zero) and the compute host (`compute`) to their declared state:
-Tailscale joined, Docker installed on `compute`, and both the Gateway API
-and Compute API (plus the UI's static build) deployed as systemd services.
-Domain vocabulary
-(Deploy, Deploy file, Host group) is defined in the root
-[`CONTEXT.md`](../CONTEXT.md); pyinfra-specific implementation notes and
-citations live in [`docs/agents/pyinfra.md`](../docs/agents/pyinfra.md).
+Declarative provisioning for the homelab control plane. Converges the Gateway (`gateway`, the Pi Zero) and the compute host (`compute`) to their declared state: Tailscale joined, Docker installed on `compute`, and both the Gateway API and Compute API (plus the UI's static build) deployed as systemd services. Domain vocabulary (Deploy, Deploy file, Host group) is in [`CONTEXT.md`](../CONTEXT.md).
 
 ## Layout
 
@@ -30,23 +23,11 @@ provisioning/
 ../.env.example                    # checked-in template -- copy to ../.env (gitignored)
 ```
 
-**Run `./deploy.sh` from the repo root**, or `./deploy.sh` from inside
-`provisioning/` directly (`cd provisioning/` first) — both resolve to the
-same script and behave identically. Deploy files themselves still need
-`provisioning/` as cwd internally: they import from sibling modules
-(`from common import ...`, `from go_deploy import ...`) and
-`files.template` resolves `templates/*.j2` relative to the current working
-directory, both of which pyinfra only sets up automatically for the
-directory it's actually invoked from — `deploy.sh` (either copy) `cd`s
-there itself before execing pyinfra, so this is handled either way.
+Run `./deploy.sh` from the repo root or from inside `provisioning/` — both resolve to the same script. Deploy files import from sibling modules and resolve `templates/*.j2` relative to cwd, so `deploy.sh` always `cd`s into `provisioning/` first.
 
 ## Setup
 
-An independent [uv](https://docs.astral.sh/uv/) project, but not an
-installable package (`[tool.uv] package = false` in `pyproject.toml`) --
-it's a directory of scripts pyinfra's CLI executes, not a Python package
-anything imports. Also requires a Go toolchain on the dev machine, for the
-Gateway API/Compute API builds:
+An independent [uv](https://docs.astral.sh/uv/) project, not an installable package -- pyinfra's CLI executes these scripts directly. Also requires a Go toolchain on the dev machine:
 
 ```sh
 cd provisioning
@@ -55,56 +36,24 @@ uv sync
 
 ## Configuration
 
-Nothing operator-specific is hardcoded — real addresses,
-secrets, and deployment refs are all read from the dev machine's
-environment at Deploy time, via typed
-[`pydantic-settings`](https://docs.pydantic.dev/latest/concepts/pydantic_settings/)
-classes in `settings.py` rather than each Deploy file parsing
-`os.environ` by hand. Ports and similar fields are coerced to their real
-type (e.g. `int`); a class with a required field (no default, e.g.
-`TailscaleSettings.tailscale_auth_key`) raises a `pydantic.ValidationError`
-listing every missing var at once if it isn't set. Deploy files that only
-need a required setting when actually targeting a given device construct
-that class lazily inside the relevant `has_device_role(...)` guard, so
-running one Deploy file in isolation still never demands env vars an
-unrelated one needs — the same "targetable in isolation" contract as
-before. No `env_file` support — these classes are a typed wrapper around plain
-environment variables, not a new persistence mechanism.
+Real addresses, secrets, and deployment refs are read from the dev machine's environment at Deploy time via typed [`pydantic-settings`](https://docs.pydantic.dev/latest/concepts/pydantic_settings/) classes in `settings.py`. A class with a required field (no default) raises a `ValidationError` listing every missing var at once. Deploy files construct settings lazily inside `has_device_role(...)`, so running one in isolation never demands env vars an unrelated one needs.
 
-Copy [`../.env.example`](../.env.example) to `../.env` (repo root,
-gitignored, never committed) and fill in real values for every required
-variable listed below. Run deploys via `./deploy.sh` (see Running a
-Deploy) rather than `uv run pyinfra` directly — it loads `.env` into its
-own subprocess and execs pyinfra, so these vars never leak into or linger
-in your interactive shell.
+Copy [`../.env.example`](../.env.example) to `../.env` (repo root, gitignored) and fill in every required variable below. Run deploys via `./deploy.sh`, not `uv run pyinfra` directly -- it loads `.env` into its own subprocess, so secrets never touch your interactive shell.
 
 ### inventory.py (`InventorySettings`)
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `GATEWAY_HOST`, `GATEWAY_SSH_USER` | `pi-zero.tailnet`, `pi` | The real Gateway (Pi Zero) -- pyinfra's SSH target |
-| `COMPUTE_HOST`, `COMPUTE_SSH_USER` | `main-server.tailnet`, `admin` | The real compute host -- pyinfra's SSH target |
-| `GATEWAY_TAILNET_HOST` | `pi-zero.your-tailnet-name.ts.net` | The Gateway's real Tailscale MagicDNS name, used only to derive `UI_ORIGIN` |
-| `COMPUTE_TAILNET_HOST` | `main-server.your-tailnet-name.ts.net` | The compute host's real Tailscale MagicDNS name, used only to derive `VITE_COMPUTE_API_URL` |
+| `GATEWAY_HOST`, `GATEWAY_SSH_USER` | `pi-zero.tailnet`, `pi` | Gateway's SSH target |
+| `COMPUTE_HOST`, `COMPUTE_SSH_USER` | `main-server.tailnet`, `admin` | Compute's SSH target |
+| `GATEWAY_TAILNET_HOST` | `pi-zero.your-tailnet-name.ts.net` | Gateway's Tailscale MagicDNS name; derives `UI_ORIGIN` |
+| `COMPUTE_TAILNET_HOST` | `main-server.your-tailnet-name.ts.net` | Compute's Tailscale MagicDNS name; derives `VITE_COMPUTE_API_URL` |
 | `GATEWAY_TEST_HOST`, `GATEWAY_TEST_SSH_PORT`, `GATEWAY_TEST_SSH_USER` | `localhost`, `2201`, `root` | `test` group's gateway stand-in (see Testing) |
 | `COMPUTE_TEST_HOST`, `COMPUTE_TEST_SSH_PORT`, `COMPUTE_TEST_SSH_USER` | `localhost`, `2202`, `root` | `test` group's compute stand-in |
 
-`GATEWAY_HOST`/`COMPUTE_HOST` are pure SSH targets -- pyinfra connects to
-exactly these to run any Deploy file, including `deploy_tailscale.py`
-itself, so on a fresh device that isn't joined to the tailnet yet, this
-needs to be a plain LAN address (e.g. `192.168.0.50`), not a tailnet name.
-Safe to leave as the LAN address permanently as long as the
-gateway/compute devices stay on the same local network as the dev machine
--- no separate "bootstrap value" needed.
+`GATEWAY_HOST`/`COMPUTE_HOST` are pure SSH targets, used even by `deploy_tailscale.py` itself — on a fresh device, use a plain LAN address, not a tailnet name.
 
-`GATEWAY_TAILNET_HOST`/`COMPUTE_TAILNET_HOST` are deliberately separate:
-both `deploy_compute_api.py` and `deploy_gateway.py` derive the
-other's browser-facing origin from these two
-(`https://{gateway_tailnet_host}`, `https://{compute_tailnet_host}`),
-since that's exactly what each device's own `tailscale serve` instance
-exposes it at, and specifically needs the real MagicDNS name -- that's the
-only name `tailscale serve` issues a valid HTTPS cert for, so a LAN IP
-origin would break CORS/HTTPS.
+`GATEWAY_TAILNET_HOST`/`COMPUTE_TAILNET_HOST` are separate from the SSH targets: `deploy_compute_api.py`/`deploy_gateway.py` derive the *other* device's browser-facing origin from these, since only the real MagicDNS name gets a valid `tailscale serve` HTTPS cert.
 
 ### deploy_tailscale.py (`TailscaleSettings`)
 
@@ -112,90 +61,52 @@ Bold variables are required.
 
 | Variable | Default | Purpose |
 |---|---|---|
-| **`TAILSCALE_AUTH_KEY`** | — | Tailnet auth key, never committed; only required the first time the device joins the tailnet |
+| **`TAILSCALE_AUTH_KEY`** | — | Tailnet auth key, never committed; only required on first join |
 
 ### deploy_gateway.py (`GatewaySettings`, `GatewaySecrets`)
 
-Cross-compiles `control-plane/cmd/gateway` for the Pi Zero W (`GOOS=linux
-GOARCH=arm GOARM=6`) on the dev machine and ships only the binary --
-there's no repo to pull or ref to check out on-device anymore. This is
-the only Deploy file for the device: the Gateway API binary does static
-serving, WoL, and proxying in one process (see [`ARCHITECTURE.md`](../ARCHITECTURE.md)),
-so there's no separate build/template step for anything else.
+Cross-compiles `control-plane/cmd/gateway` for the Pi Zero W (`GOARCH=arm GOARM=6`) and ships only the binary. The Gateway API does static serving, WoL, and proxying in one process (see [`ARCHITECTURE.md`](../ARCHITECTURE.md)), so this is the only Deploy file for the device.
 
 Bold variables are required.
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `GATEWAY_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address for the Gateway API |
-| **`COMPUTE_MAC_ADDRESS`** | — | WoL target MAC for the Gateway API |
-| `COMPUTE_HOST` | `main-server.tailnet` | Host the `/server*` route forwards to |
-| **`COMPUTE_PROXY_PORT`** | — | Port on `COMPUTE_HOST` that `/server*` forwards to (path stripped); no default since the server-side proxy it points at doesn't exist yet |
-| **`GRAFANA_CLOUD_LOKI_URL`** | — | Grafana Cloud's Loki push endpoint -- events are POSTed here directly |
-| **`GRAFANA_CLOUD_LOKI_USER`** | — | Grafana Cloud Loki basic-auth username (the stack's numeric instance/user ID) |
+| `GATEWAY_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address |
+| **`COMPUTE_MAC_ADDRESS`** | — | WoL target MAC |
+| `COMPUTE_HOST` | `main-server.tailnet` | Host `/server*` forwards to |
+| **`COMPUTE_PROXY_PORT`** | — | Port on `COMPUTE_HOST`; no default since the downstream proxy doesn't exist yet |
+| **`GRAFANA_CLOUD_LOKI_URL`** | — | Grafana Cloud's Loki push endpoint |
+| **`GRAFANA_CLOUD_LOKI_USER`** | — | Loki basic-auth username (numeric instance ID) |
 | **`GRAFANA_CLOUD_LOKI_API_KEY`** | — | Grafana Cloud Access Policy token, scoped to `logs:write` |
 
-`VITE_COMPUTE_API_URL` (baked into the UI build) is
-`https://{COMPUTE_TAILNET_HOST}`, derived from `InventorySettings` rather
-than its own separately-set secret.
+`VITE_COMPUTE_API_URL` is derived from `InventorySettings`, not a separate secret.
 
-After the systemd unit, this Deploy file also runs `tailscale serve --bg
---https=443 localhost:$GATEWAY_PORT` to expose the UI/Gateway API on the
-tailnet, guarded by `common.TailscaleServeStatus`, a fact that checks the
-raw `tailscale serve status --json` text for that target string, so a
-second run is a no-op. `tailscale serve`'s exact CLI syntax/JSON shape has
-moved across Tailscale versions and isn't fully documented, so re-verify
-this against whatever `tailscale version` is actually installed before
-trusting it blindly on a new device.
+After the systemd unit, this file also runs `tailscale serve --bg --https=443 localhost:$GATEWAY_PORT`, guarded by `common.TailscaleServeStatus` so a second run is a no-op. `tailscale serve`'s CLI/JSON shape has moved across Tailscale versions — re-verify against the installed version before trusting it on a new device.
 
 ### deploy_compute_api.py (`ComputeApiSettings`, `ComputeApiSecrets`)
 
-Cross-compiles `control-plane/cmd/compute-api` on the dev machine and ships only
-the binary, same as the Gateway API -- `GOARCH` is read from the
-device's real architecture (`common.DpkgArchitecture`) rather than
-hardcoded, since unlike the Pi Zero W, `compute` isn't a fixed known
-device.
+Cross-compiles `control-plane/cmd/compute-api` and ships only the binary, same as the Gateway. `GOARCH` is read from the device's real architecture (`common.DpkgArchitecture`), since `compute` isn't a fixed known device.
 
 Bold variables are required.
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `COMPUTE_API_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address for the Compute API |
-| **`GRAFANA_CLOUD_LOKI_URL`** | — | Grafana Cloud's Loki push endpoint -- events are POSTed here directly |
-| **`GRAFANA_CLOUD_LOKI_USER`** | — | Grafana Cloud Loki basic-auth username (the stack's numeric instance/user ID) |
+| `COMPUTE_API_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address |
+| **`GRAFANA_CLOUD_LOKI_URL`** | — | Grafana Cloud's Loki push endpoint |
+| **`GRAFANA_CLOUD_LOKI_USER`** | — | Loki basic-auth username |
 | **`GRAFANA_CLOUD_LOKI_API_KEY`** | — | Grafana Cloud Access Policy token, scoped to `logs:write` |
 
-`UI_ORIGIN` (the Compute API's CORS allow-list entry) is
-`https://{GATEWAY_TAILNET_HOST}`, derived from `InventorySettings` rather
-than its own separately-set secret.
-
-After the systemd unit, this Deploy file also runs `tailscale serve --bg
---https=443 localhost:$COMPUTE_API_PORT` to expose the Compute API on the
-tailnet (CONTEXT.md: fronted by its own `tailscale serve` instance) --
-guarded by `common.TailscaleServeStatus`, a fact that checks the raw
-`tailscale serve status --json` text for that target string, so a second
-run is a no-op. `tailscale serve`'s exact CLI syntax/JSON shape has moved
-across Tailscale versions and isn't fully documented, so re-verify this
-against whatever `tailscale version` is actually installed before trusting
-it blindly on a new device.
+`UI_ORIGIN` (the CORS allow-list entry) is derived from `InventorySettings`, not a separate secret. Also runs `tailscale serve` for `$COMPUTE_API_PORT`, same mechanism and version caveat as the Gateway above.
 
 ## Running a Deploy
 
-Use `./deploy.sh` (repo root or `provisioning/`, interchangeably) in place
-of `uv run pyinfra inventory.py` — it loads `../.env` into its own
-subprocess and execs pyinfra with `inventory.py` plus whatever args you
-pass, so secrets never touch your interactive shell and you don't repeat
-`inventory.py` on every invocation. With no target
-given it defaults to `deploy.py` (everything); otherwise it resolves a
-short name to its `deploy_<name>.py` file (e.g. `gateway` → `deploy_gateway.py`)
-so you don't have to keep retyping the `deploy_` prefix either — the full
-filename still works if you prefer it:
+`./deploy.sh` loads `../.env` and execs pyinfra with `inventory.py` plus whatever args you pass. No target defaults to `deploy.py` (everything); a short name resolves to its `deploy_<name>.py` file (e.g. `gateway` → `deploy_gateway.py`):
 
 ```sh
 # Everything, both groups
 ./deploy.sh
 
-# Preview only -- connects and diffs, mutates nothing (see Gotcha below)
+# Preview only -- connects and diffs, mutates nothing
 ./deploy.sh --dry
 
 # One Deploy file against one Host group
@@ -203,42 +114,19 @@ filename still works if you prefer it:
 ./deploy.sh gateway --limit gateway --dry
 ```
 
-pyinfra 3.x has no `--check` flag — use `--dry` instead
-(`docs/agents/pyinfra.md`'s Gotchas). `deploy.py` never runs
-on its own: no CI config, cron job, or git hook in this repo invokes it
--- it's a human, from the dev machine, every time.
+pyinfra 3.x has no `--check` flag — use `--dry`. `deploy.py` is never invoked automatically — no CI, cron, or git hook runs it.
 
 ## Testing
 
-No pytest/mypy seam applies to infrastructure code — the checks below run
-through pyinfra's own execution engine, the "highest available seam"
-philosophy this repo follows for infrastructure code. Three tiers, and this is
-the precedent future Deploy files in this repo should follow:
+No pytest/mypy seam applies to infrastructure code, so these checks run through pyinfra's own execution engine.
 
 ### Tier 1 — `--dry`
 
-Every Deploy file is run with `--dry` before being applied for real. This
-connects for real and gathers facts, but executes nothing — it prints the
-operations that *would* run. Catches template and logic errors early, but
-per its own documented caveat it's a prepare-phase estimate, not a
-correctness proof (`docs/agents/pyinfra.md`'s `--dry` section) — that's
-what tiers 2 and 3 are for.
+Connects for real and gathers facts, but executes nothing. Catches template/logic errors early; per pyinfra's own caveat it's a prepare-phase estimate, not a correctness proof.
 
 ### Tier 2 — disposable containers (the `test` Host group)
 
-`inventory.py`'s `test` group points at long-lived, **systemd-capable**
-containers reached over plain `@ssh` — deliberately *not* pyinfra's
-`@docker` connector. `@docker` image-mode containers run no init system
-(`tail -f /dev/null` as PID 1), so the `systemd.service` operations this
-feature uses throughout can't succeed against them
-(`docs/agents/pyinfra.md`'s Open Question #2). Using `@ssh` against a
-systemd-capable container instead exercises the *exact same connector
-path* `gateway`/`compute` use, so execution errors surface against the real
-code path, and the container survives across runs for the idempotency
-check below.
-
-Stand up the two stand-in containers (needs a systemd-capable image with
-an SSH server; adjust to taste):
+`inventory.py`'s `test` group points at long-lived, **systemd-capable** containers over plain `@ssh` — not pyinfra's `@docker` connector, since `@docker` image-mode containers run no init system and can't run `systemd.service` operations. `@ssh` exercises the same connector path `gateway`/`compute` use.
 
 ```sh
 docker run -d --name gateway-test --privileged --cgroupns=host \
@@ -249,32 +137,19 @@ docker run -d --name compute-test --privileged --cgroupns=host \
   jrei/systemd-debian:12
 
 # Install your pyinfra dev machine's public key + an SSH server on each
-# (exact steps depend on the chosen image; jrei/systemd-debian ships
-# openssh-server disabled by default -- enable and seed authorized_keys
-# via `docker exec`, then `systemctl start ssh` inside each container).
+# (jrei/systemd-debian ships openssh-server disabled -- enable and seed
+# authorized_keys via `docker exec`, then `systemctl start ssh`).
 ```
-
-Then, from `provisioning/`:
 
 ```sh
 ./deploy.sh --limit test
 ```
 
-Every Deploy file runs against both stand-ins (`device_role` host data makes
-`gateway-test`/`compute-test` behave like `gateway`/`compute` for gating
-purposes — see `common.has_device_role` and `inventory.py`'s module
-docstring). Bad package
-names, invalid templates, and wrong command syntax surface here, against
-throwaway containers, not a physical device. `deploy_tailscale.py`
-deliberately skips the actual `tailscale up` join for `test` (only the
-install steps run) — see that file's docstring — so this never enrolls an
-ephemeral container into the real tailnet.
+`device_role` host data makes `gateway-test`/`compute-test` behave like `gateway`/`compute` for gating, so every Deploy file runs against both. `deploy_tailscale.py` skips the actual `tailscale up` join for `test`, so a container never enrolls in the real tailnet.
 
 ### Tier 3 — idempotency, the actual correctness check
 
-Run the same Deploy twice in a row, immediately, with nothing else
-changed in between, against **both** `test` and the real
-`gateway`/`compute`:
+Run the same Deploy twice in a row against **both** `test` and the real `gateway`/`compute`:
 
 ```sh
 ./deploy.sh --limit test
@@ -284,40 +159,10 @@ changed in between, against **both** `test` and the real
 ./deploy.sh --limit gateway     # again, immediately
 ```
 
-**Pass condition**: the second run's `Grand total` row has an empty/`-`
-`Success` column and everything lands in `No Change`
-(`docs/agents/pyinfra.md`'s Idempotency mechanics section has a worked
-example of what that table looks like). This is what verifies a Deploy
-file is genuinely declarative, not merely "ran without error" once. For a
-scripted gate instead of eyeballing the table, add `--json` to the second
-run and check its per-operation change counts.
+**Pass condition**: the second run's `Grand total` row has an empty `Success` column, everything in `No Change`. Add `--json` to the second run for a scripted gate instead of eyeballing the table.
 
-### What was actually verified while building this feature
+## Known gaps
 
-Live verification was performed for
-pieces with no other test seam: the shared `git_systemd_service`
-helper demoed end-to-end against a real throwaway git repo and a real
-(user-mode, sandbox-only) systemd unit — first run applies, second run is
-fully idempotent, a code-only change correctly triggers a restart. Full
-tiers 2 and 3 against `gateway`/`compute`-shaped disposable containers
-require Docker and a systemd-capable image, unavailable in the sandbox
-this feature was built in; the procedure above is what to run against
-real infrastructure.
-
-## Known gaps (flagged, not silently dropped)
-
-- ~~**`tailscale serve` port mappings**~~ — closed. `deploy_compute_api.py`
-  and `deploy_gateway.py` now both run `tailscale serve` for their respective
-  loopback-bound ports (see each section above), and the two Deploy files'
-  `UI_ORIGIN`/`VITE_COMPUTE_API_URL` values are derived from `InventorySettings`
-  rather than hand-kept-in-sync secrets, since that's exactly what each side's
-  `tailscale serve` exposes. Not yet re-verified against a real device (this
-  was built without one) — see the version-sensitivity caveat in each section
-  above before trusting it blindly on first use.
-- **Bind-address enforcement** (the "never bound off-tailnet" hard
-  requirement) is not checked by pyinfra — an explicit, deferred gap.
-- **The server-side workload proxy** that `/server*` forwards to
-  doesn't exist yet — it's out of pyinfra's scope entirely
-  (same boundary as the Docker Compose stacks it would front) and is a
-  manual prerequisite to build before this route actually reaches
-  anything.
+- **Tiers 2/3 haven't run against real infrastructure** — the `tailscale serve` automation for both Deploy files is unverified against a real device; re-check the CLI/JSON version caveat above before trusting it blindly.
+- **Bind-address enforcement** ("never bound off-tailnet") isn't checked by pyinfra.
+- **The server-side workload proxy** `/server*` forwards to doesn't exist yet — a manual prerequisite, out of pyinfra's scope.

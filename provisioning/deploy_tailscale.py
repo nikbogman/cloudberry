@@ -1,22 +1,16 @@
 """Joins a target device to the tailnet.
 
-Installs Tailscale via the official install script -- Tailscale's own
-documented "mainstream distributions" method
-(https://tailscale.com/docs/install/linux#mainstream-distributions is
-`curl -fsSL https://tailscale.com/install.sh | sh`), which detects the
-distro/codename and wires up the apt repo and signing key itself, so this
-Deploy file no longer hand-rolls those steps via `apt.key`/`apt.repo`.
-Then enables `tailscaled` and runs `tailscale up` with an auth key from
-the `TAILSCALE_AUTH_KEY` environment variable on the dev machine -- never
-written to a file in this repo. Targetable in isolation:
+Installs Tailscale via the official install script (detects distro and
+wires up the apt repo itself), enables `tailscaled`, then runs
+`tailscale up` using `TAILSCALE_AUTH_KEY` from the dev machine's
+environment -- never written to a file. Targetable in isolation:
 
     pyinfra inventory.py deploy_tailscale.py --limit pi
     pyinfra inventory.py deploy_tailscale.py --limit server --dry
 
-Install steps run against `test` stand-ins too, so a bad package name
-surfaces there first. The `tailscale up` join is restricted to the real
-`pi`/`server` groups -- never `test` -- so a disposable container never
-enrolls in the real tailnet.
+Install steps also run against `test` stand-ins; the `tailscale up` join
+is restricted to `pi`/`server` so a disposable container never enrolls in
+the real tailnet.
 """
 
 import json
@@ -31,10 +25,9 @@ from settings import TailscaleSettings
 
 
 class TailscaleBackendState(FactBase):
-    """`BackendState` from `tailscale status --json` (e.g. "Running" once
-    joined), or `None` if Tailscale isn't installed/joined yet. `|| true`
-    keeps a "command not found" on a fresh host from failing the fact
-    gather.
+    """`BackendState` from `tailscale status --json` ("Running" once
+    joined), or `None` if not installed/joined. `|| true` keeps a fresh
+    host's "command not found" from failing the fact gather.
     """
 
     def command(self) -> str:

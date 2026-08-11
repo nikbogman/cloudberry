@@ -12,10 +12,8 @@ import (
 	"github.com/nikbogman/homelab/control-plane/internal/gateway"
 )
 
-// uidist is populated by `npm run build` in ../../ui; deploy_gateway.py
-// always runs that build first. The checked-in .gitkeep exists only so a
-// fresh checkout compiles before the UI's been built -- go:embed requires
-// at least one matching file.
+// .gitkeep satisfies go:embed's "at least one file" requirement before
+// deploy_gateway.py builds the UI into uidist/.
 //
 //go:embed all:uidist
 var embeddedUI embed.FS

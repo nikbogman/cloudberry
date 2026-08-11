@@ -1,6 +1,5 @@
-// Package gateway runs on the Pi Zero, path-routed under the same
-// tailscale serve app as the UI -- same-origin, so no CORS entry is
-// needed.
+// Package gateway is path-routed under the same tailscale serve app as
+// the UI, so no CORS entry is needed.
 package gateway
 
 import (
@@ -22,9 +21,8 @@ type EventLogger interface {
 type Config struct {
 	MACAddress string
 	BindHost   string
-	// UIAssets is served at "/" -- the real binary passes an embed.FS
-	// (via fs.Sub) holding the UI's build output, tests pass
-	// os.DirFS(t.TempDir()).
+	// Served at "/": the real binary passes an embed.FS via fs.Sub, tests
+	// pass os.DirFS.
 	UIAssets         fs.FS
 	ComputeHost      string
 	ComputeProxyPort int
@@ -48,8 +46,8 @@ func NewHandler(cfg Config, waker Waker, logger EventLogger) (http.Handler, erro
 	h := &Handler{macAddress: cfg.MACAddress, waker: waker, logger: logger}
 
 	mux := http.NewServeMux()
-	// Loopback exemption lets the compute proxy below trigger auto-wake
-	// in-process without a tailnet identity header.
+	// Lets the compute proxy trigger auto-wake in-process without a
+	// tailnet identity header.
 	mux.Handle("POST /wake", tailnet.RequireTailnetIdentityOrLoopback(http.HandlerFunc(h.handleWake)))
 	mux.Handle("/server/", newComputeProxy(cfg.ComputeHost, cfg.ComputeProxyPort, h.doWake))
 	mux.Handle("/", http.FileServer(http.FS(cfg.UIAssets)))

@@ -7,8 +7,7 @@ const STATUS_LABELS: Record<ReachabilityState, string> = {
 }
 
 const DEFAULT_POLL_INTERVAL_MS = 12_000
-// Bounds how long a poll can sit in "Checking…": without it, a fully powered-off
-// host can leave the TCP connect hanging far longer than the poll interval.
+// Caps how long a poll can hang in "Checking…" if the host is powered off.
 const HEALTH_CHECK_TIMEOUT_MS = 5_000
 
 export interface MountOptions {
@@ -42,10 +41,8 @@ export function mountUi(container: HTMLElement, options: MountOptions): () => vo
   let pollInFlight = false
   let actionPending = false
 
-  // Each button is disabled whenever its action wouldn't make sense given
-  // the last known reachability state, plus whenever any action/poll is
-  // already in flight (actionPending and pollInFlight are tracked
-  // separately since a poll may land while an action is pending, or vice versa).
+  // Disabled when the action wouldn't make sense for current reachability,
+  // or when any action/poll is already in flight.
   const applyButtonState = () => {
     wakeButton.disabled = actionPending || reachability === 'reachable'
     suspendButton.disabled = actionPending || reachability === 'unreachable'

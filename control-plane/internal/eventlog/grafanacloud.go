@@ -1,14 +1,9 @@
 // Package eventlog ships structured events straight to Grafana Cloud's
-// Loki endpoint. No local collector in front of this: Grafana Cloud
-// doesn't run one for you (Alloy is always self-hosted), and standing up
-// a whole agent process just for this repo isn't worth it (ADR-0014).
+// Loki endpoint -- no local collector, not worth running one for this repo.
 //
-// event_type/outcome/app are stream labels; identity/extra ride in the log
-// line itself, since Loki labels are meant for low-cardinality dimensions,
-// not free-form identity strings.
-//
-// A logging failure here must never break the caller's actual action, so
-// SendEvent swallows transport errors.
+// event_type/outcome/app are Loki stream labels (low-cardinality);
+// identity/extra ride in the log line. SendEvent swallows transport
+// errors so a logging failure never breaks the caller's actual action.
 package eventlog
 
 import (
@@ -47,8 +42,7 @@ type lokiPayload struct {
 
 type lokiStream struct {
 	Stream lokiStreamLabels `json:"stream"`
-	// Values is Loki's push-API entry format: each element is a
-	// [unix-nano-timestamp, log line] pair, both encoded as strings.
+	// Loki's push-API format: [unix-nano-timestamp, log line] pairs.
 	Values [][2]string `json:"values"`
 }
 

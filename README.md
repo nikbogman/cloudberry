@@ -1,15 +1,15 @@
 # Homelab Control System
 
-A control plane that lets the user wake, monitor, and suspend the main workload server (which hosts Docker-based services like Immich and other self-hosted apps) from anywhere on their Tailscale tailnet — without leaving the server running 24/7.
+Wakes, monitors, and suspends the main workload server (Docker services like Immich) from anywhere on the tailnet, without leaving it running 24/7.
 
-The full domain vocabulary — UI, Reachable, Wake, Suspend, Identity header, Deploy, Concern, Host group, etc. — is defined in [CONTEXT.md](CONTEXT.md). Read it before making non-trivial changes; this README stays intentionally high-level.
+Domain vocabulary (UI, Reachable, Wake, Suspend, Identity header, Deploy, Host group, etc.) is defined in [CONTEXT.md](CONTEXT.md).
 
 ## How it fits together
 
-Two physical devices on the same tailnet and the same LAN broadcast domain:
+Two devices on the same tailnet and LAN broadcast domain:
 
 - **Gateway (Pi Zero)** — always on, low-power. Serves the UI and runs the Gateway API.
-- **Compute host** — the workload machine (Immich, AI agents, etc.), spends most of its time suspended to RAM.
+- **Compute host** — runs the workloads, suspended to RAM most of the time.
 
 ```
  Browser (tailnet) ──┬──> UI (Gateway, static, served by the Gateway API)
@@ -21,46 +21,42 @@ Two physical devices on the same tailnet and the same LAN broadcast domain:
                       └──GET /health, POST /suspend──> Compute API (compute host)
 ```
 
-- **[UI](control-plane/ui)** — the browser app. Polls reachability, offers Wake/Suspend buttons. The only user-facing surface.
-- **[Gateway API](control-plane/README.md#gateway-api)** — one process on the Gateway that serves the UI's static files, sends a deliberate Wake-on-LAN packet when the Wake button is pressed, and reverse-proxies `/server*` to the Compute host, auto-waking it on a transport failure.
-- **[Compute API](control-plane/README.md#compute-api)** — exposes the Suspend action and the reachability health check the UI polls.
-- **[tailnet](control-plane/README.md#internal-tailnet)** and **[eventlog](control-plane/README.md#internal-eventlog)** — the identity-auth/bind-safety and Grafana Cloud event-logging libraries both Go binaries depend on.
+- **[UI](control-plane/ui)** — browser app. Polls reachability, offers Wake/Suspend.
+- **[Gateway API](control-plane/README.md#gateway-api)** — serves the UI, sends Wake-on-LAN, reverse-proxies `/server*` to Compute with auto-wake.
+- **[Compute API](control-plane/README.md#compute-api)** — exposes Suspend and the health check the UI polls.
+- **[tailnet](control-plane/README.md#internaltailnet)** / **[eventlog](control-plane/README.md#internaleventlog)** — shared identity-auth/bind-safety and Grafana Cloud logging packages.
 
-Auth for every control-plane endpoint is the `Tailscale-User-Login` header injected by `tailscale serve`: tailnet membership is the entire authorization boundary, with no separate allow-list.
+Auth is the `Tailscale-User-Login` header injected by `tailscale serve` — tailnet membership is the entire authorization boundary.
 
-Key architectural decisions, data flow, and constraints are recorded in [`ARCHITECTURE.md`](ARCHITECTURE.md) — the canonical technical reference for this system.
+See [`ARCHITECTURE.md`](ARCHITECTURE.md) for design decisions, data flow, and constraints.
 
 ## Repo layout
 
 ```
-CONTEXT.md               domain glossary — read this first
-ARCHITECTURE.md          canonical architecture/design reference
+CONTEXT.md               domain glossary
+ARCHITECTURE.md          architecture/design reference
 control-plane/
   ui/                       browser SPA (TypeScript + Vite)
-  go.mod                    one Go module for the two control-plane binaries below
-  cmd/gateway/              Go binary on the Gateway (serves the UI, Wake, /server* proxy + auto-wake)
-  cmd/compute-api/          Go binary on the compute host (Suspend, health)
-  internal/tailnet/         shared Go package: identity-header auth, bind-safety
-  internal/eventlog/        shared Go package: Grafana Cloud event logging
-provisioning/               declarative provisioning (pyinfra) for the gateway and compute host
-deploy.sh                   forwards to provisioning/deploy.sh -- run from the repo root
-.env.example                 checked-in template -- copy to .env (gitignored) and fill in real values
+  go.mod                    one Go module for both binaries below
+  cmd/gateway/              Gateway API (UI, Wake, /server* proxy)
+  cmd/compute-api/          Compute API (Suspend, health)
+  internal/tailnet/         shared: identity-header auth, bind-safety
+  internal/eventlog/        shared: Grafana Cloud event logging
+provisioning/               declarative provisioning (pyinfra)
+deploy.sh                   forwards to provisioning/deploy.sh
+.env.example                 template -- copy to .env (gitignored)
 ```
 
 ## Status
 
-The control system (UI, both the Gateway API and Compute API) is fully implemented — see [`ARCHITECTURE.md`](ARCHITECTURE.md) for what it does and how it's put together.
+Fully implemented — see [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
-**Declarative provisioning (pyinfra) is built** in [`provisioning/`](provisioning), which converges the gateway and the compute host to their declared state (Tailscale, Docker, both the Gateway API and Compute API, the UI's static build) in one command. See [`provisioning/README.md`](provisioning/README.md) for usage, configuration, and the three-tier testing procedure. Tiers 2/3 of that procedure (disposable-container and real-device runs) still need running against real infrastructure — flagged explicitly in that README's Known gaps, not silently assumed done.
+Provisioning ([`provisioning/`](provisioning)) converges both devices in one command. Tiers 2/3 of its testing procedure (disposable-container and real-device runs) haven't run against real infrastructure yet — see that README's Known gaps.
 
 ## Development
 
-The Gateway API and Compute API are one Go module (`control-plane/go.mod`) with the shared `tailnet`/`eventlog` packages and both binaries as packages underneath it — `go test ./...`/`go build ./...` from `control-plane/` covers both. `ui` is a separate npm project. `provisioning/` is an independent `uv` project (not an installable package). There's no single root-level build across all three. See:
+One Go module covers both binaries (`go build ./...`/`go test ./...` from `control-plane/`). `ui/` is a separate npm project; `provisioning/` an independent `uv` project. No root-level build.
 
 - [control-plane/README.md](control-plane/README.md)
 - [control-plane/ui/README.md](control-plane/ui/README.md)
 - [provisioning/README.md](provisioning/README.md)
-
-## Working with this repo as an agent
-
-`CLAUDE.md` documents two agent-skill conventions used throughout this repo: an issue tracker under `docs/specs/<feature-slug>/` ([docs/agents/issue-tracker.md](docs/agents/issue-tracker.md)) and a five-role triage-label vocabulary ([docs/agents/triage-labels.md](docs/agents/triage-labels.md)).

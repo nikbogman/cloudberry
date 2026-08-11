@@ -1,12 +1,18 @@
-# Graph Report - .  (2026-08-01)
+# Graph Report - homelab  (2026-08-11)
 
 ## Corpus Check
-- Corpus is ~33,598 words - fits in a single context window. You may not need a graph.
+- 57 files · ~29,622 words
+- Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
 - 351 nodes · 610 edges · 29 communities (19 shown, 10 thin omitted)
 - Extraction: 88% EXTRACTED · 12% INFERRED · 0% AMBIGUOUS · INFERRED: 74 edges (avg confidence: 0.82)
-- Token cost: 279,924 input · 0 output
+- Token cost: 0 input · 0 output
+
+## Graph Freshness
+- Built from commit: `804f66f7`
+- Run `git rev-parse HEAD` and compare to check if the graph is stale.
+- Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - Provisioning Facts & Deploy
@@ -74,7 +80,7 @@
 
 ### Community 0 - "Provisioning Facts & Deploy"
 Cohesion: 0.07
-Nodes (31): BaseSettings, DpkgArchitecture, has_device_role(), linux_codename(), linux_distro_id(), FactBase, Helpers shared by more than one Deploy file.  Not a Deploy file itself -- define, Native apt architecture (e.g. "amd64", "arm64") per `dpkg     --print-architectu (+23 more)
+Nodes (31): BaseSettings, DpkgArchitecture, has_device_role(), linux_codename(), linux_distro_id(), FactBase, Fact-derived helpers and the `device_role` guard shared by Deploy files. Importe, `dpkg --print-architecture` output (e.g. "amd64") -- pyinfra has no     built-in (+23 more)
 
 ### Community 1 - "Project Docs & Domain Glossary"
 Cohesion: 0.20

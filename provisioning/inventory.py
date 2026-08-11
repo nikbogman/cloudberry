@@ -1,21 +1,16 @@
 """Host groups for the homelab control plane.
 
-Two real devices, `gateway` and `compute`, plus a `test` group of disposable,
-systemd-capable containers standing in for both devices' OS bases. No
-Deploy file hardcodes a host -- they target `gateway`/`compute`/`test` by name.
-
-Real addresses are read from the environment via `settings.InventorySettings`
-(pydantic-settings), not hardcoded, with a placeholder MagicDNS-shaped
-default.
+Two real devices, `gateway` and `compute`, plus a `test` group of
+disposable, systemd-capable containers standing in for both. No Deploy
+file hardcodes a host -- they target `gateway`/`compute`/`test` by name.
+Real addresses come from `settings.InventorySettings`.
 
 `device_role` (host data, not a pyinfra group) records which application
-logic a host runs -- "gateway" or "compute" -- independently of whether it's
-the real device or a disposable stand-in. Test hosts aren't added into the
-`gateway`/`compute` groups themselves, since those groups must stay
-targetable in isolation via `--limit`, which a shared group name would
-break. See docs/agents/pyinfra.md for why `test` uses the `@ssh` connector
-rather than `@docker` image mode. provisioning/README.md documents how to
-stand up these containers.
+logic a host runs, independent of whether it's the real device or its
+`test` stand-in. Test hosts aren't added to the `gateway`/`compute`
+groups themselves, since those must stay targetable in isolation via
+`--limit`. See provisioning/README.md for how to stand up these
+containers.
 """
 
 from settings import InventorySettings
@@ -37,10 +32,9 @@ compute = [
     ),
 ]
 
-# Separate inventory identities ("gateway-test"/"compute-test") with the
-# connect address in `ssh_hostname` -- pyinfra dedupes hosts by identity
-# string, and both containers share the same dev-machine address on
-# different ports.
+# Separate identities ("gateway-test"/"compute-test") with the connect
+# address in `ssh_hostname` -- pyinfra dedupes hosts by identity, and both
+# containers share the same dev-machine address on different ports.
 test = [
     (
         "gateway-test",

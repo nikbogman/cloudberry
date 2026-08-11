@@ -55,6 +55,7 @@
       "_origin": "ast",
       "id": "control_plane_cmd_compute_api_main",
       "community": 3,
+      "community_name": "Entrypoints & Event Logging",
       "norm_label": "compute-api/main.go"
     },
     {
@@ -65,6 +66,7 @@
       "_origin": "ast",
       "id": "control_plane_cmd_compute_api_main_main",
       "community": 3,
+      "community_name": "Entrypoints & Event Logging",
       "norm_label": "main()"
     },
     {
@@ -75,16 +77,18 @@
       "_origin": "ast",
       "id": "control_plane_cmd_gateway_main",
       "community": 3,
+      "community_name": "Entrypoints & Event Logging",
       "norm_label": "gateway/main.go"
     },
     {
       "label": "main()",
       "file_type": "code",
       "source_file": "control-plane/cmd/gateway/main.go",
-      "source_location": "L23",
+      "source_location": "L21",
       "_origin": "ast",
       "id": "control_plane_cmd_gateway_main_main",
       "community": 3,
+      "community_name": "Entrypoints & Event Logging",
       "norm_label": "main()"
     },
     {
@@ -97,6 +101,7 @@
       "_origin": "ast",
       "id": "pkg_github_com_nikbogman_homelab_control_plane",
       "community": 27,
+      "community_name": "Go Module Root",
       "norm_label": "github.com/nikbogman/homelab/control-plane"
     },
     {
@@ -107,6 +112,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_handler",
       "community": 8,
+      "community_name": "Compute Handler Implementation",
       "norm_label": "compute/handler.go"
     },
     {
@@ -117,6 +123,7 @@
       "_origin": "ast",
       "id": "compute_suspender",
       "community": 8,
+      "community_name": "Compute Handler Implementation",
       "norm_label": "suspender"
     },
     {
@@ -127,16 +134,18 @@
       "_origin": "ast",
       "id": "compute_eventlogger",
       "community": 8,
+      "community_name": "Compute Handler Implementation",
       "norm_label": "eventlogger"
     },
     {
       "label": "reachabilityTracker",
       "file_type": "code",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L25",
+      "source_location": "L24",
       "_origin": "ast",
       "id": "compute_reachabilitytracker",
       "community": 8,
+      "community_name": "Compute Handler Implementation",
       "norm_label": "reachabilitytracker"
     },
     {
@@ -147,56 +156,62 @@
       "_origin": "ast",
       "id": "once",
       "community": 8,
+      "community_name": "Compute Handler Implementation",
       "norm_label": "once"
     },
     {
       "label": ".noteReachable()",
       "file_type": "code",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L29",
+      "source_location": "L28",
       "_origin": "ast",
       "id": "compute_reachabilitytracker_notereachable",
       "community": 8,
+      "community_name": "Compute Handler Implementation",
       "norm_label": ".notereachable()"
     },
     {
       "label": "Handler",
       "file_type": "code",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L35",
+      "source_location": "L34",
       "_origin": "ast",
       "id": "compute_handler",
       "community": 8,
+      "community_name": "Compute Handler Implementation",
       "norm_label": "handler"
     },
     {
       "label": "NewHandler()",
       "file_type": "code",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L44",
+      "source_location": "L43",
       "_origin": "ast",
       "id": "control_plane_internal_compute_handler_newhandler",
       "community": 8,
+      "community_name": "Compute Handler Implementation",
       "norm_label": "newhandler()"
     },
     {
       "label": ".withCORS()",
       "file_type": "code",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L61",
+      "source_location": "L59",
       "_origin": "ast",
       "id": "compute_handler_withcors",
       "community": 8,
+      "community_name": "Compute Handler Implementation",
       "norm_label": ".withcors()"
     },
     {
       "label": ".handleHealth()",
       "file_type": "code",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L84",
+      "source_location": "L82",
       "_origin": "ast",
       "id": "compute_handler_handlehealth",
       "community": 8,
+      "community_name": "Compute Handler Implementation",
       "norm_label": ".handlehealth()"
     },
     {
@@ -207,6 +222,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_handler_go_responsewriter",
       "community": 8,
+      "community_name": "Compute Handler Implementation",
       "norm_label": "responsewriter"
     },
     {
@@ -217,16 +233,18 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_handler_go_request",
       "community": 8,
+      "community_name": "Compute Handler Implementation",
       "norm_label": "request"
     },
     {
       "label": ".handleSuspend()",
       "file_type": "code",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L89",
+      "source_location": "L87",
       "_origin": "ast",
       "id": "compute_handler_handlesuspend",
       "community": 8,
+      "community_name": "Compute Handler Implementation",
       "norm_label": ".handlesuspend()"
     },
     {
@@ -237,6 +255,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_handler_test",
       "community": 2,
+      "community_name": "Compute Handler Tests",
       "norm_label": "compute/handler_test.go"
     },
     {
@@ -247,6 +266,7 @@
       "_origin": "ast",
       "id": "compute_loggedevent",
       "community": 2,
+      "community_name": "Compute Handler Tests",
       "norm_label": "loggedevent"
     },
     {
@@ -257,6 +277,7 @@
       "_origin": "ast",
       "id": "compute_fakelogger",
       "community": 2,
+      "community_name": "Compute Handler Tests",
       "norm_label": "fakelogger"
     },
     {
@@ -267,6 +288,7 @@
       "_origin": "ast",
       "id": "compute_fakelogger_sendevent",
       "community": 2,
+      "community_name": "Compute Handler Tests",
       "norm_label": ".sendevent()"
     },
     {
@@ -277,6 +299,7 @@
       "_origin": "ast",
       "id": "compute_fakesuspender",
       "community": 2,
+      "community_name": "Compute Handler Tests",
       "norm_label": "fakesuspender"
     },
     {
@@ -287,6 +310,7 @@
       "_origin": "ast",
       "id": "compute_fakesuspender_suspend",
       "community": 2,
+      "community_name": "Compute Handler Tests",
       "norm_label": ".suspend()"
     },
     {
@@ -297,6 +321,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_handler_test_mustnewhandler",
       "community": 2,
+      "community_name": "Compute Handler Tests",
       "norm_label": "mustnewhandler()"
     },
     {
@@ -307,6 +332,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_handler_test_go_t",
       "community": 2,
+      "community_name": "Compute Handler Tests",
       "norm_label": "t"
     },
     {
@@ -317,6 +343,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_handler_test_go_eventlogger",
       "community": 2,
+      "community_name": "Compute Handler Tests",
       "norm_label": "eventlogger"
     },
     {
@@ -327,6 +354,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_handler_test_go_handler",
       "community": 2,
+      "community_name": "Compute Handler Tests",
       "norm_label": "handler"
     },
     {
@@ -337,6 +365,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_handler_test_authedrequest",
       "community": 2,
+      "community_name": "Compute Handler Tests",
       "norm_label": "authedrequest()"
     },
     {
@@ -347,6 +376,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_handler_test_go_request",
       "community": 2,
+      "community_name": "Compute Handler Tests",
       "norm_label": "request"
     },
     {
@@ -357,6 +387,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_handler_test_testhealthcheckrequiresidentityheader",
       "community": 2,
+      "community_name": "Compute Handler Tests",
       "norm_label": "testhealthcheckrequiresidentityheader()"
     },
     {
@@ -367,6 +398,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_handler_test_testhealthcheckreportsreachablewithvalididentity",
       "community": 2,
+      "community_name": "Compute Handler Tests",
       "norm_label": "testhealthcheckreportsreachablewithvalididentity()"
     },
     {
@@ -377,6 +409,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_handler_test_testhealthcheckrequiresnoextracredentialsbeyondidentityheader",
       "community": 2,
+      "community_name": "Compute Handler Tests",
       "norm_label": "testhealthcheckrequiresnoextracredentialsbeyondidentityheader()"
     },
     {
@@ -387,6 +420,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_handler_test_testfirsthealthchecklogsreachabilitychanged",
       "community": 2,
+      "community_name": "Compute Handler Tests",
       "norm_label": "testfirsthealthchecklogsreachabilitychanged()"
     },
     {
@@ -397,6 +431,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_handler_test_testsubsequenthealthchecksdonotrelogreachability",
       "community": 2,
+      "community_name": "Compute Handler Tests",
       "norm_label": "testsubsequenthealthchecksdonotrelogreachability()"
     },
     {
@@ -407,6 +442,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_handler_test_testcorsallowsuiorigin",
       "community": 2,
+      "community_name": "Compute Handler Tests",
       "norm_label": "testcorsallowsuiorigin()"
     },
     {
@@ -417,6 +453,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_handler_test_testcorsrejectsotherorigins",
       "community": 2,
+      "community_name": "Compute Handler Tests",
       "norm_label": "testcorsrejectsotherorigins()"
     },
     {
@@ -427,6 +464,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_handler_test_testnewhandlerrefusesofftailnetbindhost",
       "community": 2,
+      "community_name": "Compute Handler Tests",
       "norm_label": "testnewhandlerrefusesofftailnetbindhost()"
     },
     {
@@ -437,6 +475,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_handler_test_testsuspendrequiresidentityheader",
       "community": 2,
+      "community_name": "Compute Handler Tests",
       "norm_label": "testsuspendrequiresidentityheader()"
     },
     {
@@ -447,6 +486,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_handler_test_testsuspendrunstheconfiguredsystemsuspender",
       "community": 2,
+      "community_name": "Compute Handler Tests",
       "norm_label": "testsuspendrunstheconfiguredsystemsuspender()"
     },
     {
@@ -457,6 +497,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_handler_test_testsuspendreturns200onsuccess",
       "community": 2,
+      "community_name": "Compute Handler Tests",
       "norm_label": "testsuspendreturns200onsuccess()"
     },
     {
@@ -467,6 +508,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_handler_test_testsuspendlogsrequestedthensucceededwithcalleridentity",
       "community": 2,
+      "community_name": "Compute Handler Tests",
       "norm_label": "testsuspendlogsrequestedthensucceededwithcalleridentity()"
     },
     {
@@ -477,6 +519,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_handler_test_testsuspendreturns500andlogsfailedwhensuspenderfails",
       "community": 2,
+      "community_name": "Compute Handler Tests",
       "norm_label": "testsuspendreturns500andlogsfailedwhensuspenderfails()"
     },
     {
@@ -487,6 +530,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_handler_test_testsuspenddoesnotguardagainstrepeatedrequests",
       "community": 2,
+      "community_name": "Compute Handler Tests",
       "norm_label": "testsuspenddoesnotguardagainstrepeatedrequests()"
     },
     {
@@ -497,6 +541,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_suspend",
       "community": 11,
+      "community_name": "Compute Suspend Logic",
       "norm_label": "suspend.go"
     },
     {
@@ -507,6 +552,7 @@
       "_origin": "ast",
       "id": "compute_systemsuspender",
       "community": 11,
+      "community_name": "Compute Suspend Logic",
       "norm_label": "systemsuspender"
     },
     {
@@ -517,6 +563,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_suspend_newsystemsuspender",
       "community": 11,
+      "community_name": "Compute Suspend Logic",
       "norm_label": "newsystemsuspender()"
     },
     {
@@ -527,6 +574,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_suspend_newsystemsuspenderwithcommand",
       "community": 11,
+      "community_name": "Compute Suspend Logic",
       "norm_label": "newsystemsuspenderwithcommand()"
     },
     {
@@ -537,6 +585,7 @@
       "_origin": "ast",
       "id": "compute_systemsuspender_suspend",
       "community": 11,
+      "community_name": "Compute Suspend Logic",
       "norm_label": ".suspend()"
     },
     {
@@ -547,6 +596,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_suspend_test",
       "community": 11,
+      "community_name": "Compute Suspend Logic",
       "norm_label": "suspend_test.go"
     },
     {
@@ -557,6 +607,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_suspend_test_withfakeruncommand",
       "community": 11,
+      "community_name": "Compute Suspend Logic",
       "norm_label": "withfakeruncommand()"
     },
     {
@@ -567,6 +618,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_suspend_test_go_t",
       "community": 11,
+      "community_name": "Compute Suspend Logic",
       "norm_label": "t"
     },
     {
@@ -577,6 +629,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_suspend_test_testsuspendrunsthedefaultcommand",
       "community": 11,
+      "community_name": "Compute Suspend Logic",
       "norm_label": "testsuspendrunsthedefaultcommand()"
     },
     {
@@ -587,6 +640,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_suspend_test_testdefaultcommandissystemctlsuspendonly",
       "community": 11,
+      "community_name": "Compute Suspend Logic",
       "norm_label": "testdefaultcommandissystemctlsuspendonly()"
     },
     {
@@ -597,6 +651,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_suspend_test_testsuspendrunsaconfiguredcommand",
       "community": 11,
+      "community_name": "Compute Suspend Logic",
       "norm_label": "testsuspendrunsaconfiguredcommand()"
     },
     {
@@ -607,6 +662,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_suspend_test_testsuspendpropagateserrorfromexitcode",
       "community": 11,
+      "community_name": "Compute Suspend Logic",
       "norm_label": "testsuspendpropagateserrorfromexitcode()"
     },
     {
@@ -617,6 +673,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_suspend_test_testsuspendpropagateserrorwhencommandisnotfound",
       "community": 11,
+      "community_name": "Compute Suspend Logic",
       "norm_label": "testsuspendpropagateserrorwhencommandisnotfound()"
     },
     {
@@ -627,6 +684,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_compute_suspend_test_testconstructorrejectsanemptycommand",
       "community": 11,
+      "community_name": "Compute Suspend Logic",
       "norm_label": "testconstructorrejectsanemptycommand()"
     },
     {
@@ -637,6 +695,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_env_env",
       "community": 3,
+      "community_name": "Entrypoints & Event Logging",
       "norm_label": "env.go"
     },
     {
@@ -647,6 +706,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_env_env_mustenv",
       "community": 3,
+      "community_name": "Entrypoints & Event Logging",
       "norm_label": "mustenv()"
     },
     {
@@ -657,6 +717,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_env_env_mustenvint",
       "community": 3,
+      "community_name": "Entrypoints & Event Logging",
       "norm_label": "mustenvint()"
     },
     {
@@ -667,6 +728,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_env_env_envor",
       "community": 3,
+      "community_name": "Entrypoints & Event Logging",
       "norm_label": "envor()"
     },
     {
@@ -677,16 +739,18 @@
       "_origin": "ast",
       "id": "control_plane_internal_eventlog_grafanacloud",
       "community": 3,
+      "community_name": "Entrypoints & Event Logging",
       "norm_label": "grafanacloud.go"
     },
     {
       "label": "GrafanaCloudLogger",
       "file_type": "code",
       "source_file": "control-plane/internal/eventlog/grafanacloud.go",
-      "source_location": "L26",
+      "source_location": "L21",
       "_origin": "ast",
       "id": "eventlog_grafanacloudlogger",
       "community": 3,
+      "community_name": "Entrypoints & Event Logging",
       "norm_label": "grafanacloudlogger"
     },
     {
@@ -697,66 +761,73 @@
       "_origin": "ast",
       "id": "client",
       "community": 3,
+      "community_name": "Entrypoints & Event Logging",
       "norm_label": "client"
     },
     {
       "label": "NewGrafanaCloudLogger()",
       "file_type": "code",
       "source_file": "control-plane/internal/eventlog/grafanacloud.go",
-      "source_location": "L34",
+      "source_location": "L29",
       "_origin": "ast",
       "id": "control_plane_internal_eventlog_grafanacloud_newgrafanacloudlogger",
       "community": 3,
+      "community_name": "Entrypoints & Event Logging",
       "norm_label": "newgrafanacloudlogger()"
     },
     {
       "label": "lokiPayload",
       "file_type": "code",
       "source_file": "control-plane/internal/eventlog/grafanacloud.go",
-      "source_location": "L44",
+      "source_location": "L39",
       "_origin": "ast",
       "id": "eventlog_lokipayload",
       "community": 3,
+      "community_name": "Entrypoints & Event Logging",
       "norm_label": "lokipayload"
     },
     {
       "label": "lokiStream",
       "file_type": "code",
       "source_file": "control-plane/internal/eventlog/grafanacloud.go",
-      "source_location": "L48",
+      "source_location": "L43",
       "_origin": "ast",
       "id": "eventlog_lokistream",
       "community": 3,
+      "community_name": "Entrypoints & Event Logging",
       "norm_label": "lokistream"
     },
     {
       "label": "lokiStreamLabels",
       "file_type": "code",
       "source_file": "control-plane/internal/eventlog/grafanacloud.go",
-      "source_location": "L55",
+      "source_location": "L49",
       "_origin": "ast",
       "id": "eventlog_lokistreamlabels",
       "community": 3,
+      "community_name": "Entrypoints & Event Logging",
       "norm_label": "lokistreamlabels"
     },
     {
       "label": "lokiLine",
       "file_type": "code",
       "source_file": "control-plane/internal/eventlog/grafanacloud.go",
-      "source_location": "L61",
+      "source_location": "L55",
       "_origin": "ast",
       "id": "eventlog_lokiline",
       "community": 3,
+      "community_name": "Entrypoints & Event Logging",
       "norm_label": "lokiline"
     },
     {
       "label": ".SendEvent()",
       "file_type": "code",
       "source_file": "control-plane/internal/eventlog/grafanacloud.go",
-      "source_location": "L68",
+      "source_location": "L62",
       "_origin": "ast",
       "id": "eventlog_grafanacloudlogger_sendevent",
       "community": 3,
+      "community_name": "Entrypoints & Event Logging",
       "norm_label": ".sendevent()"
     },
     {
@@ -767,6 +838,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_eventlog_grafanacloud_test",
       "community": 3,
+      "community_name": "Entrypoints & Event Logging",
       "norm_label": "grafanacloud_test.go"
     },
     {
@@ -777,6 +849,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_eventlog_grafanacloud_test_testsendeventpostsalokipushpayloadwithbasicauth",
       "community": 3,
+      "community_name": "Entrypoints & Event Logging",
       "norm_label": "testsendeventpostsalokipushpayloadwithbasicauth()"
     },
     {
@@ -787,6 +860,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_eventlog_grafanacloud_test_go_t",
       "community": 3,
+      "community_name": "Entrypoints & Event Logging",
       "norm_label": "t"
     },
     {
@@ -797,6 +871,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_eventlog_grafanacloud_test_testsendeventincludesextrafieldsintheline",
       "community": 3,
+      "community_name": "Entrypoints & Event Logging",
       "norm_label": "testsendeventincludesextrafieldsintheline()"
     },
     {
@@ -807,6 +882,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_eventlog_grafanacloud_test_testsendeventlogsunexpectedstatuscode",
       "community": 3,
+      "community_name": "Entrypoints & Event Logging",
       "norm_label": "testsendeventlogsunexpectedstatuscode()"
     },
     {
@@ -817,6 +893,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_eventlog_grafanacloud_test_testsendeventdoesnotpanicwhengrafanacloudisunreachable",
       "community": 3,
+      "community_name": "Entrypoints & Event Logging",
       "norm_label": "testsendeventdoesnotpanicwhengrafanacloudisunreachable()"
     },
     {
@@ -827,36 +904,40 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_handler",
       "community": 14,
+      "community_name": "Gateway Handler Implementation",
       "norm_label": "gateway/handler.go"
     },
     {
       "label": "Waker",
       "file_type": "code",
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L14",
+      "source_location": "L13",
       "_origin": "ast",
       "id": "gateway_waker",
       "community": 14,
+      "community_name": "Gateway Handler Implementation",
       "norm_label": "waker"
     },
     {
       "label": "EventLogger",
       "file_type": "code",
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L18",
+      "source_location": "L17",
       "_origin": "ast",
       "id": "gateway_eventlogger",
       "community": 14,
+      "community_name": "Gateway Handler Implementation",
       "norm_label": "eventlogger"
     },
     {
       "label": "Config",
       "file_type": "code",
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L22",
+      "source_location": "L21",
       "_origin": "ast",
       "id": "gateway_config",
       "community": 14,
+      "community_name": "Gateway Handler Implementation",
       "norm_label": "config"
     },
     {
@@ -867,36 +948,40 @@
       "_origin": "ast",
       "id": "fs",
       "community": 14,
+      "community_name": "Gateway Handler Implementation",
       "norm_label": "fs"
     },
     {
       "label": "Handler",
       "file_type": "code",
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L33",
+      "source_location": "L31",
       "_origin": "ast",
       "id": "gateway_handler",
       "community": 14,
+      "community_name": "Gateway Handler Implementation",
       "norm_label": "handler"
     },
     {
       "label": "NewHandler()",
       "file_type": "code",
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L39",
+      "source_location": "L37",
       "_origin": "ast",
       "id": "control_plane_internal_gateway_handler_newhandler",
       "community": 14,
+      "community_name": "Gateway Handler Implementation",
       "norm_label": "newhandler()"
     },
     {
       "label": ".handleWake()",
       "file_type": "code",
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L59",
+      "source_location": "L57",
       "_origin": "ast",
       "id": "gateway_handler_handlewake",
       "community": 14,
+      "community_name": "Gateway Handler Implementation",
       "norm_label": ".handlewake()"
     },
     {
@@ -907,6 +992,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_handler_go_responsewriter",
       "community": 14,
+      "community_name": "Gateway Handler Implementation",
       "norm_label": "responsewriter"
     },
     {
@@ -917,16 +1003,18 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_handler_go_request",
       "community": 14,
+      "community_name": "Gateway Handler Implementation",
       "norm_label": "request"
     },
     {
       "label": ".doWake()",
       "file_type": "code",
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L70",
+      "source_location": "L68",
       "_origin": "ast",
       "id": "gateway_handler_dowake",
       "community": 14,
+      "community_name": "Gateway Handler Implementation",
       "norm_label": ".dowake()"
     },
     {
@@ -937,6 +1025,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_handler_test",
       "community": 6,
+      "community_name": "Gateway Handler Tests",
       "norm_label": "gateway/handler_test.go"
     },
     {
@@ -947,6 +1036,7 @@
       "_origin": "ast",
       "id": "gateway_fakewaker",
       "community": 6,
+      "community_name": "Gateway Handler Tests",
       "norm_label": "fakewaker"
     },
     {
@@ -957,6 +1047,7 @@
       "_origin": "ast",
       "id": "gateway_fakewaker_send",
       "community": 6,
+      "community_name": "Gateway Handler Tests",
       "norm_label": ".send()"
     },
     {
@@ -967,6 +1058,7 @@
       "_origin": "ast",
       "id": "gateway_loggedevent",
       "community": 6,
+      "community_name": "Gateway Handler Tests",
       "norm_label": "loggedevent"
     },
     {
@@ -977,6 +1069,7 @@
       "_origin": "ast",
       "id": "gateway_fakelogger",
       "community": 6,
+      "community_name": "Gateway Handler Tests",
       "norm_label": "fakelogger"
     },
     {
@@ -987,6 +1080,7 @@
       "_origin": "ast",
       "id": "gateway_fakelogger_sendevent",
       "community": 6,
+      "community_name": "Gateway Handler Tests",
       "norm_label": ".sendevent()"
     },
     {
@@ -997,6 +1091,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_handler_test_mustnewhandler",
       "community": 6,
+      "community_name": "Gateway Handler Tests",
       "norm_label": "mustnewhandler()"
     },
     {
@@ -1007,6 +1102,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_handler_test_go_t",
       "community": 6,
+      "community_name": "Gateway Handler Tests",
       "norm_label": "t"
     },
     {
@@ -1017,6 +1113,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_handler_test_go_eventlogger",
       "community": 6,
+      "community_name": "Gateway Handler Tests",
       "norm_label": "eventlogger"
     },
     {
@@ -1027,6 +1124,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_handler_test_go_handler",
       "community": 6,
+      "community_name": "Gateway Handler Tests",
       "norm_label": "handler"
     },
     {
@@ -1037,6 +1135,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_handler_test_mustnewhandlerwithconfig",
       "community": 10,
+      "community_name": "Gateway Proxy Tests",
       "norm_label": "mustnewhandlerwithconfig()"
     },
     {
@@ -1047,6 +1146,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_handler_test_testwakerequiresidentityheader",
       "community": 6,
+      "community_name": "Gateway Handler Tests",
       "norm_label": "testwakerequiresidentityheader()"
     },
     {
@@ -1057,6 +1157,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_handler_test_testwakeallowsaloopbackcallerwithnoidentityheader",
       "community": 6,
+      "community_name": "Gateway Handler Tests",
       "norm_label": "testwakeallowsaloopbackcallerwithnoidentityheader()"
     },
     {
@@ -1067,6 +1168,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_handler_test_testwakestillhonorsidentityheaderfromanonloopbackcaller",
       "community": 6,
+      "community_name": "Gateway Handler Tests",
       "norm_label": "testwakestillhonorsidentityheaderfromanonloopbackcaller()"
     },
     {
@@ -1077,6 +1179,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_handler_test_testwakesendsmagicpackettoconfiguredmac",
       "community": 6,
+      "community_name": "Gateway Handler Tests",
       "norm_label": "testwakesendsmagicpackettoconfiguredmac()"
     },
     {
@@ -1087,6 +1190,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_handler_test_testwakereturns200onsuccess",
       "community": 6,
+      "community_name": "Gateway Handler Tests",
       "norm_label": "testwakereturns200onsuccess()"
     },
     {
@@ -1097,6 +1201,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_handler_test_testwakelogsrequestedthensucceededwithcalleridentity",
       "community": 6,
+      "community_name": "Gateway Handler Tests",
       "norm_label": "testwakelogsrequestedthensucceededwithcalleridentity()"
     },
     {
@@ -1107,6 +1212,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_handler_test_testwakereturns500andlogsfailedwhensenderfails",
       "community": 6,
+      "community_name": "Gateway Handler Tests",
       "norm_label": "testwakereturns500andlogsfailedwhensenderfails()"
     },
     {
@@ -1117,6 +1223,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_handler_test_testwakedoesnotguardagainstrepeatedrequests",
       "community": 6,
+      "community_name": "Gateway Handler Tests",
       "norm_label": "testwakedoesnotguardagainstrepeatedrequests()"
     },
     {
@@ -1127,6 +1234,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_handler_test_testnewhandlerrefusesofftailnetbindhost",
       "community": 6,
+      "community_name": "Gateway Handler Tests",
       "norm_label": "testnewhandlerrefusesofftailnetbindhost()"
     },
     {
@@ -1137,6 +1245,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_handler_test_testnewhandlerrejectsamalformedmacaddressatstartup",
       "community": 6,
+      "community_name": "Gateway Handler Tests",
       "norm_label": "testnewhandlerrejectsamalformedmacaddressatstartup()"
     },
     {
@@ -1147,16 +1256,18 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_proxy",
       "community": 15,
+      "community_name": "Gateway Proxy & Auto-Wake",
       "norm_label": "proxy.go"
     },
     {
       "label": "autoWakeThrottler",
       "file_type": "code",
       "source_file": "control-plane/internal/gateway/proxy.go",
-      "source_location": "L27",
+      "source_location": "L26",
       "_origin": "ast",
       "id": "gateway_autowakethrottler",
       "community": 15,
+      "community_name": "Gateway Proxy & Auto-Wake",
       "norm_label": "autowakethrottler"
     },
     {
@@ -1167,6 +1278,7 @@
       "_origin": "ast",
       "id": "time",
       "community": 15,
+      "community_name": "Gateway Proxy & Auto-Wake",
       "norm_label": "time"
     },
     {
@@ -1177,26 +1289,29 @@
       "_origin": "ast",
       "id": "mutex",
       "community": 15,
+      "community_name": "Gateway Proxy & Auto-Wake",
       "norm_label": "mutex"
     },
     {
       "label": ".trigger()",
       "file_type": "code",
       "source_file": "control-plane/internal/gateway/proxy.go",
-      "source_location": "L37",
+      "source_location": "L35",
       "_origin": "ast",
       "id": "gateway_autowakethrottler_trigger",
       "community": 15,
+      "community_name": "Gateway Proxy & Auto-Wake",
       "norm_label": ".trigger()"
     },
     {
       "label": "newComputeProxy()",
       "file_type": "code",
       "source_file": "control-plane/internal/gateway/proxy.go",
-      "source_location": "L55",
+      "source_location": "L51",
       "_origin": "ast",
       "id": "control_plane_internal_gateway_proxy_newcomputeproxy",
       "community": 15,
+      "community_name": "Gateway Proxy & Auto-Wake",
       "norm_label": "newcomputeproxy()"
     },
     {
@@ -1207,16 +1322,18 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_proxy_go_handler",
       "community": 15,
+      "community_name": "Gateway Proxy & Auto-Wake",
       "norm_label": "handler"
     },
     {
       "label": "retryUntilReachable()",
       "file_type": "code",
       "source_file": "control-plane/internal/gateway/proxy.go",
-      "source_location": "L74",
+      "source_location": "L68",
       "_origin": "ast",
       "id": "control_plane_internal_gateway_proxy_retryuntilreachable",
       "community": 15,
+      "community_name": "Gateway Proxy & Auto-Wake",
       "norm_label": "retryuntilreachable()"
     },
     {
@@ -1227,6 +1344,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_proxy_go_responsewriter",
       "community": 15,
+      "community_name": "Gateway Proxy & Auto-Wake",
       "norm_label": "responsewriter"
     },
     {
@@ -1237,6 +1355,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_proxy_go_request",
       "community": 15,
+      "community_name": "Gateway Proxy & Auto-Wake",
       "norm_label": "request"
     },
     {
@@ -1247,6 +1366,7 @@
       "_origin": "ast",
       "id": "roundtripper",
       "community": 15,
+      "community_name": "Gateway Proxy & Auto-Wake",
       "norm_label": "roundtripper"
     },
     {
@@ -1257,6 +1377,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_proxy_test",
       "community": 10,
+      "community_name": "Gateway Proxy Tests",
       "norm_label": "proxy_test.go"
     },
     {
@@ -1267,6 +1388,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_proxy_test_withshortretrywindow",
       "community": 10,
+      "community_name": "Gateway Proxy Tests",
       "norm_label": "withshortretrywindow()"
     },
     {
@@ -1277,6 +1399,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_proxy_test_go_t",
       "community": 10,
+      "community_name": "Gateway Proxy Tests",
       "norm_label": "t"
     },
     {
@@ -1287,6 +1410,7 @@
       "_origin": "ast",
       "id": "duration",
       "community": 10,
+      "community_name": "Gateway Proxy Tests",
       "norm_label": "duration"
     },
     {
@@ -1297,6 +1421,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_proxy_test_withshortautowakethrottle",
       "community": 10,
+      "community_name": "Gateway Proxy Tests",
       "norm_label": "withshortautowakethrottle()"
     },
     {
@@ -1307,6 +1432,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_proxy_test_closedporttarget",
       "community": 10,
+      "community_name": "Gateway Proxy Tests",
       "norm_label": "closedporttarget()"
     },
     {
@@ -1317,6 +1443,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_proxy_test_splithostport",
       "community": 10,
+      "community_name": "Gateway Proxy Tests",
       "norm_label": "splithostport()"
     },
     {
@@ -1327,6 +1454,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_proxy_test_testproxy_autowakethrottlesrepeatcallswithinthewindow",
       "community": 10,
+      "community_name": "Gateway Proxy Tests",
       "norm_label": "testproxy_autowakethrottlesrepeatcallswithinthewindow()"
     },
     {
@@ -1337,6 +1465,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_proxy_test_testproxy_autowakedoesnotthrottleoncethewindowhaselapsed",
       "community": 10,
+      "community_name": "Gateway Proxy Tests",
       "norm_label": "testproxy_autowakedoesnotthrottleoncethewindowhaselapsed()"
     },
     {
@@ -1347,6 +1476,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_proxy_test_testproxy_failsopenwhenthewakererrors",
       "community": 10,
+      "community_name": "Gateway Proxy Tests",
       "norm_label": "testproxy_failsopenwhenthewakererrors()"
     },
     {
@@ -1357,6 +1487,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_proxy_test_testproxy_arealhttperrorfromalivebackendpassesthroughwithoutwaking",
       "community": 10,
+      "community_name": "Gateway Proxy Tests",
       "norm_label": "testproxy_arealhttperrorfromalivebackendpassesthroughwithoutwaking()"
     },
     {
@@ -1367,6 +1498,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_proxy_test_testproxy_retriesuntilthebackendstartsrespondingwithinthewindow",
       "community": 10,
+      "community_name": "Gateway Proxy Tests",
       "norm_label": "testproxy_retriesuntilthebackendstartsrespondingwithinthewindow()"
     },
     {
@@ -1377,6 +1509,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_proxy_test_testproxy_servesstaticfilesfromuiassets",
       "community": 10,
+      "community_name": "Gateway Proxy Tests",
       "norm_label": "testproxy_servesstaticfilesfromuiassets()"
     },
     {
@@ -1387,6 +1520,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_proxy_test_testproxy_doesnotfallbacktoindexhtmlforanunknownpath",
       "community": 10,
+      "community_name": "Gateway Proxy Tests",
       "norm_label": "testproxy_doesnotfallbacktoindexhtmlforanunknownpath()"
     },
     {
@@ -1397,6 +1531,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_proxy_test_writefile",
       "community": 10,
+      "community_name": "Gateway Proxy Tests",
       "norm_label": "writefile()"
     },
     {
@@ -1407,6 +1542,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_wol",
       "community": 13,
+      "community_name": "Wake-on-LAN Sender",
       "norm_label": "wol.go"
     },
     {
@@ -1417,36 +1553,40 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_wol_buildmagicpacket",
       "community": 13,
+      "community_name": "Wake-on-LAN Sender",
       "norm_label": "buildmagicpacket()"
     },
     {
       "label": "WakeOnLanSender",
       "file_type": "code",
       "source_file": "control-plane/internal/gateway/wol.go",
-      "source_location": "L39",
+      "source_location": "L38",
       "_origin": "ast",
       "id": "gateway_wakeonlansender",
       "community": 13,
+      "community_name": "Wake-on-LAN Sender",
       "norm_label": "wakeonlansender"
     },
     {
       "label": "NewWakeOnLanSender()",
       "file_type": "code",
       "source_file": "control-plane/internal/gateway/wol.go",
-      "source_location": "L46",
+      "source_location": "L45",
       "_origin": "ast",
       "id": "control_plane_internal_gateway_wol_newwakeonlansender",
       "community": 13,
+      "community_name": "Wake-on-LAN Sender",
       "norm_label": "newwakeonlansender()"
     },
     {
       "label": ".Send()",
       "file_type": "code",
       "source_file": "control-plane/internal/gateway/wol.go",
-      "source_location": "L50",
+      "source_location": "L49",
       "_origin": "ast",
       "id": "gateway_wakeonlansender_send",
       "community": 13,
+      "community_name": "Wake-on-LAN Sender",
       "norm_label": ".send()"
     },
     {
@@ -1457,6 +1597,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_wol_test",
       "community": 13,
+      "community_name": "Wake-on-LAN Sender",
       "norm_label": "wol_test.go"
     },
     {
@@ -1467,6 +1608,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_wol_test_testbuildmagicpackethassixleadingffbytes",
       "community": 13,
+      "community_name": "Wake-on-LAN Sender",
       "norm_label": "testbuildmagicpackethassixleadingffbytes()"
     },
     {
@@ -1477,6 +1619,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_wol_test_go_t",
       "community": 13,
+      "community_name": "Wake-on-LAN Sender",
       "norm_label": "t"
     },
     {
@@ -1487,6 +1630,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_wol_test_testbuildmagicpacketrepeatsmacsixteentimes",
       "community": 13,
+      "community_name": "Wake-on-LAN Sender",
       "norm_label": "testbuildmagicpacketrepeatsmacsixteentimes()"
     },
     {
@@ -1497,6 +1641,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_wol_test_testbuildmagicpacketacceptshyphenseparatedmac",
       "community": 13,
+      "community_name": "Wake-on-LAN Sender",
       "norm_label": "testbuildmagicpacketacceptshyphenseparatedmac()"
     },
     {
@@ -1507,6 +1652,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_wol_test_testbuildmagicpacketacceptslowercasemac",
       "community": 13,
+      "community_name": "Wake-on-LAN Sender",
       "norm_label": "testbuildmagicpacketacceptslowercasemac()"
     },
     {
@@ -1517,6 +1663,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_gateway_wol_test_testbuildmagicpacketrejectsinvalidmac",
       "community": 13,
+      "community_name": "Wake-on-LAN Sender",
       "norm_label": "testbuildmagicpacketrejectsinvalidmac()"
     },
     {
@@ -1527,6 +1674,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_httpresponse_httpresponse",
       "community": 8,
+      "community_name": "Compute Handler Implementation",
       "norm_label": "httpresponse.go"
     },
     {
@@ -1537,6 +1685,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_httpresponse_httpresponse_writejson",
       "community": 8,
+      "community_name": "Compute Handler Implementation",
       "norm_label": "writejson()"
     },
     {
@@ -1547,6 +1696,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_httpresponse_httpresponse_go_responsewriter",
       "community": 8,
+      "community_name": "Compute Handler Implementation",
       "norm_label": "responsewriter"
     },
     {
@@ -1557,6 +1707,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_httpresponse_httpresponse_copy",
       "community": 8,
+      "community_name": "Compute Handler Implementation",
       "norm_label": "copy()"
     },
     {
@@ -1567,6 +1718,7 @@
       "_origin": "ast",
       "id": "response",
       "community": 8,
+      "community_name": "Compute Handler Implementation",
       "norm_label": "response"
     },
     {
@@ -1577,26 +1729,29 @@
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_auth",
       "community": 4,
+      "community_name": "Tailnet Auth",
       "norm_label": "auth.go"
     },
     {
       "label": "contextKey",
       "file_type": "code",
       "source_file": "control-plane/internal/tailnet/auth.go",
-      "source_location": "L27",
+      "source_location": "L22",
       "_origin": "ast",
       "id": "tailnet_contextkey",
       "community": 4,
+      "community_name": "Tailnet Auth",
       "norm_label": "contextkey"
     },
     {
       "label": "RequireTailnetIdentity()",
       "file_type": "code",
       "source_file": "control-plane/internal/tailnet/auth.go",
-      "source_location": "L33",
+      "source_location": "L28",
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_auth_requiretailnetidentity",
       "community": 4,
+      "community_name": "Tailnet Auth",
       "norm_label": "requiretailnetidentity()"
     },
     {
@@ -1607,26 +1762,29 @@
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_auth_go_handler",
       "community": 4,
+      "community_name": "Tailnet Auth",
       "norm_label": "handler"
     },
     {
       "label": "RequireTailnetIdentityOrLoopback()",
       "file_type": "code",
       "source_file": "control-plane/internal/tailnet/auth.go",
-      "source_location": "L48",
+      "source_location": "L41",
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_auth_requiretailnetidentityorloopback",
       "community": 4,
+      "community_name": "Tailnet Auth",
       "norm_label": "requiretailnetidentityorloopback()"
     },
     {
       "label": "GetCallerIdentity()",
       "file_type": "code",
       "source_file": "control-plane/internal/tailnet/auth.go",
-      "source_location": "L65",
+      "source_location": "L58",
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_auth_getcalleridentity",
       "community": 4,
+      "community_name": "Tailnet Auth",
       "norm_label": "getcalleridentity()"
     },
     {
@@ -1637,16 +1795,18 @@
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_auth_go_request",
       "community": 4,
+      "community_name": "Tailnet Auth",
       "norm_label": "request"
     },
     {
       "label": "remoteHost()",
       "file_type": "code",
       "source_file": "control-plane/internal/tailnet/auth.go",
-      "source_location": "L70",
+      "source_location": "L63",
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_auth_remotehost",
       "community": 4,
+      "community_name": "Tailnet Auth",
       "norm_label": "remotehost()"
     },
     {
@@ -1657,6 +1817,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_auth_test",
       "community": 4,
+      "community_name": "Tailnet Auth",
       "norm_label": "auth_test.go"
     },
     {
@@ -1667,6 +1828,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_auth_test_writeidentityjson",
       "community": 4,
+      "community_name": "Tailnet Auth",
       "norm_label": "writeidentityjson()"
     },
     {
@@ -1677,6 +1839,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_auth_test_go_responsewriter",
       "community": 4,
+      "community_name": "Tailnet Auth",
       "norm_label": "responsewriter"
     },
     {
@@ -1687,6 +1850,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_auth_test_go_request",
       "community": 4,
+      "community_name": "Tailnet Auth",
       "norm_label": "request"
     },
     {
@@ -1697,6 +1861,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_auth_test_protectedhandler",
       "community": 4,
+      "community_name": "Tailnet Auth",
       "norm_label": "protectedhandler()"
     },
     {
@@ -1707,6 +1872,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_auth_test_go_handler",
       "community": 4,
+      "community_name": "Tailnet Auth",
       "norm_label": "handler"
     },
     {
@@ -1717,6 +1883,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_auth_test_loopbackprotectedhandler",
       "community": 4,
+      "community_name": "Tailnet Auth",
       "norm_label": "loopbackprotectedhandler()"
     },
     {
@@ -1727,6 +1894,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_auth_test_testrejectsrequestwithnoidentityheader",
       "community": 4,
+      "community_name": "Tailnet Auth",
       "norm_label": "testrejectsrequestwithnoidentityheader()"
     },
     {
@@ -1737,6 +1905,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_auth_test_go_t",
       "community": 4,
+      "community_name": "Tailnet Auth",
       "norm_label": "t"
     },
     {
@@ -1747,6 +1916,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_auth_test_testrejectsrequestwithblankidentityheader",
       "community": 4,
+      "community_name": "Tailnet Auth",
       "norm_label": "testrejectsrequestwithblankidentityheader()"
     },
     {
@@ -1757,6 +1927,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_auth_test_testallowsrequestwithvalididentityheader",
       "community": 4,
+      "community_name": "Tailnet Auth",
       "norm_label": "testallowsrequestwithvalididentityheader()"
     },
     {
@@ -1767,6 +1938,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_auth_test_testgetcalleridentityreturnsheadervalue",
       "community": 4,
+      "community_name": "Tailnet Auth",
       "norm_label": "testgetcalleridentityreturnsheadervalue()"
     },
     {
@@ -1777,6 +1949,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_auth_test_testloopbackallowsarequestfrom127001withnoidentityheader",
       "community": 4,
+      "community_name": "Tailnet Auth",
       "norm_label": "testloopbackallowsarequestfrom127001withnoidentityheader()"
     },
     {
@@ -1787,6 +1960,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_auth_test_testloopbackrejectsarequestfromelsewherewithnoidentityheader",
       "community": 4,
+      "community_name": "Tailnet Auth",
       "norm_label": "testloopbackrejectsarequestfromelsewherewithnoidentityheader()"
     },
     {
@@ -1797,6 +1971,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_auth_test_testloopbackstillhonorsavalididentityheaderfromelsewhere",
       "community": 4,
+      "community_name": "Tailnet Auth",
       "norm_label": "testloopbackstillhonorsavalididentityheaderfromelsewhere()"
     },
     {
@@ -1807,6 +1982,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_bindsafety",
       "community": 16,
+      "community_name": "Tailnet Bind Safety",
       "norm_label": "bindsafety.go"
     },
     {
@@ -1817,6 +1993,7 @@
       "_origin": "ast",
       "id": "tailnet_bindofftailneterror",
       "community": 16,
+      "community_name": "Tailnet Bind Safety",
       "norm_label": "bindofftailneterror"
     },
     {
@@ -1827,16 +2004,18 @@
       "_origin": "ast",
       "id": "tailnet_bindofftailneterror_error",
       "community": 16,
+      "community_name": "Tailnet Bind Safety",
       "norm_label": ".error()"
     },
     {
       "label": "AssertTailnetOnlyBind()",
       "file_type": "code",
       "source_file": "control-plane/internal/tailnet/bindsafety.go",
-      "source_location": "L23",
+      "source_location": "L22",
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_bindsafety_asserttailnetonlybind",
       "community": 16,
+      "community_name": "Tailnet Bind Safety",
       "norm_label": "asserttailnetonlybind()"
     },
     {
@@ -1847,6 +2026,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_bindsafety_test",
       "community": 16,
+      "community_name": "Tailnet Bind Safety",
       "norm_label": "bindsafety_test.go"
     },
     {
@@ -1857,6 +2037,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_bindsafety_test_testallowsloopbackandtailnetaddresses",
       "community": 16,
+      "community_name": "Tailnet Bind Safety",
       "norm_label": "testallowsloopbackandtailnetaddresses()"
     },
     {
@@ -1867,6 +2048,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_bindsafety_test_go_t",
       "community": 16,
+      "community_name": "Tailnet Bind Safety",
       "norm_label": "t"
     },
     {
@@ -1877,6 +2059,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_bindsafety_test_testrejectsofftailnetaddresses",
       "community": 16,
+      "community_name": "Tailnet Bind Safety",
       "norm_label": "testrejectsofftailnetaddresses()"
     },
     {
@@ -1887,6 +2070,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_bindsafety_test_appfactory",
       "community": 16,
+      "community_name": "Tailnet Bind Safety",
       "norm_label": "appfactory()"
     },
     {
@@ -1897,6 +2081,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_bindsafety_test_testappfactoryrefusestostartonofftailnethost",
       "community": 16,
+      "community_name": "Tailnet Bind Safety",
       "norm_label": "testappfactoryrefusestostartonofftailnethost()"
     },
     {
@@ -1907,6 +2092,7 @@
       "_origin": "ast",
       "id": "control_plane_internal_tailnet_bindsafety_test_testappfactorystartsonloopbackhost",
       "community": 16,
+      "community_name": "Tailnet Bind Safety",
       "norm_label": "testappfactorystartsonloopbackhost()"
     },
     {
@@ -1917,6 +2103,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_package",
       "community": 7,
+      "community_name": "UI Package Dependencies",
       "norm_label": "package.json"
     },
     {
@@ -1927,6 +2114,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_package_name",
       "community": 7,
+      "community_name": "UI Package Dependencies",
       "norm_label": "name"
     },
     {
@@ -1937,6 +2125,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_package_private",
       "community": 7,
+      "community_name": "UI Package Dependencies",
       "norm_label": "private"
     },
     {
@@ -1947,6 +2136,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_package_version",
       "community": 7,
+      "community_name": "UI Package Dependencies",
       "norm_label": "version"
     },
     {
@@ -1957,6 +2147,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_package_type",
       "community": 7,
+      "community_name": "UI Package Dependencies",
       "norm_label": "type"
     },
     {
@@ -1967,6 +2158,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_package_scripts",
       "community": 7,
+      "community_name": "UI Package Dependencies",
       "norm_label": "scripts"
     },
     {
@@ -1977,6 +2169,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_package_scripts_dev",
       "community": 7,
+      "community_name": "UI Package Dependencies",
       "norm_label": "dev"
     },
     {
@@ -1987,6 +2180,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_package_scripts_build",
       "community": 7,
+      "community_name": "UI Package Dependencies",
       "norm_label": "build"
     },
     {
@@ -1997,6 +2191,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_package_scripts_preview",
       "community": 7,
+      "community_name": "UI Package Dependencies",
       "norm_label": "preview"
     },
     {
@@ -2007,6 +2202,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_package_scripts_test",
       "community": 7,
+      "community_name": "UI Package Dependencies",
       "norm_label": "test"
     },
     {
@@ -2017,6 +2213,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_package_scripts_typecheck",
       "community": 7,
+      "community_name": "UI Package Dependencies",
       "norm_label": "typecheck"
     },
     {
@@ -2027,6 +2224,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_package_devdependencies",
       "community": 7,
+      "community_name": "UI Package Dependencies",
       "norm_label": "devdependencies"
     },
     {
@@ -2037,6 +2235,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_package_devdependencies_jsdom",
       "community": 7,
+      "community_name": "UI Package Dependencies",
       "norm_label": "jsdom"
     },
     {
@@ -2047,6 +2246,7 @@
       "_origin": "ast",
       "id": "jsdom",
       "community": 7,
+      "community_name": "UI Package Dependencies",
       "norm_label": "jsdom"
     },
     {
@@ -2057,6 +2257,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_package_devdependencies_typescript",
       "community": 7,
+      "community_name": "UI Package Dependencies",
       "norm_label": "typescript"
     },
     {
@@ -2067,6 +2268,7 @@
       "_origin": "ast",
       "id": "typescript",
       "community": 7,
+      "community_name": "UI Package Dependencies",
       "norm_label": "typescript"
     },
     {
@@ -2077,6 +2279,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_package_devdependencies_vite",
       "community": 7,
+      "community_name": "UI Package Dependencies",
       "norm_label": "vite"
     },
     {
@@ -2087,6 +2290,7 @@
       "_origin": "ast",
       "id": "vite",
       "community": 7,
+      "community_name": "UI Package Dependencies",
       "norm_label": "vite"
     },
     {
@@ -2097,6 +2301,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_package_devdependencies_vitest",
       "community": 7,
+      "community_name": "UI Package Dependencies",
       "norm_label": "vitest"
     },
     {
@@ -2107,6 +2312,7 @@
       "_origin": "ast",
       "id": "vitest",
       "community": 7,
+      "community_name": "UI Package Dependencies",
       "norm_label": "vitest"
     },
     {
@@ -2117,6 +2323,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_src_app_test",
       "community": 12,
+      "community_name": "UI App Component",
       "norm_label": "app.test.ts"
     },
     {
@@ -2127,6 +2334,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_src_app_test_statuselement",
       "community": 12,
+      "community_name": "UI App Component",
       "norm_label": "statuselement()"
     },
     {
@@ -2137,6 +2345,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_src_app_test_wakebutton",
       "community": 12,
+      "community_name": "UI App Component",
       "norm_label": "wakebutton()"
     },
     {
@@ -2147,6 +2356,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_src_app_test_suspendbutton",
       "community": 12,
+      "community_name": "UI App Component",
       "norm_label": "suspendbutton()"
     },
     {
@@ -2157,6 +2367,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_src_app_test_refreshbutton",
       "community": 12,
+      "community_name": "UI App Component",
       "norm_label": "refreshbutton()"
     },
     {
@@ -2167,6 +2378,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_src_app_test_actionerror",
       "community": 12,
+      "community_name": "UI App Component",
       "norm_label": "actionerror()"
     },
     {
@@ -2177,6 +2389,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_src_app_test_stubfetch",
       "community": 12,
+      "community_name": "UI App Component",
       "norm_label": "stubfetch()"
     },
     {
@@ -2187,6 +2400,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_src_app",
       "community": 12,
+      "community_name": "UI App Component",
       "norm_label": "app.ts"
     },
     {
@@ -2197,6 +2411,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_src_app_reachabilitystate",
       "community": 12,
+      "community_name": "UI App Component",
       "norm_label": "reachabilitystate"
     },
     {
@@ -2207,26 +2422,29 @@
       "_origin": "ast",
       "id": "control_plane_ui_src_app_status_labels",
       "community": 12,
+      "community_name": "UI App Component",
       "norm_label": "status_labels"
     },
     {
       "label": "MountOptions",
       "file_type": "code",
       "source_file": "control-plane/ui/src/app.ts",
-      "source_location": "L14",
+      "source_location": "L13",
       "_origin": "ast",
       "id": "control_plane_ui_src_app_mountoptions",
       "community": 12,
+      "community_name": "UI App Component",
       "norm_label": "mountoptions"
     },
     {
       "label": "mountUi()",
       "file_type": "code",
       "source_file": "control-plane/ui/src/app.ts",
-      "source_location": "L22",
+      "source_location": "L21",
       "_origin": "ast",
       "id": "control_plane_ui_src_app_mountui",
       "community": 12,
+      "community_name": "UI App Component",
       "norm_label": "mountui()"
     },
     {
@@ -2237,6 +2455,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_src_main",
       "community": 12,
+      "community_name": "UI App Component",
       "norm_label": "main.ts"
     },
     {
@@ -2247,6 +2466,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_tsconfig",
       "community": 5,
+      "community_name": "UI TypeScript Config",
       "norm_label": "tsconfig.json"
     },
     {
@@ -2257,6 +2477,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_tsconfig_compileroptions",
       "community": 5,
+      "community_name": "UI TypeScript Config",
       "norm_label": "compileroptions"
     },
     {
@@ -2267,6 +2488,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_tsconfig_compileroptions_target",
       "community": 5,
+      "community_name": "UI TypeScript Config",
       "norm_label": "target"
     },
     {
@@ -2277,6 +2499,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_tsconfig_compileroptions_module",
       "community": 5,
+      "community_name": "UI TypeScript Config",
       "norm_label": "module"
     },
     {
@@ -2287,6 +2510,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_tsconfig_compileroptions_lib",
       "community": 5,
+      "community_name": "UI TypeScript Config",
       "norm_label": "lib"
     },
     {
@@ -2297,6 +2521,7 @@
       "_origin": "ast",
       "id": "ref_es2023",
       "community": 5,
+      "community_name": "UI TypeScript Config",
       "norm_label": "es2023"
     },
     {
@@ -2307,6 +2532,7 @@
       "_origin": "ast",
       "id": "ref_dom",
       "community": 5,
+      "community_name": "UI TypeScript Config",
       "norm_label": "dom"
     },
     {
@@ -2317,6 +2543,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_tsconfig_compileroptions_types",
       "community": 5,
+      "community_name": "UI TypeScript Config",
       "norm_label": "types"
     },
     {
@@ -2327,6 +2554,7 @@
       "_origin": "ast",
       "id": "ref_vite_client",
       "community": 5,
+      "community_name": "UI TypeScript Config",
       "norm_label": "vite/client"
     },
     {
@@ -2337,6 +2565,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_tsconfig_compileroptions_allowarbitraryextensions",
       "community": 5,
+      "community_name": "UI TypeScript Config",
       "norm_label": "allowarbitraryextensions"
     },
     {
@@ -2347,6 +2576,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_tsconfig_compileroptions_skiplibcheck",
       "community": 5,
+      "community_name": "UI TypeScript Config",
       "norm_label": "skiplibcheck"
     },
     {
@@ -2357,6 +2587,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_tsconfig_compileroptions_moduleresolution",
       "community": 5,
+      "community_name": "UI TypeScript Config",
       "norm_label": "moduleresolution"
     },
     {
@@ -2367,6 +2598,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_tsconfig_compileroptions_allowimportingtsextensions",
       "community": 5,
+      "community_name": "UI TypeScript Config",
       "norm_label": "allowimportingtsextensions"
     },
     {
@@ -2377,6 +2609,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_tsconfig_compileroptions_verbatimmodulesyntax",
       "community": 5,
+      "community_name": "UI TypeScript Config",
       "norm_label": "verbatimmodulesyntax"
     },
     {
@@ -2387,6 +2620,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_tsconfig_compileroptions_moduledetection",
       "community": 5,
+      "community_name": "UI TypeScript Config",
       "norm_label": "moduledetection"
     },
     {
@@ -2397,6 +2631,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_tsconfig_compileroptions_noemit",
       "community": 5,
+      "community_name": "UI TypeScript Config",
       "norm_label": "noemit"
     },
     {
@@ -2407,6 +2642,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_tsconfig_compileroptions_nounusedlocals",
       "community": 5,
+      "community_name": "UI TypeScript Config",
       "norm_label": "nounusedlocals"
     },
     {
@@ -2417,6 +2653,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_tsconfig_compileroptions_nounusedparameters",
       "community": 5,
+      "community_name": "UI TypeScript Config",
       "norm_label": "nounusedparameters"
     },
     {
@@ -2427,6 +2664,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_tsconfig_compileroptions_erasablesyntaxonly",
       "community": 5,
+      "community_name": "UI TypeScript Config",
       "norm_label": "erasablesyntaxonly"
     },
     {
@@ -2437,6 +2675,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_tsconfig_compileroptions_nofallthroughcasesinswitch",
       "community": 5,
+      "community_name": "UI TypeScript Config",
       "norm_label": "nofallthroughcasesinswitch"
     },
     {
@@ -2447,6 +2686,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_tsconfig_include",
       "community": 5,
+      "community_name": "UI TypeScript Config",
       "norm_label": "include"
     },
     {
@@ -2457,6 +2697,7 @@
       "_origin": "ast",
       "id": "ref_src",
       "community": 5,
+      "community_name": "UI TypeScript Config",
       "norm_label": "src"
     },
     {
@@ -2467,6 +2708,7 @@
       "_origin": "ast",
       "id": "control_plane_ui_vite_config",
       "community": 26,
+      "community_name": "UI Vite Config",
       "norm_label": "vite.config.ts"
     },
     {
@@ -2481,6 +2723,7 @@
       "_origin": "ast",
       "id": "deploy",
       "community": 18,
+      "community_name": "Root Deploy Script",
       "norm_label": "deploy.sh"
     },
     {
@@ -2495,6 +2738,7 @@
       "_origin": "ast",
       "id": "deploy_sh__entry",
       "community": 18,
+      "community_name": "Root Deploy Script",
       "norm_label": "deploy.sh script"
     },
     {
@@ -2505,16 +2749,18 @@
       "_origin": "ast",
       "id": "provisioning_common",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "common.py"
     },
     {
       "label": "DpkgArchitecture",
       "file_type": "code",
       "source_file": "provisioning/common.py",
-      "source_location": "L13",
+      "source_location": "L9",
       "_origin": "ast",
       "id": "provisioning_common_dpkgarchitecture",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "dpkgarchitecture"
     },
     {
@@ -2525,147 +2771,162 @@
       "_origin": "ast",
       "id": "provisioning_common_py_factbase",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "factbase"
     },
     {
       "label": ".command()",
       "file_type": "code",
       "source_file": "provisioning/common.py",
-      "source_location": "L24",
+      "source_location": "L16",
       "_origin": "ast",
       "id": "provisioning_common_dpkgarchitecture_command",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": ".command()"
     },
     {
       "label": ".process()",
       "file_type": "code",
       "source_file": "provisioning/common.py",
-      "source_location": "L27",
+      "source_location": "L19",
       "_origin": "ast",
       "id": "provisioning_common_dpkgarchitecture_process",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": ".process()"
     },
     {
       "label": "linux_distro_id()",
       "file_type": "code",
       "source_file": "provisioning/common.py",
-      "source_location": "L31",
+      "source_location": "L23",
       "_origin": "ast",
       "id": "provisioning_common_linux_distro_id",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "linux_distro_id()"
     },
     {
       "label": "linux_codename()",
       "file_type": "code",
       "source_file": "provisioning/common.py",
-      "source_location": "L43",
+      "source_location": "L32",
       "_origin": "ast",
       "id": "provisioning_common_linux_codename",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "linux_codename()"
     },
     {
       "label": "has_device_role()",
       "file_type": "code",
       "source_file": "provisioning/common.py",
-      "source_location": "L53",
+      "source_location": "L41",
       "_origin": "ast",
       "id": "provisioning_common_has_device_role",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "has_device_role()"
     },
     {
       "label": "TailscaleServeStatus",
       "file_type": "code",
       "source_file": "provisioning/common.py",
-      "source_location": "L64",
+      "source_location": "L50",
       "_origin": "ast",
       "id": "provisioning_common_tailscaleservestatus",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "tailscaleservestatus"
     },
     {
       "label": ".command()",
       "file_type": "code",
       "source_file": "provisioning/common.py",
-      "source_location": "L79",
+      "source_location": "L59",
       "_origin": "ast",
       "id": "provisioning_common_tailscaleservestatus_command",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": ".command()"
     },
     {
       "label": ".process()",
       "file_type": "code",
       "source_file": "provisioning/common.py",
-      "source_location": "L82",
+      "source_location": "L62",
       "_origin": "ast",
       "id": "provisioning_common_tailscaleservestatus_process",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": ".process()"
     },
     {
-      "label": "Helpers shared by more than one Deploy file.  Not a Deploy file itself -- define",
+      "label": "Fact-derived helpers and the `device_role` guard shared by Deploy files. Importe",
       "file_type": "rationale",
       "source_file": "provisioning/common.py",
       "source_location": "L1",
       "_origin": "ast",
       "id": "provisioning_common_rationale_1",
       "community": 0,
-      "norm_label": "helpers shared by more than one deploy file.  not a deploy file itself -- define"
+      "community_name": "Provisioning Facts & Deploy",
+      "norm_label": "fact-derived helpers and the `device_role` guard shared by deploy files. importe"
     },
     {
-      "label": "Native apt architecture (e.g. \"amd64\", \"arm64\") per `dpkg     --print-architectu",
+      "label": "`dpkg --print-architecture` output (e.g. \"amd64\") -- pyinfra has no     built-in",
       "file_type": "rationale",
       "source_file": "provisioning/common.py",
-      "source_location": "L14",
+      "source_location": "L10",
       "_origin": "ast",
-      "id": "provisioning_common_rationale_14",
+      "id": "provisioning_common_rationale_10",
       "community": 0,
-      "norm_label": "native apt architecture (e.g. \"amd64\", \"arm64\") per `dpkg     --print-architectu"
+      "community_name": "Provisioning Facts & Deploy",
+      "norm_label": "`dpkg --print-architecture` output (e.g. \"amd64\") -- pyinfra has no     built-in"
     },
     {
-      "label": "`ID` from `/etc/os-release` (e.g. \"debian\" on Raspberry Pi OS,     \"ubuntu\" on U",
+      "label": "`ID` from `/etc/os-release` (e.g. \"debian\", \"ubuntu\") -- vendor apt     repos ke",
       "file_type": "rationale",
       "source_file": "provisioning/common.py",
-      "source_location": "L32",
+      "source_location": "L24",
       "_origin": "ast",
-      "id": "provisioning_common_rationale_32",
+      "id": "provisioning_common_rationale_24",
       "community": 0,
-      "norm_label": "`id` from `/etc/os-release` (e.g. \"debian\" on raspberry pi os,     \"ubuntu\" on u"
+      "community_name": "Provisioning Facts & Deploy",
+      "norm_label": "`id` from `/etc/os-release` (e.g. \"debian\", \"ubuntu\") -- vendor apt     repos ke"
     },
     {
-      "label": "Debian-family codename (e.g. \"bookworm\" on Raspberry Pi OS, \"noble\"     on Ubunt",
+      "label": "Debian-family codename (e.g. \"bookworm\", \"noble\") for apt source     lines. Fall",
       "file_type": "rationale",
       "source_file": "provisioning/common.py",
-      "source_location": "L44",
+      "source_location": "L33",
       "_origin": "ast",
-      "id": "provisioning_common_rationale_44",
+      "id": "provisioning_common_rationale_33",
       "community": 0,
-      "norm_label": "debian-family codename (e.g. \"bookworm\" on raspberry pi os, \"noble\"     on ubunt"
+      "community_name": "Provisioning Facts & Deploy",
+      "norm_label": "debian-family codename (e.g. \"bookworm\", \"noble\") for apt source     lines. fall"
     },
     {
-      "label": "Whether the current host has one of the given device roles     (\"gateway\"/\"compu",
+      "label": "Whether the current host has one of the given `device_role`s     (set in invento",
       "file_type": "rationale",
       "source_file": "provisioning/common.py",
-      "source_location": "L54",
+      "source_location": "L42",
       "_origin": "ast",
-      "id": "provisioning_common_rationale_54",
+      "id": "provisioning_common_rationale_42",
       "community": 0,
-      "norm_label": "whether the current host has one of the given device roles     (\"gateway\"/\"compu"
+      "community_name": "Provisioning Facts & Deploy",
+      "norm_label": "whether the current host has one of the given `device_role`s     (set in invento"
     },
     {
-      "label": "Raw `tailscale serve status --json` output (or `\"{}\"` if unset, not     installe",
+      "label": "Raw `tailscale serve status --json` output (`\"{}\"` if unset,     uninstalled, or",
       "file_type": "rationale",
       "source_file": "provisioning/common.py",
-      "source_location": "L65",
+      "source_location": "L51",
       "_origin": "ast",
-      "id": "provisioning_common_rationale_65",
+      "id": "provisioning_common_rationale_51",
       "community": 0,
-      "norm_label": "raw `tailscale serve status --json` output (or `\"{}\"` if unset, not     installe"
+      "community_name": "Provisioning Facts & Deploy",
+      "norm_label": "raw `tailscale serve status --json` output (`\"{}\"` if unset,     uninstalled, or"
     },
     {
       "label": "deploy.py",
@@ -2675,6 +2936,7 @@
       "_origin": "ast",
       "id": "provisioning_deploy_py_provisioning_deploy",
       "community": 19,
+      "community_name": "Provisioning Deploy (Python)",
       "norm_label": "deploy.py"
     },
     {
@@ -2685,6 +2947,7 @@
       "_origin": "ast",
       "id": "provisioning_deploy_rationale_1",
       "community": 19,
+      "community_name": "Provisioning Deploy (Python)",
       "norm_label": "single entrypoint composing every deploy file.      pyinfra inventory.py deploy."
     },
     {
@@ -2699,6 +2962,7 @@
       "_origin": "ast",
       "id": "provisioning_deploy_sh_provisioning_deploy",
       "community": 20,
+      "community_name": "Provisioning Deploy (Shell)",
       "norm_label": "provisioning/deploy.sh"
     },
     {
@@ -2713,6 +2977,7 @@
       "_origin": "ast",
       "id": "provisioning_deploy_sh__entry",
       "community": 20,
+      "community_name": "Provisioning Deploy (Shell)",
       "norm_label": "deploy.sh script"
     },
     {
@@ -2723,17 +2988,19 @@
       "_origin": "ast",
       "id": "provisioning_deploy_compute_api",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "deploy_compute_api.py"
     },
     {
-      "label": "Deploys the Compute API to `compute`.  Cross-compiles the Compute API's Go binar",
+      "label": "Deploys the Compute API to `compute`.  Cross-compiles the binary on the dev mach",
       "file_type": "rationale",
       "source_file": "provisioning/deploy_compute_api.py",
       "source_location": "L1",
       "_origin": "ast",
       "id": "provisioning_deploy_compute_api_rationale_1",
       "community": 0,
-      "norm_label": "deploys the compute api to `compute`.  cross-compiles the compute api's go binar"
+      "community_name": "Provisioning Facts & Deploy",
+      "norm_label": "deploys the compute api to `compute`.  cross-compiles the binary on the dev mach"
     },
     {
       "label": "deploy_docker.py",
@@ -2743,17 +3010,19 @@
       "_origin": "ast",
       "id": "provisioning_deploy_docker",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "deploy_docker.py"
     },
     {
-      "label": "Installs and enables the Docker engine on `server`.  So workload Compose stacks",
+      "label": "Installs and enables the Docker engine on `server`, for workload Compose stacks",
       "file_type": "rationale",
       "source_file": "provisioning/deploy_docker.py",
       "source_location": "L1",
       "_origin": "ast",
       "id": "provisioning_deploy_docker_rationale_1",
       "community": 0,
-      "norm_label": "installs and enables the docker engine on `server`.  so workload compose stacks"
+      "community_name": "Provisioning Facts & Deploy",
+      "norm_label": "installs and enables the docker engine on `server`, for workload compose stacks"
     },
     {
       "label": "deploy_gateway.py",
@@ -2763,6 +3032,7 @@
       "_origin": "ast",
       "id": "provisioning_deploy_gateway",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "deploy_gateway.py"
     },
     {
@@ -2773,6 +3043,7 @@
       "_origin": "ast",
       "id": "provisioning_deploy_gateway_rationale_1",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "deploys the gateway to `gateway`: builds the ui, embeds it into the gateway bina"
     },
     {
@@ -2783,16 +3054,18 @@
       "_origin": "ast",
       "id": "provisioning_deploy_tailscale",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "deploy_tailscale.py"
     },
     {
       "label": "TailscaleBackendState",
       "file_type": "code",
       "source_file": "provisioning/deploy_tailscale.py",
-      "source_location": "L33",
+      "source_location": "L27",
       "_origin": "ast",
       "id": "provisioning_deploy_tailscale_tailscalebackendstate",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "tailscalebackendstate"
     },
     {
@@ -2803,26 +3076,29 @@
       "_origin": "ast",
       "id": "provisioning_deploy_tailscale_py_factbase",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "factbase"
     },
     {
       "label": ".command()",
       "file_type": "code",
       "source_file": "provisioning/deploy_tailscale.py",
-      "source_location": "L40",
+      "source_location": "L33",
       "_origin": "ast",
       "id": "provisioning_deploy_tailscale_tailscalebackendstate_command",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": ".command()"
     },
     {
       "label": ".process()",
       "file_type": "code",
       "source_file": "provisioning/deploy_tailscale.py",
-      "source_location": "L43",
+      "source_location": "L36",
       "_origin": "ast",
       "id": "provisioning_deploy_tailscale_tailscalebackendstate_process",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": ".process()"
     },
     {
@@ -2833,17 +3109,19 @@
       "_origin": "ast",
       "id": "provisioning_deploy_tailscale_rationale_1",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "joins a target device to the tailnet.  installs tailscale via the official insta"
     },
     {
-      "label": "`BackendState` from `tailscale status --json` (e.g. \"Running\" once     joined),",
+      "label": "`BackendState` from `tailscale status --json` (\"Running\" once     joined), or `N",
       "file_type": "rationale",
       "source_file": "provisioning/deploy_tailscale.py",
-      "source_location": "L34",
+      "source_location": "L28",
       "_origin": "ast",
-      "id": "provisioning_deploy_tailscale_rationale_34",
+      "id": "provisioning_deploy_tailscale_rationale_28",
       "community": 0,
-      "norm_label": "`backendstate` from `tailscale status --json` (e.g. \"running\" once     joined),"
+      "community_name": "Provisioning Facts & Deploy",
+      "norm_label": "`backendstate` from `tailscale status --json` (\"running\" once     joined), or `n"
     },
     {
       "label": "go_deploy.py",
@@ -2853,36 +3131,40 @@
       "_origin": "ast",
       "id": "provisioning_go_deploy",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "go_deploy.py"
     },
     {
       "label": "go_binary_systemd_service()",
       "file_type": "code",
       "source_file": "provisioning/go_deploy.py",
-      "source_location": "L31",
+      "source_location": "L18",
       "_origin": "ast",
       "id": "provisioning_go_deploy_go_binary_systemd_service",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "go_binary_systemd_service()"
     },
     {
-      "label": "Shared off-device Go build + systemd deploy helper.  The pattern common to both",
+      "label": "Shared off-device Go build + systemd deploy helper, used by both the Gateway API",
       "file_type": "rationale",
       "source_file": "provisioning/go_deploy.py",
       "source_location": "L1",
       "_origin": "ast",
       "id": "provisioning_go_deploy_rationale_1",
       "community": 0,
-      "norm_label": "shared off-device go build + systemd deploy helper.  the pattern common to both"
+      "community_name": "Provisioning Facts & Deploy",
+      "norm_label": "shared off-device go build + systemd deploy helper, used by both the gateway api"
     },
     {
       "label": "Cross-compile `package` (an import path relative to `module_dir`,     e.g. \"./cm",
       "file_type": "rationale",
       "source_file": "provisioning/go_deploy.py",
-      "source_location": "L45",
+      "source_location": "L32",
       "_origin": "ast",
-      "id": "provisioning_go_deploy_rationale_45",
+      "id": "provisioning_go_deploy_rationale_32",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "cross-compile `package` (an import path relative to `module_dir`,     e.g. \"./cm"
     },
     {
@@ -2893,6 +3175,7 @@
       "_origin": "ast",
       "id": "provisioning_inventory",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "inventory.py"
     },
     {
@@ -2903,6 +3186,7 @@
       "_origin": "ast",
       "id": "provisioning_inventory_rationale_1",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "host groups for the homelab control plane.  two real devices, `gateway` and `com"
     },
     {
@@ -2916,6 +3200,7 @@
       "_origin": "ast",
       "id": "pkg_homelab_pyinfra",
       "community": 28,
+      "community_name": "Pyinfra Module Root",
       "norm_label": "homelab-pyinfra"
     },
     {
@@ -2926,16 +3211,18 @@
       "_origin": "ast",
       "id": "provisioning_settings",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "settings.py"
     },
     {
       "label": "InventorySettings",
       "file_type": "code",
       "source_file": "provisioning/settings.py",
-      "source_location": "L24",
+      "source_location": "L15",
       "_origin": "ast",
       "id": "provisioning_settings_inventorysettings",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "inventorysettings"
     },
     {
@@ -2946,67 +3233,74 @@
       "_origin": "ast",
       "id": "basesettings",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "basesettings"
     },
     {
       "label": "TailscaleSettings",
       "file_type": "code",
       "source_file": "provisioning/settings.py",
-      "source_location": "L64",
+      "source_location": "L41",
       "_origin": "ast",
       "id": "provisioning_settings_tailscalesettings",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "tailscalesettings"
     },
     {
       "label": "GatewaySettings",
       "file_type": "code",
       "source_file": "provisioning/settings.py",
-      "source_location": "L68",
+      "source_location": "L45",
       "_origin": "ast",
       "id": "provisioning_settings_gatewaysettings",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "gatewaysettings"
     },
     {
       "label": "GatewaySecrets",
       "file_type": "code",
       "source_file": "provisioning/settings.py",
-      "source_location": "L86",
+      "source_location": "L58",
       "_origin": "ast",
       "id": "provisioning_settings_gatewaysecrets",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "gatewaysecrets"
     },
     {
       "label": "ComputeApiSettings",
       "file_type": "code",
       "source_file": "provisioning/settings.py",
-      "source_location": "L93",
+      "source_location": "L65",
       "_origin": "ast",
       "id": "provisioning_settings_computeapisettings",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "computeapisettings"
     },
     {
       "label": "ComputeApiSecrets",
       "file_type": "code",
       "source_file": "provisioning/settings.py",
-      "source_location": "L98",
+      "source_location": "L70",
       "_origin": "ast",
       "id": "provisioning_settings_computeapisecrets",
       "community": 0,
+      "community_name": "Provisioning Facts & Deploy",
       "norm_label": "computeapisecrets"
     },
     {
-      "label": "Typed configuration read from the dev machine's environment at Deploy time (ADR-",
+      "label": "Typed configuration read from the dev machine's environment at Deploy time. One",
       "file_type": "rationale",
       "source_file": "provisioning/settings.py",
       "source_location": "L1",
       "_origin": "ast",
       "id": "provisioning_settings_rationale_1",
       "community": 0,
-      "norm_label": "typed configuration read from the dev machine's environment at deploy time (adr-"
+      "community_name": "Provisioning Facts & Deploy",
+      "norm_label": "typed configuration read from the dev machine's environment at deploy time. one"
     },
     {
       "label": "Graphify Trigger Directive (user-level)",
@@ -3017,9 +3311,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "claude_claude_graphify_directive",
       "community": 9,
-      "norm_label": "graphify trigger directive (user-level)"
+      "norm_label": "graphify trigger directive (user-level)",
+      "community_name": "Graphify Skill Documentation",
+      "id": "claude_claude_graphify_directive"
     },
     {
       "label": "/graphify Skill Pipeline",
@@ -3030,9 +3325,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "claude_skills_graphify_skill_graphify_command",
       "community": 9,
-      "norm_label": "/graphify skill pipeline"
+      "norm_label": "/graphify skill pipeline",
+      "community_name": "Graphify Skill Documentation",
+      "id": "claude_skills_graphify_skill_graphify_command"
     },
     {
       "label": "Honesty Rules",
@@ -3044,9 +3340,10 @@
       "author": null,
       "contributor": null,
       "rationale": "Never invent an edge (use AMBIGUOUS if unsure), never skip the corpus size warning, always show token cost, never hide cohesion scores, never run HTML viz on >5000 nodes without warning.",
-      "id": "claude_skills_graphify_skill_honesty_rules",
       "community": 1,
-      "norm_label": "honesty rules"
+      "norm_label": "honesty rules",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "claude_skills_graphify_skill_honesty_rules"
     },
     {
       "label": "Part A: Structural (AST) Extraction",
@@ -3058,9 +3355,10 @@
       "author": null,
       "contributor": null,
       "rationale": "AST extraction is deterministic and free (no LLM, no API key). A code-only corpus skips semantic extraction entirely and needs nothing beyond this pass.",
-      "id": "claude_skills_graphify_skill_part_a_ast",
       "community": 9,
-      "norm_label": "part a: structural (ast) extraction"
+      "norm_label": "part a: structural (ast) extraction",
+      "community_name": "Graphify Skill Documentation",
+      "id": "claude_skills_graphify_skill_part_a_ast"
     },
     {
       "label": "Part B: Semantic Extraction",
@@ -3072,9 +3370,10 @@
       "author": null,
       "contributor": null,
       "rationale": "Uses Gemini only if GEMINI_API_KEY/GOOGLE_API_KEY is already set; otherwise the host agent itself is the LLM (dispatches subagents). graphify never reads ANTHROPIC_API_KEY/OPENAI_API_KEY and must never block or prompt for a missing key.",
-      "id": "claude_skills_graphify_skill_part_b_semantic",
       "community": 9,
-      "norm_label": "part b: semantic extraction"
+      "norm_label": "part b: semantic extraction",
+      "community_name": "Graphify Skill Documentation",
+      "id": "claude_skills_graphify_skill_part_b_semantic"
     },
     {
       "label": "/graphify add & --watch Reference",
@@ -3085,9 +3384,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "claude_skills_graphify_references_add_watch_doc",
       "community": 9,
-      "norm_label": "/graphify add & --watch reference"
+      "norm_label": "/graphify add & --watch reference",
+      "community_name": "Graphify Skill Documentation",
+      "id": "claude_skills_graphify_references_add_watch_doc"
     },
     {
       "label": "Extra Exports & Benchmark Reference",
@@ -3098,9 +3398,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "claude_skills_graphify_references_exports_doc",
       "community": 9,
-      "norm_label": "extra exports & benchmark reference"
+      "norm_label": "extra exports & benchmark reference",
+      "community_name": "Graphify Skill Documentation",
+      "id": "claude_skills_graphify_references_exports_doc"
     },
     {
       "label": "Extraction Subagent Prompt Spec",
@@ -3111,9 +3412,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "claude_skills_graphify_references_extraction_spec_doc",
       "community": 9,
-      "norm_label": "extraction subagent prompt spec"
+      "norm_label": "extraction subagent prompt spec",
+      "community_name": "Graphify Skill Documentation",
+      "id": "claude_skills_graphify_references_extraction_spec_doc"
     },
     {
       "label": "Node ID Format Rule",
@@ -3125,9 +3427,10 @@
       "author": null,
       "contributor": null,
       "rationale": "IDs must be {full-repo-relative-path-stem}_{entity}, every directory level kept, deterministic from the label alone, matching the AST extractor's format exactly so semantic and AST nodes dedupe instead of creating orphan ghost duplicates.",
-      "id": "claude_skills_graphify_references_extraction_spec_node_id_format",
       "community": 9,
-      "norm_label": "node id format rule"
+      "norm_label": "node id format rule",
+      "community_name": "Graphify Skill Documentation",
+      "id": "claude_skills_graphify_references_extraction_spec_node_id_format"
     },
     {
       "label": "Confidence Score Rubric",
@@ -3139,9 +3442,10 @@
       "author": null,
       "contributor": null,
       "rationale": "INFERRED edges must pick a discrete score from {0.95,0.85,0.75,0.65,0.55}, never 0.5, because models collapse continuous ranges into a bimodal 0.5/0.85+ split in production; discrete rubrics are followed more faithfully.",
-      "id": "claude_skills_graphify_references_extraction_spec_confidence_rubric",
       "community": 9,
-      "norm_label": "confidence score rubric"
+      "norm_label": "confidence score rubric",
+      "community_name": "Graphify Skill Documentation",
+      "id": "claude_skills_graphify_references_extraction_spec_confidence_rubric"
     },
     {
       "label": "GitHub Clone & Cross-repo Merge Reference",
@@ -3152,9 +3456,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "claude_skills_graphify_references_github_and_merge_doc",
       "community": 9,
-      "norm_label": "github clone & cross-repo merge reference"
+      "norm_label": "github clone & cross-repo merge reference",
+      "community_name": "Graphify Skill Documentation",
+      "id": "claude_skills_graphify_references_github_and_merge_doc"
     },
     {
       "label": "Commit Hook & CLAUDE.md Integration Reference",
@@ -3165,9 +3470,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "claude_skills_graphify_references_hooks_doc",
       "community": 9,
-      "norm_label": "commit hook & claude.md integration reference"
+      "norm_label": "commit hook & claude.md integration reference",
+      "community_name": "Graphify Skill Documentation",
+      "id": "claude_skills_graphify_references_hooks_doc"
     },
     {
       "label": "Query/Path/Explain Reference",
@@ -3178,9 +3484,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "claude_skills_graphify_references_query_doc",
       "community": 9,
-      "norm_label": "query/path/explain reference"
+      "norm_label": "query/path/explain reference",
+      "community_name": "Graphify Skill Documentation",
+      "id": "claude_skills_graphify_references_query_doc"
     },
     {
       "label": "Constrained Query Expansion (Step 0)",
@@ -3192,9 +3499,10 @@
       "author": null,
       "contributor": null,
       "rationale": "graphify's matcher is case-folded substring + IDF with no stemming/synonyms/cross-language matching, so a wording mismatch between the user's question and the graph's vocabulary collapses the answer to zero hits; queries must be expanded against the graph's own extracted vocabulary first, using only tokens that literally appear there.",
-      "id": "claude_skills_graphify_references_query_vocab_expansion",
       "community": 9,
-      "norm_label": "constrained query expansion (step 0)"
+      "norm_label": "constrained query expansion (step 0)",
+      "community_name": "Graphify Skill Documentation",
+      "id": "claude_skills_graphify_references_query_vocab_expansion"
     },
     {
       "label": "Video/Audio Transcription Reference",
@@ -3205,9 +3513,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "claude_skills_graphify_references_transcribe_doc",
       "community": 9,
-      "norm_label": "video/audio transcription reference"
+      "norm_label": "video/audio transcription reference",
+      "community_name": "Graphify Skill Documentation",
+      "id": "claude_skills_graphify_references_transcribe_doc"
     },
     {
       "label": "Incremental Update & Cluster-only Reference",
@@ -3218,9 +3527,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "claude_skills_graphify_references_update_doc",
       "community": 9,
-      "norm_label": "incremental update & cluster-only reference"
+      "norm_label": "incremental update & cluster-only reference",
+      "community_name": "Graphify Skill Documentation",
+      "id": "claude_skills_graphify_references_update_doc"
     },
     {
       "label": "Graphify Project Integration Rules (root CLAUDE.md)",
@@ -3231,9 +3541,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "claude_graphify_project_rules",
       "community": 9,
-      "norm_label": "graphify project integration rules (root claude.md)"
+      "norm_label": "graphify project integration rules (root claude.md)",
+      "community_name": "Graphify Skill Documentation",
+      "id": "claude_graphify_project_rules"
     },
     {
       "label": "ARCHITECTURE.md (Homelab Control Plane)",
@@ -3244,9 +3555,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "architecture_doc",
       "community": 1,
-      "norm_label": "architecture.md (homelab control plane)"
+      "norm_label": "architecture.md (homelab control plane)",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "architecture_doc"
     },
     {
       "label": "CONTEXT.md (Domain Glossary)",
@@ -3257,9 +3569,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "context_doc",
       "community": 1,
-      "norm_label": "context.md (domain glossary)"
+      "norm_label": "context.md (domain glossary)",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "context_doc"
     },
     {
       "label": "Homelab Repo README",
@@ -3270,9 +3583,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "readme_doc",
       "community": 1,
-      "norm_label": "homelab repo readme"
+      "norm_label": "homelab repo readme",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "readme_doc"
     },
     {
       "label": "control-plane/README.md",
@@ -3283,9 +3597,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "control_plane_readme_doc",
       "community": 1,
-      "norm_label": "control-plane/readme.md"
+      "norm_label": "control-plane/readme.md",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "control_plane_readme_doc"
     },
     {
       "label": "ui/README.md",
@@ -3296,9 +3611,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "control_plane_ui_readme_doc",
       "community": 1,
-      "norm_label": "ui/readme.md"
+      "norm_label": "ui/readme.md",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "control_plane_ui_readme_doc"
     },
     {
       "label": "UI index.html Entry Point",
@@ -3309,9 +3625,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "control_plane_ui_index_entrypoint",
       "community": 1,
-      "norm_label": "ui index.html entry point"
+      "norm_label": "ui index.html entry point",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "control_plane_ui_index_entrypoint"
     },
     {
       "label": "provisioning/README.md",
@@ -3322,9 +3639,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "provisioning_readme_doc",
       "community": 1,
-      "norm_label": "provisioning/readme.md"
+      "norm_label": "provisioning/readme.md",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "provisioning_readme_doc"
     },
     {
       "label": "Gateway",
@@ -3335,9 +3653,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "context_gateway",
       "community": 1,
-      "norm_label": "gateway"
+      "norm_label": "gateway",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "context_gateway"
     },
     {
       "label": "Compute",
@@ -3348,9 +3667,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "context_compute",
       "community": 1,
-      "norm_label": "compute"
+      "norm_label": "compute",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "context_compute"
     },
     {
       "label": "UI",
@@ -3361,9 +3681,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "context_ui",
       "community": 1,
-      "norm_label": "ui"
+      "norm_label": "ui",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "context_ui"
     },
     {
       "label": "Gateway API",
@@ -3374,9 +3695,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "context_gateway_api",
       "community": 1,
-      "norm_label": "gateway api"
+      "norm_label": "gateway api",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "context_gateway_api"
     },
     {
       "label": "Compute API",
@@ -3387,9 +3709,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "context_compute_api",
       "community": 1,
-      "norm_label": "compute api"
+      "norm_label": "compute api",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "context_compute_api"
     },
     {
       "label": "Reachable",
@@ -3400,9 +3723,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "context_reachable",
       "community": 1,
-      "norm_label": "reachable"
+      "norm_label": "reachable",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "context_reachable"
     },
     {
       "label": "Wake",
@@ -3414,9 +3738,10 @@
       "author": null,
       "contributor": null,
       "rationale": "Two distinct triggers for the same physical WoL action: deliberate (UI Wake button) and automatic (the Gateway API's /server* proxy route on any proxied request while Compute is asleep).",
-      "id": "context_wake",
       "community": 1,
-      "norm_label": "wake"
+      "norm_label": "wake",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "context_wake"
     },
     {
       "label": "Suspend",
@@ -3428,9 +3753,10 @@
       "author": null,
       "contributor": null,
       "rationale": "Suspend-to-RAM is the only supported sleep state; full shutdown (ACPI S5) is explicitly out of scope because WoL after full power-off is unreliable across BIOS/NIC configurations.",
-      "id": "context_suspend",
       "community": 1,
-      "norm_label": "suspend"
+      "norm_label": "suspend",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "context_suspend"
     },
     {
       "label": "Identity Header",
@@ -3442,9 +3768,10 @@
       "author": null,
       "contributor": null,
       "rationale": "The Tailscale-User-Login header injected by tailscale serve is the entire authentication mechanism for both apps; tailnet membership alone is the authorization boundary, with no separate allow-list.",
-      "id": "context_identity_header",
       "community": 1,
-      "norm_label": "identity header"
+      "norm_label": "identity header",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "context_identity_header"
     },
     {
       "label": "Deploy",
@@ -3455,9 +3782,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "context_deploy",
       "community": 1,
-      "norm_label": "deploy"
+      "norm_label": "deploy",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "context_deploy"
     },
     {
       "label": "Deploy file",
@@ -3468,9 +3796,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "context_deploy_file",
       "community": 1,
-      "norm_label": "deploy file"
+      "norm_label": "deploy file",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "context_deploy_file"
     },
     {
       "label": "Host group",
@@ -3481,9 +3810,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "context_host_group",
       "community": 1,
-      "norm_label": "host group"
+      "norm_label": "host group",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "context_host_group"
     },
     {
       "label": "reachabilityTracker",
@@ -3494,9 +3824,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "control_plane_readme_reachabilitytracker",
       "community": 1,
-      "norm_label": "reachabilitytracker"
+      "norm_label": "reachabilitytracker",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "control_plane_readme_reachabilitytracker"
     },
     {
       "label": "autoWakeThrottler",
@@ -3507,9 +3838,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "control_plane_readme_autowakethrottler",
       "community": 1,
-      "norm_label": "autowakethrottler"
+      "norm_label": "autowakethrottler",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "control_plane_readme_autowakethrottler"
     },
     {
       "label": "GrafanaCloudLogger",
@@ -3520,9 +3852,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "control_plane_readme_grafanacloudlogger",
       "community": 1,
-      "norm_label": "grafanacloudlogger"
+      "norm_label": "grafanacloudlogger",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "control_plane_readme_grafanacloudlogger"
     },
     {
       "label": "doWake (private function)",
@@ -3533,9 +3866,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "control_plane_readme_dowake",
       "community": 1,
-      "norm_label": "dowake (private function)"
+      "norm_label": "dowake (private function)",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "control_plane_readme_dowake"
     },
     {
       "label": "mountUi",
@@ -3546,9 +3880,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "control_plane_ui_readme_mountui",
       "community": 1,
-      "norm_label": "mountui"
+      "norm_label": "mountui",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "control_plane_ui_readme_mountui"
     },
     {
       "label": "Known Limitations (Flagged Transparency)",
@@ -3560,9 +3895,10 @@
       "author": null,
       "contributor": null,
       "rationale": "No cross-subnet WoL error path, reachabilityTracker can only observe becoming reachable, Grafana Cloud pipeline has no retry/buffering, bind-address enforcement is runtime-only -- documented explicitly rather than silently assumed away.",
-      "id": "architecture_known_limitations",
       "community": 1,
-      "norm_label": "known limitations (flagged transparency)"
+      "norm_label": "known limitations (flagged transparency)",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "architecture_known_limitations"
     },
     {
       "label": "Known Gaps (Flagged, Not Silently Dropped)",
@@ -3574,9 +3910,10 @@
       "author": null,
       "contributor": null,
       "rationale": "Bind-address enforcement is not checked by pyinfra, and the server-side workload proxy /server* forwards to doesn't exist yet -- explicit, deferred gaps rather than implied completeness.",
-      "id": "provisioning_readme_known_gaps",
       "community": 1,
-      "norm_label": "known gaps (flagged, not silently dropped)"
+      "norm_label": "known gaps (flagged, not silently dropped)",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "provisioning_readme_known_gaps"
     },
     {
       "label": "Deploys Are Manually Triggered Only",
@@ -3588,9 +3925,10 @@
       "author": null,
       "contributor": null,
       "rationale": "No CI/cron/hook triggers a deploy; an unattended deploy against a two-device personal setup is a risk not worth taking.",
-      "id": "architecture_deploys_manual_only",
       "community": 1,
-      "norm_label": "deploys are manually triggered only"
+      "norm_label": "deploys are manually triggered only",
+      "community_name": "Project Docs & Domain Glossary",
+      "id": "architecture_deploys_manual_only"
     },
     {
       "label": "Android Chrome Icon 192x192 (Cloud)",
@@ -3601,9 +3939,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "control_plane_ui_public_android_chrome_192x192",
       "community": 21,
-      "norm_label": "android chrome icon 192x192 (cloud)"
+      "norm_label": "android chrome icon 192x192 (cloud)",
+      "community_name": "Favicon Asset (192x192)",
+      "id": "control_plane_ui_public_android_chrome_192x192"
     },
     {
       "label": "Android Chrome Icon 512x512 (Cloud Mascot)",
@@ -3614,9 +3953,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "control_plane_ui_public_android_chrome_512x512",
       "community": 22,
-      "norm_label": "android chrome icon 512x512 (cloud mascot)"
+      "norm_label": "android chrome icon 512x512 (cloud mascot)",
+      "community_name": "Favicon Asset (512x512)",
+      "id": "control_plane_ui_public_android_chrome_512x512"
     },
     {
       "label": "Apple Touch Icon (Cloud Mascot)",
@@ -3627,9 +3967,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "control_plane_ui_public_apple_touch_icon",
       "community": 23,
-      "norm_label": "apple touch icon (cloud mascot)"
+      "norm_label": "apple touch icon (cloud mascot)",
+      "community_name": "Favicon Asset (Apple Touch)",
+      "id": "control_plane_ui_public_apple_touch_icon"
     },
     {
       "label": "favicon-16x16.png (Control Plane UI Favicon, 16x16)",
@@ -3640,9 +3981,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "control_plane_ui_public_favicon_16x16_favicon",
       "community": 24,
-      "norm_label": "favicon-16x16.png (control plane ui favicon, 16x16)"
+      "norm_label": "favicon-16x16.png (control plane ui favicon, 16x16)",
+      "community_name": "Favicon Asset (16x16)",
+      "id": "control_plane_ui_public_favicon_16x16_favicon"
     },
     {
       "label": "Favicon 32x32 (Cloud Icon)",
@@ -3653,9 +3995,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "control_plane_ui_public_favicon_32x32",
       "community": 25,
-      "norm_label": "favicon 32x32 (cloud icon)"
+      "norm_label": "favicon 32x32 (cloud icon)",
+      "community_name": "Favicon Asset (32x32)",
+      "id": "control_plane_ui_public_favicon_32x32"
     },
     {
       "label": "Browser (tailnet)",
@@ -3666,9 +4009,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "homelab_drawio_browser",
       "community": 17,
-      "norm_label": "browser (tailnet)"
+      "norm_label": "browser (tailnet)",
+      "community_name": "Homelab Architecture Diagram",
+      "id": "homelab_drawio_browser"
     },
     {
       "label": "Gateway (Pi Zero, always-on)",
@@ -3679,9 +4023,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "homelab_drawio_gateway",
       "community": 17,
-      "norm_label": "gateway (pi zero, always-on)"
+      "norm_label": "gateway (pi zero, always-on)",
+      "community_name": "Homelab Architecture Diagram",
+      "id": "homelab_drawio_gateway"
     },
     {
       "label": "UI (static SPA)",
@@ -3692,9 +4037,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "homelab_drawio_ui",
       "community": 17,
-      "norm_label": "ui (static spa)"
+      "norm_label": "ui (static spa)",
+      "community_name": "Homelab Architecture Diagram",
+      "id": "homelab_drawio_ui"
     },
     {
       "label": "Gateway API",
@@ -3705,9 +4051,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "homelab_drawio_gateway_api",
       "community": 17,
-      "norm_label": "gateway api"
+      "norm_label": "gateway api",
+      "community_name": "Homelab Architecture Diagram",
+      "id": "homelab_drawio_gateway_api"
     },
     {
       "label": "Grafana Cloud (Loki push)",
@@ -3718,9 +4065,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "homelab_drawio_grafana_cloud",
       "community": 17,
-      "norm_label": "grafana cloud (loki push)"
+      "norm_label": "grafana cloud (loki push)",
+      "community_name": "Homelab Architecture Diagram",
+      "id": "homelab_drawio_grafana_cloud"
     },
     {
       "label": "Compute host (sleeps to RAM)",
@@ -3731,9 +4079,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "homelab_drawio_compute_host",
       "community": 17,
-      "norm_label": "compute host (sleeps to ram)"
+      "norm_label": "compute host (sleeps to ram)",
+      "community_name": "Homelab Architecture Diagram",
+      "id": "homelab_drawio_compute_host"
     },
     {
       "label": "Compute API",
@@ -3744,9 +4093,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "homelab_drawio_compute_api",
       "community": 17,
-      "norm_label": "compute api"
+      "norm_label": "compute api",
+      "community_name": "Homelab Architecture Diagram",
+      "id": "homelab_drawio_compute_api"
     },
     {
       "label": "Downstream workload proxy",
@@ -3757,9 +4107,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "homelab_drawio_downstream_workload_proxy",
       "community": 17,
-      "norm_label": "downstream workload proxy"
+      "norm_label": "downstream workload proxy",
+      "community_name": "Homelab Architecture Diagram",
+      "id": "homelab_drawio_downstream_workload_proxy"
     }
   ],
   "links": [
@@ -3826,7 +4177,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/cmd/gateway/main.go",
-      "source_location": "L23",
+      "source_location": "L21",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_cmd_gateway_main",
@@ -3839,7 +4190,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "control-plane/cmd/gateway/main.go",
-      "source_location": "L29",
+      "source_location": "L27",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_cmd_gateway_main_main",
@@ -3851,7 +4202,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "control-plane/cmd/gateway/main.go",
-      "source_location": "L33",
+      "source_location": "L31",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_cmd_gateway_main_main",
@@ -3863,7 +4214,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "control-plane/cmd/gateway/main.go",
-      "source_location": "L44",
+      "source_location": "L42",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_cmd_gateway_main_main",
@@ -3875,7 +4226,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "control-plane/cmd/gateway/main.go",
-      "source_location": "L32",
+      "source_location": "L30",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_cmd_gateway_main_main",
@@ -3887,7 +4238,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "control-plane/cmd/gateway/main.go",
-      "source_location": "L47",
+      "source_location": "L45",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_cmd_gateway_main_main",
@@ -3908,7 +4259,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L35",
+      "source_location": "L34",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_compute_handler",
@@ -3919,7 +4270,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L25",
+      "source_location": "L24",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_compute_handler",
@@ -3941,7 +4292,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L44",
+      "source_location": "L43",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_compute_handler",
@@ -3952,7 +4303,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L37",
+      "source_location": "L36",
       "weight": 1.0,
       "context": "field",
       "_origin": "ast",
@@ -3964,7 +4315,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L44",
+      "source_location": "L43",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -3988,7 +4339,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L38",
+      "source_location": "L37",
       "weight": 1.0,
       "context": "field",
       "_origin": "ast",
@@ -4000,7 +4351,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L29",
+      "source_location": "L28",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -4012,7 +4363,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L44",
+      "source_location": "L43",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -4024,7 +4375,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L39",
+      "source_location": "L38",
       "weight": 1.0,
       "context": "field",
       "_origin": "ast",
@@ -4036,7 +4387,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L29",
+      "source_location": "L28",
       "weight": 1.0,
       "_origin": "ast",
       "source": "compute_reachabilitytracker",
@@ -4047,7 +4398,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L26",
+      "source_location": "L25",
       "weight": 1.0,
       "context": "field",
       "_origin": "ast",
@@ -4060,7 +4411,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L85",
+      "source_location": "L83",
       "weight": 1.0,
       "_origin": "ast",
       "source": "compute_handler_handlehealth",
@@ -4071,7 +4422,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L84",
+      "source_location": "L82",
       "weight": 1.0,
       "_origin": "ast",
       "source": "compute_handler",
@@ -4082,7 +4433,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L89",
+      "source_location": "L87",
       "weight": 1.0,
       "_origin": "ast",
       "source": "compute_handler",
@@ -4093,7 +4444,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L61",
+      "source_location": "L59",
       "weight": 1.0,
       "_origin": "ast",
       "context": "return_type",
@@ -4105,7 +4456,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L44",
+      "source_location": "L43",
       "weight": 1.0,
       "context": "return_type",
       "_origin": "ast",
@@ -4118,7 +4469,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L54",
+      "source_location": "L53",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_compute_handler_newhandler",
@@ -4131,7 +4482,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L52",
+      "source_location": "L51",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_compute_handler_newhandler",
@@ -4143,7 +4494,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L45",
+      "source_location": "L44",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_compute_handler_newhandler",
@@ -4177,7 +4528,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L84",
+      "source_location": "L82",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -4189,7 +4540,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L84",
+      "source_location": "L82",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -4203,7 +4554,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L86",
+      "source_location": "L84",
       "weight": 1.0,
       "_origin": "ast",
       "source": "compute_handler_handlehealth",
@@ -4213,7 +4564,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L89",
+      "source_location": "L87",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -4225,7 +4576,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L89",
+      "source_location": "L87",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -4239,7 +4590,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L95",
+      "source_location": "L93",
       "weight": 1.0,
       "_origin": "ast",
       "source": "compute_handler_handlesuspend",
@@ -4251,7 +4602,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "control-plane/internal/compute/handler.go",
-      "source_location": "L90",
+      "source_location": "L88",
       "weight": 1.0,
       "_origin": "ast",
       "source": "compute_handler_handlesuspend",
@@ -5378,7 +5729,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/eventlog/grafanacloud.go",
-      "source_location": "L34",
+      "source_location": "L29",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_eventlog_grafanacloud",
@@ -5389,7 +5740,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/eventlog/grafanacloud.go",
-      "source_location": "L26",
+      "source_location": "L21",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_eventlog_grafanacloud",
@@ -5400,7 +5751,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/eventlog/grafanacloud.go",
-      "source_location": "L61",
+      "source_location": "L55",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_eventlog_grafanacloud",
@@ -5411,7 +5762,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/eventlog/grafanacloud.go",
-      "source_location": "L44",
+      "source_location": "L39",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_eventlog_grafanacloud",
@@ -5422,7 +5773,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/eventlog/grafanacloud.go",
-      "source_location": "L48",
+      "source_location": "L43",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_eventlog_grafanacloud",
@@ -5433,7 +5784,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/eventlog/grafanacloud.go",
-      "source_location": "L55",
+      "source_location": "L49",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_eventlog_grafanacloud",
@@ -5444,7 +5795,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/eventlog/grafanacloud.go",
-      "source_location": "L34",
+      "source_location": "L29",
       "weight": 1.0,
       "context": "return_type",
       "_origin": "ast",
@@ -5456,7 +5807,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/eventlog/grafanacloud.go",
-      "source_location": "L31",
+      "source_location": "L26",
       "weight": 1.0,
       "context": "field",
       "_origin": "ast",
@@ -5468,7 +5819,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/eventlog/grafanacloud.go",
-      "source_location": "L68",
+      "source_location": "L62",
       "weight": 1.0,
       "_origin": "ast",
       "source": "eventlog_grafanacloudlogger",
@@ -5527,7 +5878,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/eventlog/grafanacloud.go",
-      "source_location": "L45",
+      "source_location": "L40",
       "weight": 1.0,
       "context": "field",
       "_origin": "ast",
@@ -5539,7 +5890,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/eventlog/grafanacloud.go",
-      "source_location": "L49",
+      "source_location": "L44",
       "weight": 1.0,
       "context": "field",
       "_origin": "ast",
@@ -5643,7 +5994,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L39",
+      "source_location": "L37",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_gateway_handler",
@@ -5654,7 +6005,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L22",
+      "source_location": "L21",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_gateway_handler",
@@ -5665,7 +6016,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L18",
+      "source_location": "L17",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_gateway_handler",
@@ -5676,7 +6027,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L33",
+      "source_location": "L31",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_gateway_handler",
@@ -5687,7 +6038,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L14",
+      "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_gateway_handler",
@@ -5698,7 +6049,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L39",
+      "source_location": "L37",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -5734,7 +6085,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L35",
+      "source_location": "L33",
       "weight": 1.0,
       "context": "field",
       "_origin": "ast",
@@ -5746,7 +6097,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L39",
+      "source_location": "L37",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -5758,7 +6109,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L36",
+      "source_location": "L34",
       "weight": 1.0,
       "context": "field",
       "_origin": "ast",
@@ -5770,7 +6121,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L39",
+      "source_location": "L37",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -5794,7 +6145,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L28",
+      "source_location": "L26",
       "weight": 1.0,
       "context": "field",
       "_origin": "ast",
@@ -5807,7 +6158,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L55",
+      "source_location": "L53",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_gateway_handler_newhandler",
@@ -5818,7 +6169,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L39",
+      "source_location": "L37",
       "weight": 1.0,
       "context": "return_type",
       "_origin": "ast",
@@ -5830,7 +6181,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L70",
+      "source_location": "L68",
       "weight": 1.0,
       "_origin": "ast",
       "source": "gateway_handler",
@@ -5841,7 +6192,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L59",
+      "source_location": "L57",
       "weight": 1.0,
       "_origin": "ast",
       "source": "gateway_handler",
@@ -5854,7 +6205,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L54",
+      "source_location": "L52",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_gateway_handler_newhandler",
@@ -5866,7 +6217,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L44",
+      "source_location": "L42",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_gateway_handler_newhandler",
@@ -5878,7 +6229,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L53",
+      "source_location": "L51",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_gateway_handler_newhandler",
@@ -5890,7 +6241,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L40",
+      "source_location": "L38",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_gateway_handler_newhandler",
@@ -5936,7 +6287,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L59",
+      "source_location": "L57",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -5948,7 +6299,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L59",
+      "source_location": "L57",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -5962,7 +6313,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L62",
+      "source_location": "L60",
       "weight": 1.0,
       "_origin": "ast",
       "source": "gateway_handler_handlewake",
@@ -5974,7 +6325,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L60",
+      "source_location": "L58",
       "weight": 1.0,
       "_origin": "ast",
       "source": "gateway_handler_handlewake",
@@ -5985,7 +6336,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/handler.go",
-      "source_location": "L61",
+      "source_location": "L59",
       "weight": 1.0,
       "_origin": "ast",
       "source": "gateway_handler_handlewake",
@@ -6579,7 +6930,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/proxy.go",
-      "source_location": "L55",
+      "source_location": "L51",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_gateway_proxy",
@@ -6590,7 +6941,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/proxy.go",
-      "source_location": "L74",
+      "source_location": "L68",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_gateway_proxy",
@@ -6601,7 +6952,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/proxy.go",
-      "source_location": "L27",
+      "source_location": "L26",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_gateway_proxy",
@@ -6612,7 +6963,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/proxy.go",
-      "source_location": "L37",
+      "source_location": "L35",
       "weight": 1.0,
       "_origin": "ast",
       "source": "gateway_autowakethrottler",
@@ -6623,7 +6974,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/proxy.go",
-      "source_location": "L31",
+      "source_location": "L30",
       "weight": 1.0,
       "context": "field",
       "_origin": "ast",
@@ -6635,7 +6986,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/proxy.go",
-      "source_location": "L32",
+      "source_location": "L31",
       "weight": 1.0,
       "context": "field",
       "_origin": "ast",
@@ -6648,7 +6999,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/proxy.go",
-      "source_location": "L62",
+      "source_location": "L58",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_gateway_proxy_newcomputeproxy",
@@ -6659,7 +7010,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/proxy.go",
-      "source_location": "L55",
+      "source_location": "L51",
       "weight": 1.0,
       "context": "return_type",
       "_origin": "ast",
@@ -6672,7 +7023,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/proxy.go",
-      "source_location": "L63",
+      "source_location": "L59",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_gateway_proxy_newcomputeproxy",
@@ -6683,7 +7034,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/proxy.go",
-      "source_location": "L74",
+      "source_location": "L68",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -6695,7 +7046,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/proxy.go",
-      "source_location": "L74",
+      "source_location": "L68",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -6709,7 +7060,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "control-plane/internal/gateway/proxy.go",
-      "source_location": "L95",
+      "source_location": "L89",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_gateway_proxy_retryuntilreachable",
@@ -6719,7 +7070,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/proxy.go",
-      "source_location": "L74",
+      "source_location": "L68",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -7198,7 +7549,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/wol.go",
-      "source_location": "L46",
+      "source_location": "L45",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_gateway_wol",
@@ -7209,7 +7560,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/wol.go",
-      "source_location": "L39",
+      "source_location": "L38",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_gateway_wol",
@@ -7281,7 +7632,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/wol.go",
-      "source_location": "L51",
+      "source_location": "L50",
       "weight": 1.0,
       "_origin": "ast",
       "source": "gateway_wakeonlansender_send",
@@ -7292,7 +7643,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/wol.go",
-      "source_location": "L46",
+      "source_location": "L45",
       "weight": 1.0,
       "context": "return_type",
       "_origin": "ast",
@@ -7304,7 +7655,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/gateway/wol.go",
-      "source_location": "L50",
+      "source_location": "L49",
       "weight": 1.0,
       "_origin": "ast",
       "source": "gateway_wakeonlansender",
@@ -7488,7 +7839,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/tailnet/auth.go",
-      "source_location": "L65",
+      "source_location": "L58",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_tailnet_auth",
@@ -7499,7 +7850,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/tailnet/auth.go",
-      "source_location": "L70",
+      "source_location": "L63",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_tailnet_auth",
@@ -7510,7 +7861,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/tailnet/auth.go",
-      "source_location": "L33",
+      "source_location": "L28",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_tailnet_auth",
@@ -7521,7 +7872,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/tailnet/auth.go",
-      "source_location": "L48",
+      "source_location": "L41",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_tailnet_auth",
@@ -7532,7 +7883,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/tailnet/auth.go",
-      "source_location": "L27",
+      "source_location": "L22",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_tailnet_auth",
@@ -7543,7 +7894,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/tailnet/auth.go",
-      "source_location": "L33",
+      "source_location": "L28",
       "weight": 1.0,
       "context": "return_type",
       "_origin": "ast",
@@ -7567,7 +7918,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/tailnet/auth.go",
-      "source_location": "L48",
+      "source_location": "L41",
       "weight": 1.0,
       "context": "return_type",
       "_origin": "ast",
@@ -7580,7 +7931,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/tailnet/auth.go",
-      "source_location": "L55",
+      "source_location": "L48",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_tailnet_auth_requiretailnetidentityorloopback",
@@ -7603,7 +7954,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/tailnet/auth.go",
-      "source_location": "L65",
+      "source_location": "L58",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -7627,7 +7978,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/tailnet/auth.go",
-      "source_location": "L70",
+      "source_location": "L63",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -7965,7 +8316,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/internal/tailnet/bindsafety.go",
-      "source_location": "L23",
+      "source_location": "L22",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_internal_tailnet_bindsafety",
@@ -8464,7 +8815,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/ui/src/app.ts",
-      "source_location": "L14",
+      "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_ui_src_app",
@@ -8475,7 +8826,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "control-plane/ui/src/app.ts",
-      "source_location": "L22",
+      "source_location": "L21",
       "weight": 1.0,
       "_origin": "ast",
       "source": "control_plane_ui_src_app",
@@ -8778,7 +9129,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/common.py",
-      "source_location": "L13",
+      "source_location": "L9",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_common",
@@ -8789,7 +9140,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/common.py",
-      "source_location": "L53",
+      "source_location": "L41",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_common",
@@ -8800,7 +9151,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/common.py",
-      "source_location": "L43",
+      "source_location": "L32",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_common",
@@ -8811,7 +9162,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/common.py",
-      "source_location": "L31",
+      "source_location": "L23",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_common",
@@ -8822,7 +9173,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/common.py",
-      "source_location": "L64",
+      "source_location": "L50",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_common",
@@ -8845,7 +9196,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_compute_api.py",
-      "source_location": "L43",
+      "source_location": "L30",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_compute_api",
@@ -8857,7 +9208,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_docker.py",
-      "source_location": "L34",
+      "source_location": "L20",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_docker",
@@ -8869,7 +9220,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_gateway.py",
-      "source_location": "L46",
+      "source_location": "L29",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_gateway",
@@ -8881,7 +9232,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_tailscale.py",
-      "source_location": "L29",
+      "source_location": "L23",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_tailscale",
@@ -8892,7 +9243,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/common.py",
-      "source_location": "L24",
+      "source_location": "L16",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_common_dpkgarchitecture",
@@ -8903,7 +9254,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/common.py",
-      "source_location": "L27",
+      "source_location": "L19",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_common_dpkgarchitecture",
@@ -8914,7 +9265,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/common.py",
-      "source_location": "L13",
+      "source_location": "L9",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_common_dpkgarchitecture",
@@ -8925,10 +9276,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/common.py",
-      "source_location": "L14",
+      "source_location": "L10",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "provisioning_common_rationale_14",
+      "source": "provisioning_common_rationale_10",
       "target": "provisioning_common_dpkgarchitecture",
       "confidence_score": 1.0
     },
@@ -8937,7 +9288,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_compute_api.py",
-      "source_location": "L43",
+      "source_location": "L30",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_compute_api",
@@ -8949,7 +9300,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_docker.py",
-      "source_location": "L34",
+      "source_location": "L20",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_docker",
@@ -8960,7 +9311,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/common.py",
-      "source_location": "L64",
+      "source_location": "L50",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_common_tailscaleservestatus",
@@ -8971,10 +9322,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/common.py",
-      "source_location": "L32",
+      "source_location": "L24",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "provisioning_common_rationale_32",
+      "source": "provisioning_common_rationale_24",
       "target": "provisioning_common_linux_distro_id",
       "confidence_score": 1.0
     },
@@ -8983,7 +9334,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_docker.py",
-      "source_location": "L34",
+      "source_location": "L20",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_docker",
@@ -8994,10 +9345,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/common.py",
-      "source_location": "L44",
+      "source_location": "L33",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "provisioning_common_rationale_44",
+      "source": "provisioning_common_rationale_33",
       "target": "provisioning_common_linux_codename",
       "confidence_score": 1.0
     },
@@ -9006,7 +9357,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_docker.py",
-      "source_location": "L34",
+      "source_location": "L20",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_docker",
@@ -9017,10 +9368,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/common.py",
-      "source_location": "L54",
+      "source_location": "L42",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "provisioning_common_rationale_54",
+      "source": "provisioning_common_rationale_42",
       "target": "provisioning_common_has_device_role",
       "confidence_score": 1.0
     },
@@ -9029,7 +9380,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_compute_api.py",
-      "source_location": "L43",
+      "source_location": "L30",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_compute_api",
@@ -9041,7 +9392,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_docker.py",
-      "source_location": "L34",
+      "source_location": "L20",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_docker",
@@ -9053,7 +9404,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_gateway.py",
-      "source_location": "L46",
+      "source_location": "L29",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_gateway",
@@ -9065,7 +9416,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_tailscale.py",
-      "source_location": "L29",
+      "source_location": "L23",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_tailscale",
@@ -9076,10 +9427,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/common.py",
-      "source_location": "L65",
+      "source_location": "L51",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "provisioning_common_rationale_65",
+      "source": "provisioning_common_rationale_51",
       "target": "provisioning_common_tailscaleservestatus",
       "confidence_score": 1.0
     },
@@ -9087,7 +9438,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/common.py",
-      "source_location": "L79",
+      "source_location": "L59",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_common_tailscaleservestatus",
@@ -9098,7 +9449,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/common.py",
-      "source_location": "L82",
+      "source_location": "L62",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_common_tailscaleservestatus",
@@ -9110,7 +9461,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_compute_api.py",
-      "source_location": "L43",
+      "source_location": "L30",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_compute_api",
@@ -9122,7 +9473,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_gateway.py",
-      "source_location": "L46",
+      "source_location": "L29",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_gateway",
@@ -9156,7 +9507,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_compute_api.py",
-      "source_location": "L44",
+      "source_location": "L31",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_compute_api",
@@ -9168,7 +9519,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_compute_api.py",
-      "source_location": "L44",
+      "source_location": "L31",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_compute_api",
@@ -9180,7 +9531,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_compute_api.py",
-      "source_location": "L45",
+      "source_location": "L32",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_compute_api",
@@ -9192,7 +9543,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_compute_api.py",
-      "source_location": "L45",
+      "source_location": "L32",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_compute_api",
@@ -9204,7 +9555,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_compute_api.py",
-      "source_location": "L45",
+      "source_location": "L32",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_compute_api",
@@ -9216,7 +9567,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_compute_api.py",
-      "source_location": "L45",
+      "source_location": "L32",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_compute_api",
@@ -9250,7 +9601,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_gateway.py",
-      "source_location": "L47",
+      "source_location": "L30",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_gateway",
@@ -9262,7 +9613,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_gateway.py",
-      "source_location": "L47",
+      "source_location": "L30",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_gateway",
@@ -9274,7 +9625,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_gateway.py",
-      "source_location": "L48",
+      "source_location": "L31",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_gateway",
@@ -9286,7 +9637,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_gateway.py",
-      "source_location": "L48",
+      "source_location": "L31",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_gateway",
@@ -9298,7 +9649,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_gateway.py",
-      "source_location": "L48",
+      "source_location": "L31",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_gateway",
@@ -9310,7 +9661,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_gateway.py",
-      "source_location": "L48",
+      "source_location": "L31",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_gateway",
@@ -9332,7 +9683,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_tailscale.py",
-      "source_location": "L33",
+      "source_location": "L27",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_tailscale",
@@ -9344,7 +9695,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_tailscale.py",
-      "source_location": "L30",
+      "source_location": "L24",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_tailscale",
@@ -9356,7 +9707,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_tailscale.py",
-      "source_location": "L30",
+      "source_location": "L24",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_tailscale",
@@ -9378,10 +9729,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_tailscale.py",
-      "source_location": "L34",
+      "source_location": "L28",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "provisioning_deploy_tailscale_rationale_34",
+      "source": "provisioning_deploy_tailscale_rationale_28",
       "target": "provisioning_deploy_tailscale_tailscalebackendstate",
       "confidence_score": 1.0
     },
@@ -9389,7 +9740,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_tailscale.py",
-      "source_location": "L33",
+      "source_location": "L27",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_tailscale_tailscalebackendstate",
@@ -9400,7 +9751,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_tailscale.py",
-      "source_location": "L40",
+      "source_location": "L33",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_tailscale_tailscalebackendstate",
@@ -9411,7 +9762,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/deploy_tailscale.py",
-      "source_location": "L43",
+      "source_location": "L36",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_deploy_tailscale_tailscalebackendstate",
@@ -9422,7 +9773,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "provisioning/deploy_tailscale.py",
-      "source_location": "L30",
+      "source_location": "L24",
       "weight": 0.8,
       "_origin": "ast",
       "source": "provisioning_deploy_tailscale_tailscalebackendstate",
@@ -9433,7 +9784,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/go_deploy.py",
-      "source_location": "L31",
+      "source_location": "L18",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_go_deploy",
@@ -9455,10 +9806,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/go_deploy.py",
-      "source_location": "L45",
+      "source_location": "L32",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "provisioning_go_deploy_rationale_45",
+      "source": "provisioning_go_deploy_rationale_32",
       "target": "provisioning_go_deploy_go_binary_systemd_service",
       "confidence_score": 1.0
     },
@@ -9467,7 +9818,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/inventory.py",
-      "source_location": "L21",
+      "source_location": "L16",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_inventory",
@@ -9479,7 +9830,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/inventory.py",
-      "source_location": "L21",
+      "source_location": "L16",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_inventory",
@@ -9501,7 +9852,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/settings.py",
-      "source_location": "L98",
+      "source_location": "L70",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_settings",
@@ -9512,7 +9863,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/settings.py",
-      "source_location": "L93",
+      "source_location": "L65",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_settings",
@@ -9523,7 +9874,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/settings.py",
-      "source_location": "L86",
+      "source_location": "L58",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_settings",
@@ -9534,7 +9885,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/settings.py",
-      "source_location": "L68",
+      "source_location": "L45",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_settings",
@@ -9545,7 +9896,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/settings.py",
-      "source_location": "L24",
+      "source_location": "L15",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_settings",
@@ -9556,7 +9907,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/settings.py",
-      "source_location": "L64",
+      "source_location": "L41",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_settings",
@@ -9578,7 +9929,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/settings.py",
-      "source_location": "L24",
+      "source_location": "L15",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_settings_inventorysettings",
@@ -9589,7 +9940,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/settings.py",
-      "source_location": "L98",
+      "source_location": "L70",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_settings_computeapisecrets",
@@ -9600,7 +9951,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/settings.py",
-      "source_location": "L93",
+      "source_location": "L65",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_settings_computeapisettings",
@@ -9611,7 +9962,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/settings.py",
-      "source_location": "L86",
+      "source_location": "L58",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_settings_gatewaysecrets",
@@ -9622,7 +9973,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/settings.py",
-      "source_location": "L68",
+      "source_location": "L45",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_settings_gatewaysettings",
@@ -9633,7 +9984,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "provisioning/settings.py",
-      "source_location": "L64",
+      "source_location": "L41",
       "weight": 1.0,
       "_origin": "ast",
       "source": "provisioning_settings_tailscalesettings",
@@ -10704,5 +11055,5 @@
       "source_file": "README.md"
     }
   ],
-  "built_at_commit": "674d4849ec2b7bebe413b5247dc7aee46f693a53"
+  "built_at_commit": "804f66f7cdb1e1f12a17d92034d2495187eb49e6"
 }
