@@ -21,7 +21,12 @@ func main() {
 		"compute-api",
 	)
 
-	handler, err := compute.NewHandler(env.MustEnv("UI_ORIGIN"), compute.NewSystemSuspender(), logger, host)
+	runtime, err := compute.NewDockerRuntime()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	handler, err := compute.NewHandler(env.MustEnv("UI_ORIGIN"), compute.NewSystemSuspender(), runtime, logger, host)
 	if err != nil {
 		log.Fatal(err)
 	}

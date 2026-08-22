@@ -13,7 +13,7 @@ control-plane/
     ├── httpresponse/  shared: JSON response writing, response pass-through
     ├── env/           shared: env-var lookup helpers
     ├── gateway/       Gateway API logic (static serving, /wake, /server* proxy + auto-wake)
-    └── compute/       Compute API logic (CORS, reachability tracking, /health, /suspend)
+    └── compute/       Compute API logic (CORS, reachability tracking, /health, /suspend, container proxy)
 ```
 
 ## Development
@@ -63,14 +63,17 @@ Deployed as a systemd unit on the Pi Zero, cross-compiled and shipped from the d
 
 ## Compute API
 
-Exposes a Reachable health check and the Suspend action, behind its own `tailscale serve` instance — a distinct origin from the [UI](ui), hence the CORS allow-list. Both endpoints require the identity header.
+Exposes a Reachable health check, the Suspend action, and its own reverse proxy to workload Docker containers, behind its own `tailscale serve` instance — a distinct origin from the [UI](ui), hence the CORS allow-list.
 
 | Route | Behavior |
 |---|---|
-| `GET /health` | Returns `{"reachable": true}`. First time reachable, logs `reachability_changed` (see `reachabilityTracker` in [`internal/compute/handler.go`](internal/compute/handler.go) — it can never observe going unreachable, since the process is asleep whenever that's true). |
-| `POST /suspend` | Runs the configured suspend command (`systemctl suspend` by default, see [`internal/compute/suspend.go`](internal/compute/suspend.go)), logs `suspend_requested`/`_succeeded`/`_failed`, returns `{"suspend": ...}`. |
+| `GET /health` | Requires the identity header. Returns `{"reachable": true}`. First time reachable, logs `reachability_changed` (see `reachabilityTracker` in [`internal/compute/handler.go`](internal/compute/handler.go) — it can never observe going unreachable, since the process is asleep whenever that's true). |
+| `POST /suspend` | Requires the identity header. Runs the configured suspend command (`systemctl suspend` by default, see [`internal/compute/suspend.go`](internal/compute/suspend.go)), logs `suspend_requested`/`_succeeded`/`_failed`, returns `{"suspend": ...}`. |
+| `/{prefix}/*` (everything else) | Not identity-gated, mirroring the Gateway's `/server/` route. Reverse-proxies to whichever Docker container carries a `homelab.route={prefix}` label, path-stripped (see [`internal/compute/proxy.go`](internal/compute/proxy.go)). A container is only routable if it publishes a port to the host. A real backend response (even an error status) passes through untouched; an unmatched path 404s; a container-discovery failure 502s. Each successful proxy is timestamped, readable via `Handler.LastProxiedAt()`, for a future idle watcher. |
 
 Suspend-to-RAM only — the suspend command isn't configurable via env var, so misconfiguration can't reintroduce a full shutdown.
+
+Container discovery talks to the local Docker daemon via the official Docker Go SDK ([`internal/compute/docker.go`](internal/compute/docker.go)), injected as the `ContainerRuntime` interface — same construction pattern as `Suspender`/`EventLogger`, faked in tests with no real daemon required.
 
 Bold variables are required.
 
