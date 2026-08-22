@@ -29,12 +29,17 @@ type RoutableContainer struct {
 }
 
 // ContainerRuntime abstracts Docker daemon access: the current set of
-// routable containers, sufficient to resolve a path to a proxy target. A
-// later ticket (the idle watcher) is expected to extend this seam with
-// per-container CPU/network activity data once it has a real consumer to
-// design that method's shape against.
+// routable containers, sufficient to resolve a path to a proxy target, plus
+// the idle watcher's container-activity signal.
 type ContainerRuntime interface {
 	RoutableContainers() ([]RoutableContainer, error)
+
+	// ActivityAboveBaseline reports whether any workload container's
+	// CPU/network usage is currently above the idle-noise baseline.
+	// Container running/stopped state alone is never this signal --
+	// workload containers run continuously via restart:unless-stopped
+	// regardless of actual use.
+	ActivityAboveBaseline() (bool, error)
 }
 
 // lastProxied tracks when a request was last successfully proxied to a
@@ -171,8 +176,14 @@ func (h *Handler) handleHoldRelease(w http.ResponseWriter, r *http.Request) {
 }
 
 // LastProxiedAt is when a request was last successfully proxied to a
-// workload container -- the activity signal the idle watcher will read.
-// The zero time means no request has been proxied yet.
+// workload container -- one of the idle watcher's activity signals. The
+// zero time means no request has been proxied yet.
 func (h *Handler) LastProxiedAt() time.Time {
 	return h.lastProxied.At()
+}
+
+// HoldActive reports whether a Hold is currently in effect -- one of the
+// idle watcher's activity signals.
+func (h *Handler) HoldActive() bool {
+	return h.hold.isActive()
 }

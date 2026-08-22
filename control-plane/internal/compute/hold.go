@@ -33,6 +33,15 @@ func (h *hold) acquire(logger EventLogger, identity string) {
 	time.AfterFunc(holdDuration, func() { h.expire(logger, gen) })
 }
 
+// isActive reports whether a hold is currently in effect -- the idle
+// watcher's third suppression signal, alongside container activity and
+// recent proxy traffic.
+func (h *hold) isActive() bool {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	return h.active
+}
+
 // release ends an active hold immediately. It's a no-op (and logs nothing)
 // if no hold is active, so a script can call it unconditionally on exit.
 func (h *hold) release(logger EventLogger, identity string) {

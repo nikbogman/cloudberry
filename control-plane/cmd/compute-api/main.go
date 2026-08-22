@@ -4,6 +4,8 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/nikbogman/homelab/control-plane/internal/compute"
 	"github.com/nikbogman/homelab/control-plane/internal/env"
@@ -21,15 +23,27 @@ func main() {
 		"compute-api",
 	)
 
-	runtime, err := compute.NewDockerRuntime()
+	cpuBaselinePercent, err := strconv.ParseFloat(env.EnvOr("COMPUTE_API_CPU_BASELINE_PERCENT", strconv.FormatFloat(compute.DefaultCPUBaselinePercent, 'f', -1, 64)), 64)
+	if err != nil {
+		log.Fatalf("COMPUTE_API_CPU_BASELINE_PERCENT: %v", err)
+	}
+	runtime, err := compute.NewDockerRuntime(cpuBaselinePercent)
+	if err != nil {
+		log.Fatal(err)
+	}
+	suspender := compute.NewSystemSuspender()
+
+	handler, err := compute.NewHandler(env.MustEnv("UI_ORIGIN"), suspender, runtime, logger, host)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	handler, err := compute.NewHandler(env.MustEnv("UI_ORIGIN"), compute.NewSystemSuspender(), runtime, logger, host)
+	idleTimeout, err := time.ParseDuration(env.EnvOr("COMPUTE_API_IDLE_TIMEOUT", "1h"))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("COMPUTE_API_IDLE_TIMEOUT: %v", err)
 	}
+	watcher := compute.NewIdleWatcher(suspender, runtime, logger, handler.HoldActive, handler.LastProxiedAt, idleTimeout)
+	go watcher.Run()
 
 	addr := net.JoinHostPort(host, port)
 	log.Printf("compute-api listening on %s", addr)

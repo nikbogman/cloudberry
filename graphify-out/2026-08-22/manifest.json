@@ -5,8 +5,8 @@
     "semantic_hash": "d3d322c74dc17227bfb631e732afb7bc"
   },
   "control-plane/cmd/compute-api/main.go": {
-    "mtime": 1787401666.5332081,
-    "ast_hash": "2fa42407c51b5a55b3b5fb69679dde90",
+    "mtime": 1787403742.0324068,
+    "ast_hash": "94c6979fe378a7c7779ec81eb827583d",
     "semantic_hash": ""
   },
   "control-plane/cmd/gateway/main.go": {
@@ -20,13 +20,13 @@
     "semantic_hash": ""
   },
   "control-plane/internal/compute/handler.go": {
-    "mtime": 1787402782.6007838,
-    "ast_hash": "5370e0e9ab2727496e848b8c2def2dac",
+    "mtime": 1787403621.484466,
+    "ast_hash": "244be5774c096e97e57c3d4efb6cb179",
     "semantic_hash": ""
   },
   "control-plane/internal/compute/handler_test.go": {
-    "mtime": 1787402965.4647064,
-    "ast_hash": "f671bf03624ec68bfc8ddb1c12a4d1ca",
+    "mtime": 1787403719.1364062,
+    "ast_hash": "4de8d302148028ca7b61a10d95ae70de",
     "semantic_hash": ""
   },
   "control-plane/internal/compute/suspend.go": {
@@ -320,8 +320,8 @@
     "semantic_hash": "0afc6b608e1ff3559008e9e8ec9d8ec9"
   },
   "control-plane/internal/compute/docker.go": {
-    "mtime": 1787402362.4609313,
-    "ast_hash": "8a2384308b0441c28c2d2069811f0cff",
+    "mtime": 1787403799.6523833,
+    "ast_hash": "2aedf7e4dd01b47ae26290f59fa84197",
     "semantic_hash": ""
   },
   "control-plane/internal/compute/docker_test.go": {
@@ -385,8 +385,18 @@
     "semantic_hash": ""
   },
   "control-plane/internal/compute/hold.go": {
-    "mtime": 1787402769.6727853,
-    "ast_hash": "3a4c8d44ecab8333a4c407f7e75a3a25",
+    "mtime": 1787403608.4244761,
+    "ast_hash": "2c17adebf7c7bb60f7321433041235f5",
+    "semantic_hash": ""
+  },
+  "control-plane/internal/compute/idlewatcher.go": {
+    "mtime": 1787403637.0684326,
+    "ast_hash": "03ac4d17d26e9b815ae8ea4b73e4e7ef",
+    "semantic_hash": ""
+  },
+  "control-plane/internal/compute/idlewatcher_test.go": {
+    "mtime": 1787403729.004405,
+    "ast_hash": "b534c273e23852f8cae854dc60bf2275",
     "semantic_hash": ""
   }
 }

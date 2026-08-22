@@ -37,5 +37,6 @@
   "35": "02-backup-scripts-can-hold-compute-awake.md",
   "36": "03-compute-suspends-itself-when-idle.md",
   "37": "04-validate-idle-watcher-without-suspending.md",
-  "38": "hold"
+  "38": "hold",
+  "39": "mustNewHandlerWithRuntime"
 }

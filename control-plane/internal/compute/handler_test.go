@@ -20,6 +20,7 @@ type loggedEvent struct {
 	eventType string
 	outcome   string
 	identity  *string
+	extra     map[string]any
 }
 
 // mu guards events: the hold's expiry timer calls SendEvent from its own
@@ -40,7 +41,7 @@ func (f *fakeLogger) snapshot() []loggedEvent {
 func (f *fakeLogger) SendEvent(eventType, outcome string, identity *string, extra map[string]any) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
-	f.events = append(f.events, loggedEvent{eventType: eventType, outcome: outcome, identity: identity})
+	f.events = append(f.events, loggedEvent{eventType: eventType, outcome: outcome, identity: identity, extra: extra})
 }
 
 type fakeSuspender struct {
@@ -56,6 +57,9 @@ func (f *fakeSuspender) Suspend() error {
 type fakeContainerRuntime struct {
 	containers []RoutableContainer
 	err        error
+
+	active   bool
+	statsErr error
 }
 
 func (f *fakeContainerRuntime) RoutableContainers() ([]RoutableContainer, error) {
@@ -63,6 +67,13 @@ func (f *fakeContainerRuntime) RoutableContainers() ([]RoutableContainer, error)
 		return nil, f.err
 	}
 	return f.containers, nil
+}
+
+func (f *fakeContainerRuntime) ActivityAboveBaseline() (bool, error) {
+	if f.statsErr != nil {
+		return false, f.statsErr
+	}
+	return f.active, nil
 }
 
 // mustNewHandler is for tests unconcerned with proxy routing; it wires an
