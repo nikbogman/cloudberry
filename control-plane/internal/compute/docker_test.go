@@ -3,14 +3,14 @@ package compute
 import (
 	"testing"
 
-	"github.com/docker/docker/api/types"
+	"github.com/moby/moby/api/types/container"
 )
 
 func TestRoutableFromContainersMatchesByLabel(t *testing.T) {
-	containers := []types.Container{
+	containers := []container.Summary{
 		{
 			Labels: map[string]string{routeLabel: "/immich"},
-			Ports:  []types.Port{{PublicPort: 8080}},
+			Ports:  []container.PortSummary{{PublicPort: 8080}},
 		},
 	}
 
@@ -22,8 +22,8 @@ func TestRoutableFromContainersMatchesByLabel(t *testing.T) {
 }
 
 func TestRoutableFromContainersSkipsContainersWithoutTheRouteLabel(t *testing.T) {
-	containers := []types.Container{
-		{Labels: map[string]string{"some.other.label": "x"}, Ports: []types.Port{{PublicPort: 8080}}},
+	containers := []container.Summary{
+		{Labels: map[string]string{"some.other.label": "x"}, Ports: []container.PortSummary{{PublicPort: 8080}}},
 	}
 
 	if got := routableFromContainers(containers); len(got) != 0 {
@@ -32,7 +32,7 @@ func TestRoutableFromContainersSkipsContainersWithoutTheRouteLabel(t *testing.T)
 }
 
 func TestRoutableFromContainersSkipsALabeledContainerWithNoPublishedPort(t *testing.T) {
-	containers := []types.Container{
+	containers := []container.Summary{
 		{Labels: map[string]string{routeLabel: "/immich"}, Ports: nil},
 	}
 

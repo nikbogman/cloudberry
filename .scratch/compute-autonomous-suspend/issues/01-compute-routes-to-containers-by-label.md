@@ -14,5 +14,5 @@
 
 **Implementation notes:**
 - `ContainerRuntime` currently exposes only `RoutableContainers()` — the spec's mention of a per-container CPU/network activity method was deferred to the idle-watcher ticket rather than built speculatively now with no caller; that ticket can extend the interface once it has a real consumer to design the method's shape against.
-- Uses the official Docker Go SDK (`github.com/docker/docker/client`), pinned to v25.0.5+incompatible with `go-connections` downgraded to v0.5.0 for Go 1.24 compatibility (newer versions require Go 1.25's toolchain via transitive otel deps).
+- Uses the current official Docker Go SDK (`github.com/moby/moby/client` — `github.com/docker/docker/client` is the deprecated predecessor path), latest v0.5.1, which only requires Go 1.24 already in use.
 - A labeled container is only routable if it publishes a port to the host (`127.0.0.1:PublicPort`); one lacking a published port is skipped with a log line, not silently dropped.

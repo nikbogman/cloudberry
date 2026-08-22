@@ -7,10 +7,8 @@ import (
 	"net"
 	"strconv"
 
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/client"
+	"github.com/moby/moby/api/types/container"
+	"github.com/moby/moby/client"
 )
 
 const routeLabel = "homelab.route"
@@ -35,16 +33,16 @@ func NewDockerRuntime() (*DockerRuntime, error) {
 // Docker bridge network directly would need a second label to disambiguate
 // which exposed port to use, which nothing has needed yet.
 func (d *DockerRuntime) RoutableContainers() ([]RoutableContainer, error) {
-	containers, err := d.cli.ContainerList(context.Background(), container.ListOptions{
-		Filters: filters.NewArgs(filters.Arg("label", routeLabel)),
+	res, err := d.cli.ContainerList(context.Background(), client.ContainerListOptions{
+		Filters: make(client.Filters).Add("label", routeLabel),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("listing containers: %w", err)
 	}
-	return routableFromContainers(containers), nil
+	return routableFromContainers(res.Items), nil
 }
 
-func routableFromContainers(containers []types.Container) []RoutableContainer {
+func routableFromContainers(containers []container.Summary) []RoutableContainer {
 	var routable []RoutableContainer
 	for _, c := range containers {
 		path, ok := c.Labels[routeLabel]
