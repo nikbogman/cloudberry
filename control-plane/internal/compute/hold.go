@@ -18,6 +18,7 @@ type hold struct {
 	mu         sync.Mutex
 	active     bool
 	generation int
+	expiresAt  time.Time
 }
 
 // acquire starts or renews the hold, always resetting the TTL to
@@ -27,6 +28,7 @@ func (h *hold) acquire(logger EventLogger, identity string) {
 	h.active = true
 	h.generation++
 	gen := h.generation
+	h.expiresAt = time.Now().Add(holdDuration)
 	h.mu.Unlock()
 
 	logger.SendEvent("hold_acquired", "acquired", &identity, nil)
@@ -40,6 +42,21 @@ func (h *hold) isActive() bool {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	return h.active
+}
+
+// remainingTTL reports time left before the active hold expires, or zero
+// if no hold is active -- the idle watcher validation status endpoint's
+// hold-TTL field.
+func (h *hold) remainingTTL() time.Duration {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	if !h.active {
+		return 0
+	}
+	if remaining := time.Until(h.expiresAt); remaining > 0 {
+		return remaining
+	}
+	return 0
 }
 
 // release ends an active hold immediately. It's a no-op (and logs nothing)

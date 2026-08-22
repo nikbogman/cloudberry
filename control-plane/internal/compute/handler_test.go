@@ -1,6 +1,7 @@
 package compute
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -429,5 +430,83 @@ func TestSuspendDoesNotGuardAgainstRepeatedRequests(t *testing.T) {
 
 	if suspender.calls != 2 {
 		t.Fatalf("got %d suspend calls, want 2", suspender.calls)
+	}
+}
+
+type statusResponse struct {
+	IdleSeconds          float64 `json:"idleSeconds"`
+	HoldActive           bool    `json:"holdActive"`
+	HoldRemainingSeconds float64 `json:"holdRemainingSeconds"`
+	DryRun               bool    `json:"dryRun"`
+}
+
+func TestStatusRequiresIdentityHeader(t *testing.T) {
+	h := mustNewHandler(t, &fakeSuspender{}, &fakeLogger{})
+	h.SetIdleStatus(func() (time.Duration, bool) { return 0, false })
+	rec := httptest.NewRecorder()
+
+	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/status", nil))
+
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("got status %d, want 401", rec.Code)
+	}
+}
+
+func TestStatusRejectsLoopbackWithNoIdentityHeader(t *testing.T) {
+	// Unlike /hold, /status is a read diagnostic, not an automation
+	// target -- no loopback exception.
+	h := mustNewHandler(t, &fakeSuspender{}, &fakeLogger{})
+	h.SetIdleStatus(func() (time.Duration, bool) { return 0, false })
+	rec := httptest.NewRecorder()
+
+	h.ServeHTTP(rec, loopbackRequest(http.MethodGet, "/status"))
+
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("got status %d, want 401", rec.Code)
+	}
+}
+
+func TestStatusReportsIdleDurationHoldStateAndDryRunFlag(t *testing.T) {
+	h := mustNewHandler(t, &fakeSuspender{}, &fakeLogger{})
+	h.SetIdleStatus(func() (time.Duration, bool) { return 90 * time.Second, true })
+	h.hold.acquire(&fakeLogger{}, testIdentity)
+	rec := httptest.NewRecorder()
+
+	h.ServeHTTP(rec, authedRequest(http.MethodGet, "/status"))
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("got status %d, want 200", rec.Code)
+	}
+	var got statusResponse
+	if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
+		t.Fatalf("decoding response: %v", err)
+	}
+	if got.IdleSeconds != 90 {
+		t.Fatalf("got idleSeconds %v, want 90", got.IdleSeconds)
+	}
+	if !got.HoldActive {
+		t.Fatalf("got holdActive false, want true")
+	}
+	if got.HoldRemainingSeconds <= 0 || got.HoldRemainingSeconds > holdDuration.Seconds() {
+		t.Fatalf("got holdRemainingSeconds %v, want in (0, %v]", got.HoldRemainingSeconds, holdDuration.Seconds())
+	}
+	if !got.DryRun {
+		t.Fatalf("got dryRun false, want true")
+	}
+}
+
+func TestStatusReportsNoHoldWhenNoneActive(t *testing.T) {
+	h := mustNewHandler(t, &fakeSuspender{}, &fakeLogger{})
+	h.SetIdleStatus(func() (time.Duration, bool) { return 0, false })
+	rec := httptest.NewRecorder()
+
+	h.ServeHTTP(rec, authedRequest(http.MethodGet, "/status"))
+
+	var got statusResponse
+	if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
+		t.Fatalf("decoding response: %v", err)
+	}
+	if got.HoldActive || got.HoldRemainingSeconds != 0 {
+		t.Fatalf("got holdActive=%v holdRemainingSeconds=%v, want false/0", got.HoldActive, got.HoldRemainingSeconds)
 	}
 }

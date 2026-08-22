@@ -13,6 +13,11 @@ const testIdleTimeout = time.Hour
 // for a real poll interval or idle timeout.
 func mustNewIdleWatcher(t *testing.T, suspender Suspender, runtime ContainerRuntime, logger EventLogger, start time.Time, holdActive func() bool, lastProxied func() time.Time) *IdleWatcher {
 	t.Helper()
+	return mustNewIdleWatcherDryRun(t, suspender, runtime, logger, start, holdActive, lastProxied, false)
+}
+
+func mustNewIdleWatcherDryRun(t *testing.T, suspender Suspender, runtime ContainerRuntime, logger EventLogger, start time.Time, holdActive func() bool, lastProxied func() time.Time, dryRun bool) *IdleWatcher {
+	t.Helper()
 	return &IdleWatcher{
 		suspender:    suspender,
 		runtime:      runtime,
@@ -21,6 +26,7 @@ func mustNewIdleWatcher(t *testing.T, suspender Suspender, runtime ContainerRunt
 		lastProxied:  lastProxied,
 		now:          func() time.Time { return start },
 		idleTimeout:  testIdleTimeout,
+		dryRun:       dryRun,
 		lastActivity: start,
 	}
 }
@@ -159,7 +165,7 @@ func TestLastActivityResetsAtConstructionTime(t *testing.T) {
 	start := time.Now()
 	suspender := &fakeSuspender{}
 	runtime := &fakeContainerRuntime{active: false}
-	w := NewIdleWatcher(suspender, runtime, &fakeLogger{}, noHold, neverProxied, testIdleTimeout)
+	w := NewIdleWatcher(suspender, runtime, &fakeLogger{}, noHold, neverProxied, testIdleTimeout, false)
 
 	if w.lastActivity.Before(start) {
 		t.Fatalf("got lastActivity %v, want it reset to construction time (>= %v)", w.lastActivity, start)
@@ -189,5 +195,90 @@ func TestLastActivityResetsImmediatelyAfterSuspendReturns(t *testing.T) {
 	w.poll()
 	if suspender.calls != 0 {
 		t.Fatalf("got %d suspend calls on the very next poll after waking, want 0", suspender.calls)
+	}
+}
+
+func TestDryRunLogsDryRunEventAndNeverCallsSuspend(t *testing.T) {
+	start := time.Now()
+	suspender := &fakeSuspender{}
+	logger := &fakeLogger{}
+	runtime := &fakeContainerRuntime{active: false}
+	w := mustNewIdleWatcherDryRun(t, suspender, runtime, logger, start, noHold, neverProxied, true)
+
+	w.now = func() time.Time { return start.Add(testIdleTimeout) }
+	w.poll()
+
+	if suspender.calls != 0 {
+		t.Fatalf("got %d suspend calls, want 0: dry run must never call Suspender.Suspend()", suspender.calls)
+	}
+	if len(logger.events) != 1 {
+		t.Fatalf("got %d events, want 1: %+v", len(logger.events), logger.events)
+	}
+	got := logger.events[0]
+	if got.eventType != "suspend_auto_dry_run" || got.outcome != "dry_run" || got.identity != nil {
+		t.Fatalf("got event %+v, want suspend_auto_dry_run/dry_run/nil", got)
+	}
+	if got.extra == nil || got.extra["idleSeconds"] == nil {
+		t.Fatalf("got event %+v, want idleSeconds recorded in extra", got)
+	}
+}
+
+func TestDryRunStillSuppressedByAnActiveHold(t *testing.T) {
+	start := time.Now()
+	suspender := &fakeSuspender{}
+	logger := &fakeLogger{}
+	runtime := &fakeContainerRuntime{active: false}
+	w := mustNewIdleWatcherDryRun(t, suspender, runtime, logger, start, func() bool { return true }, neverProxied, true)
+
+	for i := 0; i < 5; i++ {
+		w.now = func() time.Time { return start.Add(time.Duration(i) * 2 * testIdleTimeout) }
+		w.poll()
+	}
+
+	if len(logger.events) != 0 {
+		t.Fatalf("got %d events, want 0: an active hold should have suppressed every dry-run poll too: %+v", len(logger.events), logger.events)
+	}
+}
+
+func TestDryRunKeepsCyclingAndFiresAgainAfterASecondIdlePeriod(t *testing.T) {
+	start := time.Now()
+	suspender := &fakeSuspender{}
+	logger := &fakeLogger{}
+	runtime := &fakeContainerRuntime{active: false}
+	w := mustNewIdleWatcherDryRun(t, suspender, runtime, logger, start, noHold, neverProxied, true)
+
+	w.now = func() time.Time { return start.Add(testIdleTimeout) }
+	w.poll()
+
+	w.now = func() time.Time { return start.Add(2 * testIdleTimeout) }
+	w.poll()
+
+	if suspender.calls != 0 {
+		t.Fatalf("got %d suspend calls, want 0", suspender.calls)
+	}
+	dryRunEvents := 0
+	for _, e := range logger.events {
+		if e.eventType == "suspend_auto_dry_run" {
+			dryRunEvents++
+		}
+	}
+	if dryRunEvents != 2 {
+		t.Fatalf("got %d suspend_auto_dry_run events, want 2: dry run must keep cycling after a trigger: %+v", dryRunEvents, logger.events)
+	}
+}
+
+func TestStatusReportsIdleDurationAndDryRunFlag(t *testing.T) {
+	start := time.Now()
+	runtime := &fakeContainerRuntime{active: false}
+	w := mustNewIdleWatcherDryRun(t, &fakeSuspender{}, runtime, &fakeLogger{}, start, noHold, neverProxied, true)
+
+	w.now = func() time.Time { return start.Add(10 * time.Minute) }
+	idleDuration, dryRun := w.Status()
+
+	if !dryRun {
+		t.Fatalf("got dryRun false, want true")
+	}
+	if idleDuration != 10*time.Minute {
+		t.Fatalf("got idleDuration %v, want 10m", idleDuration)
 	}
 }

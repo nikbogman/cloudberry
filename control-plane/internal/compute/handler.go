@@ -84,6 +84,7 @@ type Handler struct {
 	reachability reachabilityTracker
 	lastProxied  lastProxied
 	hold         hold
+	idleStatus   func() (idleDuration time.Duration, dryRun bool)
 	serve        http.Handler
 }
 
@@ -100,6 +101,8 @@ func NewHandler(uiOrigin string, suspender Suspender, runtime ContainerRuntime, 
 
 	mux := http.NewServeMux()
 	mux.Handle("GET /health", tailnet.RequireTailnetIdentity(http.HandlerFunc(h.handleHealth)))
+	// Read diagnostic, not an automation target -- no loopback exception.
+	mux.Handle("GET /status", tailnet.RequireTailnetIdentity(http.HandlerFunc(h.handleStatus)))
 	mux.Handle("POST /suspend", tailnet.RequireTailnetIdentity(http.HandlerFunc(h.handleSuspend)))
 	// Loopback exception: an unattended backup/restore script running
 	// locally on Compute has no tailnet identity header of its own.
@@ -149,6 +152,21 @@ func (h *Handler) handleHealth(w http.ResponseWriter, r *http.Request) {
 	httpresponse.WriteJSON(w, http.StatusOK, map[string]bool{"reachable": true})
 }
 
+// handleStatus is a read-only diagnostic for validating the idle watcher
+// without waiting for a real suspend cycle: idle duration, hold state
+// (with remaining TTL), and whether dry-run mode is currently enabled.
+func (h *Handler) handleStatus(w http.ResponseWriter, r *http.Request) {
+	idleDuration, dryRun := h.idleStatus()
+	holdActive := h.hold.isActive()
+
+	httpresponse.WriteJSON(w, http.StatusOK, map[string]any{
+		"idleSeconds":          idleDuration.Seconds(),
+		"holdActive":           holdActive,
+		"holdRemainingSeconds": h.hold.remainingTTL().Seconds(),
+		"dryRun":               dryRun,
+	})
+}
+
 func (h *Handler) handleSuspend(w http.ResponseWriter, r *http.Request) {
 	identity := tailnet.GetCallerIdentity(r)
 	h.logger.SendEvent("suspend_requested", "requested", &identity, nil)
@@ -186,4 +204,12 @@ func (h *Handler) LastProxiedAt() time.Time {
 // idle watcher's activity signals.
 func (h *Handler) HoldActive() bool {
 	return h.hold.isActive()
+}
+
+// SetIdleStatus wires the idle watcher's Status method into GET /status.
+// The idle watcher itself depends on Handler (HoldActive, LastProxiedAt),
+// so this is set after both are constructed rather than passed into
+// NewHandler.
+func (h *Handler) SetIdleStatus(f func() (idleDuration time.Duration, dryRun bool)) {
+	h.idleStatus = f
 }

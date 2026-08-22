@@ -42,7 +42,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("COMPUTE_API_IDLE_TIMEOUT: %v", err)
 	}
-	watcher := compute.NewIdleWatcher(suspender, runtime, logger, handler.HoldActive, handler.LastProxiedAt, idleTimeout)
+	dryRun, err := strconv.ParseBool(env.EnvOr("COMPUTE_API_AUTOSUSPEND_DRY_RUN", "false"))
+	if err != nil {
+		log.Fatalf("COMPUTE_API_AUTOSUSPEND_DRY_RUN: %v", err)
+	}
+	watcher := compute.NewIdleWatcher(suspender, runtime, logger, handler.HoldActive, handler.LastProxiedAt, idleTimeout, dryRun)
+	handler.SetIdleStatus(watcher.Status)
 	go watcher.Run()
 
 	addr := net.JoinHostPort(host, port)
