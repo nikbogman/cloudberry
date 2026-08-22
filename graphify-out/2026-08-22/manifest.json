@@ -25,8 +25,8 @@
     "semantic_hash": ""
   },
   "control-plane/internal/compute/handler_test.go": {
-    "mtime": 1787403153.7366352,
-    "ast_hash": "b2ef31fba80f2a2a1cd6c603cad66cb4",
+    "mtime": 1787402965.4647064,
+    "ast_hash": "f671bf03624ec68bfc8ddb1c12a4d1ca",
     "semantic_hash": ""
   },
   "control-plane/internal/compute/suspend.go": {

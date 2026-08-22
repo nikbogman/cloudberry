@@ -78,6 +78,7 @@ type Handler struct {
 	logger       EventLogger
 	reachability reachabilityTracker
 	lastProxied  lastProxied
+	hold         hold
 	serve        http.Handler
 }
 
@@ -95,6 +96,10 @@ func NewHandler(uiOrigin string, suspender Suspender, runtime ContainerRuntime, 
 	mux := http.NewServeMux()
 	mux.Handle("GET /health", tailnet.RequireTailnetIdentity(http.HandlerFunc(h.handleHealth)))
 	mux.Handle("POST /suspend", tailnet.RequireTailnetIdentity(http.HandlerFunc(h.handleSuspend)))
+	// Loopback exception: an unattended backup/restore script running
+	// locally on Compute has no tailnet identity header of its own.
+	mux.Handle("POST /hold", tailnet.RequireTailnetIdentityOrLoopback(http.HandlerFunc(h.handleHoldAcquire)))
+	mux.Handle("DELETE /hold", tailnet.RequireTailnetIdentityOrLoopback(http.HandlerFunc(h.handleHoldRelease)))
 	// Catch-all: routes /{prefix}/... to whichever container carries a
 	// matching homelab.route label. Not identity-gated, mirroring the
 	// Gateway proxy's /server/ route -- this carries workload traffic,
@@ -151,6 +156,18 @@ func (h *Handler) handleSuspend(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.SendEvent("suspend_succeeded", "succeeded", &identity, nil)
 	httpresponse.WriteJSON(w, http.StatusOK, map[string]string{"suspend": "succeeded"})
+}
+
+func (h *Handler) handleHoldAcquire(w http.ResponseWriter, r *http.Request) {
+	identity := tailnet.GetCallerIdentity(r)
+	h.hold.acquire(h.logger, identity)
+	httpresponse.WriteJSON(w, http.StatusOK, map[string]string{"hold": "acquired"})
+}
+
+func (h *Handler) handleHoldRelease(w http.ResponseWriter, r *http.Request) {
+	identity := tailnet.GetCallerIdentity(r)
+	h.hold.release(h.logger, identity)
+	httpresponse.WriteJSON(w, http.StatusOK, map[string]string{"hold": "released"})
 }
 
 // LastProxiedAt is when a request was last successfully proxied to a

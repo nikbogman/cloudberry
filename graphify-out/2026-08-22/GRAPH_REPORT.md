@@ -1,11 +1,11 @@
 # Graph Report - homelab  (2026-08-22)
 
 ## Corpus Check
-- 71 files · ~39,893 words
+- 71 files · ~39,897 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 459 nodes · 794 edges · 39 communities (24 shown, 15 thin omitted)
+- 457 nodes · 789 edges · 39 communities (24 shown, 15 thin omitted)
 - Extraction: 89% EXTRACTED · 11% INFERRED · 0% AMBIGUOUS · INFERRED: 90 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
@@ -97,8 +97,8 @@ Cohesion: 0.20
 Nodes (25): Deploys Are Manually Triggered Only, ARCHITECTURE.md (Homelab Control Plane), Known Limitations (Flagged Transparency), Honesty Rules, Compute, Compute API, Deploy, Deploy file (+17 more)
 
 ### Community 2 - "Compute Handler Tests"
-Cohesion: 0.16
-Nodes (33): fakeLogger, fakeSuspender, loggedEvent, authedRequest(), Duration, Mutex, Request, T (+25 more)
+Cohesion: 0.17
+Nodes (31): fakeLogger, fakeSuspender, loggedEvent, authedRequest(), Mutex, Request, T, loopbackRequest() (+23 more)
 
 ### Community 3 - "Entrypoints & Event Logging"
 Cohesion: 0.14
@@ -130,7 +130,7 @@ Nodes (16): Graphify Trigger Directive (user-level), Graphify Project Integratio
 
 ### Community 10 - "Gateway Proxy Tests"
 Cohesion: 0.38
-Nodes (15): mustNewHandlerWithConfig(), closedPortTarget(), Duration, T, splitHostPort(), TestProxy_ARealHTTPErrorFromALiveBackendPassesThroughWithoutWaking(), TestProxy_AutoWakeDoesNotThrottleOnceTheWindowHasElapsed(), TestProxy_AutoWakeThrottlesRepeatCallsWithinTheWindow() (+7 more)
+Nodes (15): mustNewHandlerWithConfig(), closedPortTarget(), T, splitHostPort(), TestProxy_ARealHTTPErrorFromALiveBackendPassesThroughWithoutWaking(), TestProxy_AutoWakeDoesNotThrottleOnceTheWindowHasElapsed(), TestProxy_AutoWakeThrottlesRepeatCallsWithinTheWindow(), TestProxy_DoesNotFallBackToIndexHTMLForAnUnknownPath() (+7 more)
 
 ### Community 11 - "Compute Suspend Logic"
 Cohesion: 0.32
@@ -191,7 +191,7 @@ _Questions this graph is uniquely positioned to answer:_
 - **Why does `NewHandler()` connect `Gateway Handler Tests` to `Tailnet Auth`, `Gateway Proxy Tests`, `Wake-on-LAN Sender`, `Gateway Handler Implementation`, `Tailnet Bind Safety`?**
   _High betweenness centrality (0.130) - this node is a cross-community bridge._
 - **Why does `NewHandler()` connect `Compute Handler Implementation` to `Tailnet Bind Safety`, `Compute Handler Tests`, `Tailnet Auth`?**
-  _High betweenness centrality (0.106) - this node is a cross-community bridge._
+  _High betweenness centrality (0.104) - this node is a cross-community bridge._
 - **Why does `RequireTailnetIdentityOrLoopback()` connect `Tailnet Auth` to `Compute Handler Implementation`, `Gateway Handler Tests`?**
   _High betweenness centrality (0.059) - this node is a cross-community bridge._
 - **What connects `github.com/nikbogman/homelab/control-plane`, `Handler`, `lokiLine` to the rest of the system?**
