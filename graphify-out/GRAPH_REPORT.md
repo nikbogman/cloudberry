@@ -1,16 +1,16 @@
 # Graph Report - homelab  (2026-08-22)
 
 ## Corpus Check
-- 73 files · ~41,993 words
+- 73 files · ~42,971 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 496 nodes · 875 edges · 40 communities (25 shown, 15 thin omitted)
-- Extraction: 89% EXTRACTED · 11% INFERRED · 0% AMBIGUOUS · INFERRED: 95 edges (avg confidence: 0.82)
+- 516 nodes · 932 edges · 41 communities (26 shown, 15 thin omitted)
+- Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 96 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `5e1578e5`
+- Built from commit: `18b05c0a`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -54,18 +54,19 @@
 - 04-validate-idle-watcher-without-suspending.md
 - hold
 - mustNewHandlerWithRuntime
+- IdleWatcher
 
 ## God Nodes (most connected - your core abstractions)
-1. `mustNewHandler()` - 27 edges
-2. `authedRequest()` - 18 edges
-3. `CONTEXT.md (Domain Glossary)` - 17 edges
-4. `Handler` - 16 edges
-5. `compilerOptions` - 16 edges
-6. `mustNewIdleWatcher()` - 15 edges
-7. `mustNewHandlerWithConfig()` - 15 edges
-8. `mustNewHandler()` - 14 edges
-9. `ARCHITECTURE.md (Homelab Control Plane)` - 14 edges
-10. `NewHandler()` - 13 edges
+1. `mustNewHandler()` - 31 edges
+2. `authedRequest()` - 20 edges
+3. `Handler` - 19 edges
+4. `CONTEXT.md (Domain Glossary)` - 17 edges
+5. `IdleWatcher` - 16 edges
+6. `mustNewIdleWatcher()` - 16 edges
+7. `compilerOptions` - 16 edges
+8. `mustNewHandlerWithConfig()` - 15 edges
+9. `mustNewHandler()` - 14 edges
+10. `ARCHITECTURE.md (Homelab Control Plane)` - 14 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `Honesty Rules` --semantically_similar_to--> `Known Limitations (Flagged Transparency)`  [INFERRED] [semantically similar]
@@ -87,7 +88,7 @@
 - **Automatic Wake Trigger Mechanism** — context_wake, context_gateway_api, control_plane_readme_dowake, control_plane_readme_autowakethrottler [INFERRED 0.85]
 - **Homelab Core Documentation Cross-reference Hub** — architecture_doc, context_doc, readme_doc, control_plane_readme_doc [INFERRED 0.75]
 
-## Communities (40 total, 15 thin omitted)
+## Communities (41 total, 15 thin omitted)
 
 ### Community 0 - "Provisioning Facts & Deploy"
 Cohesion: 0.07
@@ -98,12 +99,12 @@ Cohesion: 0.20
 Nodes (25): Deploys Are Manually Triggered Only, ARCHITECTURE.md (Homelab Control Plane), Known Limitations (Flagged Transparency), Honesty Rules, Compute, Compute API, Deploy, Deploy file (+17 more)
 
 ### Community 2 - "Compute Handler Tests"
-Cohesion: 0.16
-Nodes (33): fakeLogger, fakeSuspender, loggedEvent, authedRequest(), Duration, Mutex, Request, T (+25 more)
+Cohesion: 0.14
+Nodes (38): fakeLogger, fakeSuspender, loggedEvent, statusResponse, authedRequest(), Duration, Mutex, Request (+30 more)
 
 ### Community 3 - "Entrypoints & Event Logging"
-Cohesion: 0.14
-Nodes (17): main(), main(), EnvOr(), MustEnv(), MustEnvInt(), Client, NewGrafanaCloudLogger(), T (+9 more)
+Cohesion: 0.22
+Nodes (12): Client, NewGrafanaCloudLogger(), T, TestSendEventDoesNotPanicWhenGrafanaCloudIsUnreachable(), TestSendEventIncludesExtraFieldsInTheLine(), TestSendEventLogsUnexpectedStatusCode(), TestSendEventPostsALokiPushPayloadWithBasicAuth(), GrafanaCloudLogger (+4 more)
 
 ### Community 4 - "Tailnet Auth"
 Cohesion: 0.16
@@ -114,8 +115,8 @@ Cohesion: 0.09
 Nodes (21): compilerOptions, allowArbitraryExtensions, allowImportingTsExtensions, erasableSyntaxOnly, lib, module, moduleDetection, moduleResolution (+13 more)
 
 ### Community 6 - "Gateway Handler Tests"
-Cohesion: 0.10
-Nodes (40): Request, ResponseWriter, NewHandler(), EventLogger, Handler, T, mustNewHandler(), mustNewHandlerWithConfig() (+32 more)
+Cohesion: 0.12
+Nodes (38): NewHandler(), EventLogger, Handler, T, mustNewHandler(), mustNewHandlerWithConfig(), TestNewHandlerRefusesOffTailnetBindHost(), TestNewHandlerRejectsAMalformedMacAddressAtStartup() (+30 more)
 
 ### Community 7 - "UI Package Dependencies"
 Cohesion: 0.10
@@ -123,15 +124,15 @@ Nodes (19): devDependencies, jsdom, typescript, vite, vitest, name, private, scr
 
 ### Community 8 - "Compute Handler Implementation"
 Cohesion: 0.11
-Nodes (22): ContainerRuntime, EventLogger, IdleWatcher, lastProxied, reachabilityTracker, Suspender, Handler, Request (+14 more)
+Nodes (20): ContainerRuntime, EventLogger, lastProxied, reachabilityTracker, Suspender, Handler, Duration, Request (+12 more)
 
 ### Community 9 - "Graphify Skill Documentation"
 Cohesion: 0.13
 Nodes (16): Graphify Trigger Directive (user-level), Graphify Project Integration Rules (root CLAUDE.md), /graphify add & --watch Reference, Extra Exports & Benchmark Reference, Confidence Score Rubric, Extraction Subagent Prompt Spec, Node ID Format Rule, GitHub Clone & Cross-repo Merge Reference (+8 more)
 
 ### Community 10 - "Gateway Proxy Tests"
-Cohesion: 0.28
-Nodes (14): EventLogger, T, Time, mustNewIdleWatcher(), neverProxied(), TestActiveHoldNeverTriggersSuspendEvenPastTheIdleTimeout(), TestAutoSuspendLogsFailedWithNilIdentityWhenSuspenderFails(), TestAutoSuspendLogsTriggeredThenSucceededWithNilIdentityAndIdleDuration() (+6 more)
+Cohesion: 0.24
+Nodes (19): EventLogger, T, Time, mustNewIdleWatcher(), mustNewIdleWatcherDryRun(), neverProxied(), TestActiveHoldNeverTriggersSuspendEvenPastTheIdleTimeout(), TestAutoSuspendLogsFailedWithNilIdentityWhenSuspenderFails() (+11 more)
 
 ### Community 11 - "Compute Suspend Logic"
 Cohesion: 0.32
@@ -178,15 +179,19 @@ Cohesion: 0.33
 Nodes (5): Conventions, Issue tracker: Local Markdown, Wayfinding operations, When a skill says "fetch the relevant ticket", When a skill says "publish to the issue tracker"
 
 ### Community 38 - "hold"
-Cohesion: 0.36
-Nodes (3): hold, EventLogger, Mutex
+Cohesion: 0.24
+Nodes (5): hold, Duration, EventLogger, Mutex, Time
 
 ### Community 39 - "mustNewHandlerWithRuntime"
 Cohesion: 0.31
 Nodes (13): EventLogger, Handler, mustNewHandlerWithRuntime(), backendAddr(), T, TestProxy_ARealHTTPErrorFromALiveBackendPassesThroughUntouched(), TestProxy_DiscoveryFailureReturns502(), TestProxy_DoesNotRecordLastProxiedTimeWhenTheBackendIsUnreachable() (+5 more)
 
+### Community 40 - "IdleWatcher"
+Cohesion: 0.19
+Nodes (11): IdleWatcher, main(), main(), Duration, EventLogger, Mutex, Time, NewIdleWatcher() (+3 more)
+
 ## Knowledge Gaps
-- **83 isolated node(s):** `github.com/nikbogman/homelab/control-plane`, `Handler`, `lokiLine`, `contextKey`, `name` (+78 more)
+- **84 isolated node(s):** `github.com/nikbogman/homelab/control-plane`, `statusResponse`, `Handler`, `lokiLine`, `contextKey` (+79 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **15 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -194,16 +199,16 @@ Nodes (13): EventLogger, Handler, mustNewHandlerWithRuntime(), backendAddr(), T,
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `NewHandler()` connect `Compute Handler Implementation` to `Tailnet Bind Safety`, `Compute Handler Tests`, `Tailnet Auth`, `mustNewHandlerWithRuntime`?**
-  _High betweenness centrality (0.130) - this node is a cross-community bridge._
+  _High betweenness centrality (0.135) - this node is a cross-community bridge._
 - **Why does `NewHandler()` connect `Gateway Handler Tests` to `Tailnet Bind Safety`, `Tailnet Auth`, `Wake-on-LAN Sender`, `Gateway Handler Implementation`?**
   _High betweenness centrality (0.118) - this node is a cross-community bridge._
-- **Why does `main()` connect `Entrypoints & Event Logging` to `Compute Handler Implementation`, `Compute Suspend Logic`, `Gateway Proxy & Auto-Wake`?**
-  _High betweenness centrality (0.069) - this node is a cross-community bridge._
-- **What connects `github.com/nikbogman/homelab/control-plane`, `Handler`, `lokiLine` to the rest of the system?**
-  _83 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `Suspender` connect `Compute Handler Implementation` to `IdleWatcher`, `Compute Handler Tests`, `Gateway Proxy Tests`, `mustNewHandlerWithRuntime`?**
+  _High betweenness centrality (0.077) - this node is a cross-community bridge._
+- **What connects `github.com/nikbogman/homelab/control-plane`, `statusResponse`, `Handler` to the rest of the system?**
+  _84 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Provisioning Facts & Deploy` be split into smaller, more focused modules?**
   _Cohesion score 0.07474747474747474 - nodes in this community are weakly interconnected._
-- **Should `Entrypoints & Event Logging` be split into smaller, more focused modules?**
-  _Cohesion score 0.1422924901185771 - nodes in this community are weakly interconnected._
+- **Should `Compute Handler Tests` be split into smaller, more focused modules?**
+  _Cohesion score 0.13937282229965156 - nodes in this community are weakly interconnected._
 - **Should `UI TypeScript Config` be split into smaller, more focused modules?**
   _Cohesion score 0.09090909090909091 - nodes in this community are weakly interconnected._

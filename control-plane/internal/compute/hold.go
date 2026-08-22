@@ -8,8 +8,8 @@ import (
 // Package var, not const, so tests can shrink it.
 var holdDuration = 30 * time.Minute
 
-// hold is a caller-renewable lease that will let the future idle watcher
-// know a long-running script (e.g. backup/restore) is in progress. generation
+// hold is a caller-renewable lease that lets the idle watcher know a
+// long-running script (e.g. backup/restore) is in progress. generation
 // guards against a stale timer firing after a renewal or release replaces
 // it -- time.AfterFunc gives no way to know whether a fired callback has
 // already started before a later acquire/release runs, so staleness is

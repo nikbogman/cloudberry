@@ -90,7 +90,7 @@ type Handler struct {
 
 // NewHandler refuses to start if bindHost would expose the app
 // off-tailnet. It returns *Handler rather than plain http.Handler so
-// callers -- e.g. the future idle watcher -- can also reach methods like
+// callers -- e.g. the idle watcher -- can also reach methods like
 // LastProxiedAt beyond just serving requests.
 func NewHandler(uiOrigin string, suspender Suspender, runtime ContainerRuntime, logger EventLogger, bindHost string) (*Handler, error) {
 	if err := tailnet.AssertTailnetOnlyBind(bindHost); err != nil {

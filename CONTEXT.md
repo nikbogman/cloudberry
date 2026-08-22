@@ -23,7 +23,7 @@ The backend on the Gateway: serves the UI's static files, sends WoL when the Wak
 _Avoid_: Pi API, wake service, Gateway proxy, WoL plugin
 
 **Compute API**:
-The backend on Compute exposing Suspend and a reachability health check. A distinct origin from the UI, fronted by its own `tailscale serve` instance.
+The backend on Compute exposing Suspend, Hold, and a reachability health check — and Compute's own reverse proxy for workload traffic, routing to Docker containers by label. Also runs the idle watcher that triggers automatic Suspend. A distinct origin from the UI, fronted by its own `tailscale serve` instance.
 _Avoid_: Server API, suspend service
 
 **Reachable**:
@@ -34,11 +34,15 @@ _Avoid_: online, up, awake
 Sending a WoL magic packet to bring Compute out of suspend. Always sent by the Gateway API — deliberately via the UI's Wake button, or automatically via the `/server*` proxy route on any request while asleep.
 
 **Suspend**:
-Putting Compute into suspend-to-RAM — the only sleep state supported. Full shutdown (ACPI S5) is out of scope: WoL after full power-off is unreliable across BIOS/NIC configs.
+Putting Compute into suspend-to-RAM — the only sleep state supported. Full shutdown (ACPI S5) is out of scope: WoL after full power-off is unreliable across BIOS/NIC configs. Triggered manually via the UI's Suspend button, or automatically by the Compute API's idle watcher when no workload container activity, no proxied HTTP traffic, and no active Hold have been observed for the idle timeout.
 _Avoid_: shutdown, sleep, power off
 
+**Hold**:
+A time-limited lock on the Compute API that blocks automatic Suspend regardless of idle signals, acquired via `POST /hold` (fixed 30-minute TTL, renewed by calling again) and released early via `DELETE /hold`. Exists so a long-running operation like a backup or restore can't be suspended out from under itself.
+_Avoid_: lock, pause, pin
+
 **Identity header**:
-`Tailscale-User-Login`, injected by `tailscale serve` in front of both apps. The entire auth mechanism — tailnet membership is the entire authorization boundary, no separate allow-list. Exception: the Gateway API's wake action also accepts a `127.0.0.1` caller in its place, for the proxy route's same-device trigger.
+`Tailscale-User-Login`, injected by `tailscale serve` in front of both apps. The entire auth mechanism — tailnet membership is the entire authorization boundary, no separate allow-list. Exception: the Gateway API's wake action and the Compute API's Hold action also accept a `127.0.0.1` caller in its place — for the proxy route's same-device trigger, and for backup/restore scripts running locally on Compute with no browser session to carry an identity.
 _Avoid_: auth token, login header
 
 ### Provisioning

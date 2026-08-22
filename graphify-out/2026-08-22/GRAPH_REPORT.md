@@ -1,12 +1,12 @@
 # Graph Report - homelab  (2026-08-22)
 
 ## Corpus Check
-- 73 files · ~41,684 words
+- 73 files · ~41,993 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 490 nodes · 862 edges · 40 communities (25 shown, 15 thin omitted)
-- Extraction: 89% EXTRACTED · 11% INFERRED · 0% AMBIGUOUS · INFERRED: 92 edges (avg confidence: 0.82)
+- 496 nodes · 875 edges · 40 communities (25 shown, 15 thin omitted)
+- Extraction: 89% EXTRACTED · 11% INFERRED · 0% AMBIGUOUS · INFERRED: 95 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
@@ -150,8 +150,8 @@ Cohesion: 0.22
 Nodes (9): Handler, Mutex, Request, ResponseWriter, Time, newComputeProxy(), retryUntilReachable(), autoWakeThrottler (+1 more)
 
 ### Community 15 - "Gateway Proxy & Auto-Wake"
-Cohesion: 0.12
-Nodes (15): DockerRuntime, fakeContainerRuntime, RoutableContainer, Client, NewDockerRuntime(), routableFromContainers(), T, TestRoutableFromContainersMatchesByLabel() (+7 more)
+Cohesion: 0.11
+Nodes (20): DockerRuntime, fakeContainerRuntime, RoutableContainer, cpuPercentFromStats(), Client, NewDockerRuntime(), routableFromContainers(), T (+12 more)
 
 ### Community 16 - "Tailnet Bind Safety"
 Cohesion: 0.31
@@ -194,11 +194,11 @@ Nodes (13): EventLogger, Handler, mustNewHandlerWithRuntime(), backendAddr(), T,
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `NewHandler()` connect `Compute Handler Implementation` to `Tailnet Bind Safety`, `Compute Handler Tests`, `Tailnet Auth`, `mustNewHandlerWithRuntime`?**
-  _High betweenness centrality (0.129) - this node is a cross-community bridge._
+  _High betweenness centrality (0.130) - this node is a cross-community bridge._
 - **Why does `NewHandler()` connect `Gateway Handler Tests` to `Tailnet Bind Safety`, `Tailnet Auth`, `Wake-on-LAN Sender`, `Gateway Handler Implementation`?**
-  _High betweenness centrality (0.119) - this node is a cross-community bridge._
+  _High betweenness centrality (0.118) - this node is a cross-community bridge._
 - **Why does `main()` connect `Entrypoints & Event Logging` to `Compute Handler Implementation`, `Compute Suspend Logic`, `Gateway Proxy & Auto-Wake`?**
-  _High betweenness centrality (0.068) - this node is a cross-community bridge._
+  _High betweenness centrality (0.069) - this node is a cross-community bridge._
 - **What connects `github.com/nikbogman/homelab/control-plane`, `Handler`, `lokiLine` to the rest of the system?**
   _83 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Provisioning Facts & Deploy` be split into smaller, more focused modules?**
