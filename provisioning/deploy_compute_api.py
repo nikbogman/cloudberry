@@ -28,7 +28,7 @@ from pyinfra import host
 from pyinfra.operations import server
 
 from common import DpkgArchitecture, TailscaleServeStatus, has_device_role
-from go_deploy import go_binary_systemd_service
+from go_build import go_binary_systemd_service
 from settings import ComputeApiSecrets, ComputeApiSettings, InventorySettings
 
 # dpkg's arch names happen to match Go's GOARCH for both values compute

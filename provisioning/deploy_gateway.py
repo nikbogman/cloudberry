@@ -27,7 +27,7 @@ from pyinfra import host, local
 from pyinfra.operations import server
 
 from common import TailscaleServeStatus, has_device_role
-from go_deploy import go_binary_systemd_service
+from go_build import go_binary_systemd_service
 from settings import GatewaySecrets, GatewaySettings, InventorySettings
 
 gateway_settings = GatewaySettings()

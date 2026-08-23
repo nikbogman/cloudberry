@@ -11,7 +11,7 @@ provisioning/
   settings.py                     # pydantic-settings classes -- typed env var config
   deploy_tailscale.py
   deploy_docker.py
-  go_deploy.py                    # shared off-device Go build+ship+systemd helper
+  go_build.py                     # shared off-device Go build+ship+systemd helper
   deploy_gateway.py               # cross-compiles + ships the Gateway API binary and the UI's static build
   deploy_compute_api.py
   deploy.py                       # entrypoint composing everything
