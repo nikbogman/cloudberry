@@ -1,16 +1,16 @@
-"""Installs and enables the Docker engine on `server`, for workload
+"""Installs and enables the Docker engine on `compute`, for workload
 Compose stacks (Immich, AI agents, etc.). Targetable in isolation:
 
-    pyinfra inventory.py deploy_docker.py --limit server
-    pyinfra inventory.py deploy_docker.py --limit server --dry
+    pyinfra inventory.py deploy_docker.py --limit compute
+    pyinfra inventory.py deploy_docker.py --limit compute --dry
 
-Applies to the `test` stand-in too; never to `pi`, which runs no Docker
+Applies to the `test` stand-in too; never to `gateway`, which runs no Docker
 workloads.
 
 pyinfra has no built-in "install Docker" operation, so this composes
 Docker's official apt-repo instructions from apt/systemd primitives.
 Distro ID and architecture are read from the host (`common.linux_distro_id`,
-`common.DpkgArchitecture`) rather than hardcoded, since `server` isn't a
+`common.DpkgArchitecture`) rather than hardcoded, since `compute` isn't a
 fixed, known image.
 """
 
@@ -20,7 +20,7 @@ from pyinfra.operations import apt, systemd
 from common import DpkgArchitecture, has_device_role, linux_codename, linux_distro_id
 
 
-if has_device_role("server"):
+if has_device_role("compute"):
     codename = linux_codename()
     distro_id = linux_distro_id()
     arch = host.get_fact(DpkgArchitecture)

@@ -29,8 +29,15 @@
   "27": "Go Module Root",
   "28": "Pyinfra Module Root",
   "29": "Architecture Decisions",
+  "30": "Spec: Compute API autonomous suspend",
   "31": "Domain Docs",
   "32": "Issue tracker: Local Markdown",
   "33": "triage-labels.md",
-  "39": "mustNewHandlerWithRuntime"
+  "34": "01-compute-routes-to-containers-by-label.md",
+  "35": "02-backup-scripts-can-hold-compute-awake.md",
+  "36": "03-compute-suspends-itself-when-idle.md",
+  "37": "04-validate-idle-watcher-without-suspending.md",
+  "38": "hold",
+  "39": "mustNewHandlerWithRuntime",
+  "40": "IdleWatcher"
 }

@@ -9,7 +9,7 @@ Real addresses come from `settings.InventorySettings`.
 logic a host runs, independent of whether it's the real device or its
 `test` stand-in. Test hosts aren't added to the `gateway`/`compute`
 groups themselves, since those must stay targetable in isolation via
-`--limit`. See provisioning/README.md for how to stand up these
+`--limit`. See deploy/README.md for how to stand up these
 containers.
 """
 

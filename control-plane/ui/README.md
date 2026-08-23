@@ -34,4 +34,4 @@ npm run build         # tsc && vite build -> dist/
 
 ## Deployment
 
-Built on the dev machine (`npm run build`); only the static `dist/` output ships to the Pi Zero, which never runs a Node toolchain. Automated by [`provisioning/deploy_gateway.py`](../../provisioning/deploy_gateway.py) — see [`provisioning/README.md`](../../provisioning/README.md).
+Built on the dev machine (`npm run build`); only the static `dist/` output ships to the Pi Zero, which never runs a Node toolchain. Automated by [`deploy/deploy_gateway.py`](../../deploy/deploy_gateway.py) — see [`deploy/README.md`](../../deploy/README.md).
