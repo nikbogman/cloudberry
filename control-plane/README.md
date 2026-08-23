@@ -1,6 +1,6 @@
 # Control-plane services
 
-Backend for the homelab control system: the Gateway API (Pi Zero, always on) and the Compute API (the host that sleeps). One Go module (`go.mod`, `github.com/nikbogman/homelab/control-plane`) covers both binaries. See [`docs/design.md`](../docs/design.md) for why.
+Backend for the homelab control system: the Gateway API (Pi Zero, always on) and the Compute API (the host that sleeps). One Go module (`go.mod`, `github.com/nikbogman/homelab/control-plane`) covers both binaries. See [`docs/architecture.md`](../docs/architecture.md) for why.
 
 ```
 control-plane/

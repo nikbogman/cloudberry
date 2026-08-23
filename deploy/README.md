@@ -65,7 +65,7 @@ Bold variables are required.
 
 ### deploy_gateway.py (`GatewaySettings`, `GatewaySecrets`)
 
-Cross-compiles `control-plane/cmd/gateway` for the Pi Zero W (`GOARCH=arm GOARM=6`) and ships only the binary. The Gateway API does static serving, WoL, and proxying in one process (see [`docs/design.md`](../docs/design.md)), so this is the only Deploy file for the device.
+Cross-compiles `control-plane/cmd/gateway` for the Pi Zero W (`GOARCH=arm GOARM=6`) and ships only the binary. The Gateway API does static serving, WoL, and proxying in one process (see [`docs/architecture.md`](../docs/architecture.md)), so this is the only Deploy file for the device.
 
 Bold variables are required.
 
