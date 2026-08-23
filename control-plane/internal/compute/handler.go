@@ -5,8 +5,6 @@ package compute
 import (
 	"net/http"
 	"sync"
-	"sync/atomic"
-	"time"
 
 	"github.com/nikbogman/homelab/control-plane/internal/httpresponse"
 	"github.com/nikbogman/homelab/control-plane/internal/tailnet"
@@ -42,27 +40,6 @@ type ContainerRuntime interface {
 	ActivityAboveBaseline() (bool, error)
 }
 
-// lastProxied tracks when a request was last successfully proxied to a
-// workload container -- the activity signal the idle watcher will read.
-// atomic.Int64 of UnixNano, not a mutex-guarded time.Time: net/http serves
-// concurrently and this is written on every proxied request.
-type lastProxied struct {
-	unixNano atomic.Int64
-}
-
-func (l *lastProxied) record(t time.Time) {
-	l.unixNano.Store(t.UnixNano())
-}
-
-// At returns the zero time if no request has ever been proxied.
-func (l *lastProxied) At() time.Time {
-	nano := l.unixNano.Load()
-	if nano == 0 {
-		return time.Time{}
-	}
-	return time.Unix(0, nano)
-}
-
 // sync.Once, not a bool: net/http serves concurrently. Also the only
 // reachability edge this app can observe -- it's asleep whenever Compute
 // goes unreachable, so it can never log that transition.
@@ -82,22 +59,17 @@ type Handler struct {
 	runtime      ContainerRuntime
 	logger       EventLogger
 	reachability reachabilityTracker
-	lastProxied  lastProxied
-	hold         hold
-	idleStatus   func() (idleDuration time.Duration, dryRun bool)
+	signals      *ActivitySignals
 	serve        http.Handler
 }
 
-// NewHandler refuses to start if bindHost would expose the app
-// off-tailnet. It returns *Handler rather than plain http.Handler so
-// callers -- e.g. the idle watcher -- can also reach methods like
-// LastProxiedAt beyond just serving requests.
-func NewHandler(uiOrigin string, suspender Suspender, runtime ContainerRuntime, logger EventLogger, bindHost string) (*Handler, error) {
+// NewHandler refuses to start if bindHost would expose the app off-tailnet.
+func NewHandler(uiOrigin string, suspender Suspender, runtime ContainerRuntime, logger EventLogger, bindHost string, signals *ActivitySignals) (*Handler, error) {
 	if err := tailnet.AssertTailnetOnlyBind(bindHost); err != nil {
 		return nil, err
 	}
 
-	h := &Handler{uiOrigin: uiOrigin, suspender: suspender, runtime: runtime, logger: logger}
+	h := &Handler{uiOrigin: uiOrigin, suspender: suspender, runtime: runtime, logger: logger, signals: signals}
 
 	mux := http.NewServeMux()
 	mux.Handle("GET /health", tailnet.RequireTailnetIdentity(http.HandlerFunc(h.handleHealth)))
@@ -156,13 +128,12 @@ func (h *Handler) handleHealth(w http.ResponseWriter, r *http.Request) {
 // without waiting for a real suspend cycle: idle duration, hold state
 // (with remaining TTL), and whether dry-run mode is currently enabled.
 func (h *Handler) handleStatus(w http.ResponseWriter, r *http.Request) {
-	idleDuration, dryRun := h.idleStatus()
-	holdActive := h.hold.isActive()
+	idleDuration, holdActive, holdRemainingTTL, dryRun := h.signals.Status()
 
 	httpresponse.WriteJSON(w, http.StatusOK, map[string]any{
 		"idleSeconds":          idleDuration.Seconds(),
 		"holdActive":           holdActive,
-		"holdRemainingSeconds": h.hold.remainingTTL().Seconds(),
+		"holdRemainingSeconds": holdRemainingTTL.Seconds(),
 		"dryRun":               dryRun,
 	})
 }
@@ -183,33 +154,12 @@ func (h *Handler) handleSuspend(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) handleHoldAcquire(w http.ResponseWriter, r *http.Request) {
 	identity := tailnet.GetCallerIdentity(r)
-	h.hold.acquire(h.logger, identity)
+	h.signals.HoldAcquire(identity)
 	httpresponse.WriteJSON(w, http.StatusOK, map[string]string{"hold": "acquired"})
 }
 
 func (h *Handler) handleHoldRelease(w http.ResponseWriter, r *http.Request) {
 	identity := tailnet.GetCallerIdentity(r)
-	h.hold.release(h.logger, identity)
+	h.signals.HoldRelease(identity)
 	httpresponse.WriteJSON(w, http.StatusOK, map[string]string{"hold": "released"})
-}
-
-// LastProxiedAt is when a request was last successfully proxied to a
-// workload container -- one of the idle watcher's activity signals. The
-// zero time means no request has been proxied yet.
-func (h *Handler) LastProxiedAt() time.Time {
-	return h.lastProxied.At()
-}
-
-// HoldActive reports whether a Hold is currently in effect -- one of the
-// idle watcher's activity signals.
-func (h *Handler) HoldActive() bool {
-	return h.hold.isActive()
-}
-
-// SetIdleStatus wires the idle watcher's Status method into GET /status.
-// The idle watcher itself depends on Handler (HoldActive, LastProxiedAt),
-// so this is set after both are constructed rather than passed into
-// NewHandler.
-func (h *Handler) SetIdleStatus(f func() (idleDuration time.Duration, dryRun bool)) {
-	h.idleStatus = f
 }

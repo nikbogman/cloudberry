@@ -30,7 +30,7 @@ func (h *Handler) handleProxy(w http.ResponseWriter, r *http.Request) {
 	target := &url.URL{Scheme: "http", Host: container.Addr}
 	proxy := httputil.NewSingleHostReverseProxy(target)
 	proxy.ModifyResponse = func(*http.Response) error {
-		h.lastProxied.record(time.Now())
+		h.signals.RecordProxied(time.Now())
 		return nil
 	}
 

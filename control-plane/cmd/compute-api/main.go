@@ -33,11 +33,6 @@ func main() {
 	}
 	suspender := compute.NewSystemSuspender()
 
-	handler, err := compute.NewHandler(env.MustEnv("UI_ORIGIN"), suspender, runtime, logger, host)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	idleTimeout, err := time.ParseDuration(env.EnvOr("COMPUTE_API_IDLE_TIMEOUT", "1h"))
 	if err != nil {
 		log.Fatalf("COMPUTE_API_IDLE_TIMEOUT: %v", err)
@@ -46,8 +41,14 @@ func main() {
 	if err != nil {
 		log.Fatalf("COMPUTE_API_AUTOSUSPEND_DRY_RUN: %v", err)
 	}
-	watcher := compute.NewIdleWatcher(suspender, runtime, logger, handler.HoldActive, handler.LastProxiedAt, idleTimeout, dryRun)
-	handler.SetIdleStatus(watcher.Status)
+	signals := compute.NewActivitySignals(logger, idleTimeout, dryRun)
+
+	handler, err := compute.NewHandler(env.MustEnv("UI_ORIGIN"), suspender, runtime, logger, host, signals)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	watcher := compute.NewIdleWatcher(suspender, runtime, logger, signals)
 	go watcher.Run()
 
 	addr := net.JoinHostPort(host, port)

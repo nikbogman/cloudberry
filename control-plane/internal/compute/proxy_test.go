@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+	"time"
 )
 
 func backendAddr(t *testing.T, backend *httptest.Server) string {
@@ -125,18 +126,19 @@ func TestProxy_RecordsLastProxiedTimeOnASuccessfulRequest(t *testing.T) {
 	runtime := &fakeContainerRuntime{containers: []RoutableContainer{
 		{Path: "/immich", Addr: backendAddr(t, backend)},
 	}}
-	h, err := NewHandler(testUIOrigin, &fakeSuspender{}, runtime, &fakeLogger{}, "127.0.0.1")
+	signals := NewActivitySignals(&fakeLogger{}, time.Hour, false)
+	h, err := NewHandler(testUIOrigin, &fakeSuspender{}, runtime, &fakeLogger{}, "127.0.0.1", signals)
 	if err != nil {
 		t.Fatalf("NewHandler failed: %v", err)
 	}
 
-	if got := h.LastProxiedAt(); !got.IsZero() {
+	if got := signals.LastProxiedAt(); !got.IsZero() {
 		t.Fatalf("got LastProxiedAt() %v before any request, want zero time", got)
 	}
 
 	h.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/immich/photos/1", nil))
 
-	if got := h.LastProxiedAt(); got.IsZero() {
+	if got := signals.LastProxiedAt(); got.IsZero() {
 		t.Fatal("got zero LastProxiedAt() after a successful proxy, want it recorded")
 	}
 }
@@ -145,14 +147,15 @@ func TestProxy_DoesNotRecordLastProxiedTimeWhenTheBackendIsUnreachable(t *testin
 	runtime := &fakeContainerRuntime{containers: []RoutableContainer{
 		{Path: "/immich", Addr: "127.0.0.1:1"}, // nothing listens on port 1
 	}}
-	h, err := NewHandler(testUIOrigin, &fakeSuspender{}, runtime, &fakeLogger{}, "127.0.0.1")
+	signals := NewActivitySignals(&fakeLogger{}, time.Hour, false)
+	h, err := NewHandler(testUIOrigin, &fakeSuspender{}, runtime, &fakeLogger{}, "127.0.0.1", signals)
 	if err != nil {
 		t.Fatalf("NewHandler failed: %v", err)
 	}
 
 	h.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/immich/photos/1", nil))
 
-	if got := h.LastProxiedAt(); !got.IsZero() {
+	if got := signals.LastProxiedAt(); !got.IsZero() {
 		t.Fatalf("got LastProxiedAt() %v after an unreachable backend, want zero time", got)
 	}
 }

@@ -8,41 +8,42 @@ import (
 
 const testIdleTimeout = time.Hour
 
-// mustNewIdleWatcher wires an IdleWatcher whose clock, hold state, and
-// last-proxied time are all test-controlled -- nothing here ever sleeps
-// for a real poll interval or idle timeout.
-func mustNewIdleWatcher(t *testing.T, suspender Suspender, runtime ContainerRuntime, logger EventLogger, start time.Time, holdActive func() bool, lastProxied func() time.Time) *IdleWatcher {
+// mustNewIdleWatcher wires an IdleWatcher whose ActivitySignals clock,
+// hold state, and last-proxied time are all test-controlled -- nothing here
+// ever sleeps for a real poll interval or idle timeout.
+func mustNewIdleWatcher(t *testing.T, suspender Suspender, runtime ContainerRuntime, logger EventLogger, start time.Time, holdActive bool, lastProxied time.Time) *IdleWatcher {
 	t.Helper()
 	return mustNewIdleWatcherDryRun(t, suspender, runtime, logger, start, holdActive, lastProxied, false)
 }
 
-func mustNewIdleWatcherDryRun(t *testing.T, suspender Suspender, runtime ContainerRuntime, logger EventLogger, start time.Time, holdActive func() bool, lastProxied func() time.Time, dryRun bool) *IdleWatcher {
+func mustNewIdleWatcherDryRun(t *testing.T, suspender Suspender, runtime ContainerRuntime, logger EventLogger, start time.Time, holdActive bool, lastProxied time.Time, dryRun bool) *IdleWatcher {
 	t.Helper()
-	return &IdleWatcher{
-		suspender:    suspender,
-		runtime:      runtime,
+	signals := &ActivitySignals{
 		logger:       logger,
-		holdActive:   holdActive,
-		lastProxied:  lastProxied,
-		now:          func() time.Time { return start },
 		idleTimeout:  testIdleTimeout,
 		dryRun:       dryRun,
+		now:          func() time.Time { return start },
 		lastActivity: start,
 	}
+	if holdActive {
+		signals.holdActive = true
+		signals.holdExpires = start.Add(1000 * time.Hour) // far enough out not to expire mid-test
+	}
+	if !lastProxied.IsZero() {
+		signals.lastProxied.Store(lastProxied.UnixNano())
+	}
+	return &IdleWatcher{suspender: suspender, runtime: runtime, logger: logger, signals: signals}
 }
-
-func noHold() bool            { return false }
-func neverProxied() time.Time { return time.Time{} }
 
 func TestContainerActivityAboveBaselineNeverTriggersSuspendHoweverLongItPolls(t *testing.T) {
 	start := time.Now()
 	suspender := &fakeSuspender{}
 	runtime := &fakeContainerRuntime{active: true}
-	w := mustNewIdleWatcher(t, suspender, runtime, &fakeLogger{}, start, noHold, neverProxied)
+	w := mustNewIdleWatcher(t, suspender, runtime, &fakeLogger{}, start, false, time.Time{})
 
 	// Poll well past the idle timeout, container activity staying above baseline throughout.
 	for i := 0; i < 5; i++ {
-		w.now = func() time.Time { return start.Add(time.Duration(i) * 2 * testIdleTimeout) }
+		w.signals.now = func() time.Time { return start.Add(time.Duration(i) * 2 * testIdleTimeout) }
 		w.poll()
 	}
 
@@ -56,11 +57,11 @@ func TestRecentProxiedRequestWithNoContainerActivityNeverTriggersSuspend(t *test
 	suspender := &fakeSuspender{}
 	runtime := &fakeContainerRuntime{active: false}
 	lastProxied := start.Add(30 * time.Minute)
-	w := mustNewIdleWatcher(t, suspender, runtime, &fakeLogger{}, start, noHold, func() time.Time { return lastProxied })
+	w := mustNewIdleWatcher(t, suspender, runtime, &fakeLogger{}, start, false, lastProxied)
 
 	// Just past the idle timeout measured from process start, but well
 	// within it measured from the more recent proxied request.
-	w.now = func() time.Time { return start.Add(testIdleTimeout + time.Minute) }
+	w.signals.now = func() time.Time { return start.Add(testIdleTimeout + time.Minute) }
 	w.poll()
 
 	if suspender.calls != 0 {
@@ -72,10 +73,10 @@ func TestActiveHoldNeverTriggersSuspendEvenPastTheIdleTimeout(t *testing.T) {
 	start := time.Now()
 	suspender := &fakeSuspender{}
 	runtime := &fakeContainerRuntime{active: false}
-	w := mustNewIdleWatcher(t, suspender, runtime, &fakeLogger{}, start, func() bool { return true }, neverProxied)
+	w := mustNewIdleWatcher(t, suspender, runtime, &fakeLogger{}, start, true, time.Time{})
 
 	for i := 0; i < 5; i++ {
-		w.now = func() time.Time { return start.Add(time.Duration(i) * 2 * testIdleTimeout) }
+		w.signals.now = func() time.Time { return start.Add(time.Duration(i) * 2 * testIdleTimeout) }
 		w.poll()
 	}
 
@@ -88,9 +89,9 @@ func TestNoActivitySignalForAFullHourTriggersTheSameSuspender(t *testing.T) {
 	start := time.Now()
 	suspender := &fakeSuspender{}
 	runtime := &fakeContainerRuntime{active: false}
-	w := mustNewIdleWatcher(t, suspender, runtime, &fakeLogger{}, start, noHold, neverProxied)
+	w := mustNewIdleWatcher(t, suspender, runtime, &fakeLogger{}, start, false, time.Time{})
 
-	w.now = func() time.Time { return start.Add(testIdleTimeout) }
+	w.signals.now = func() time.Time { return start.Add(testIdleTimeout) }
 	w.poll()
 
 	if suspender.calls != 1 {
@@ -102,9 +103,9 @@ func TestNoActivitySignalBeforeTheIdleTimeoutDoesNotTrigger(t *testing.T) {
 	start := time.Now()
 	suspender := &fakeSuspender{}
 	runtime := &fakeContainerRuntime{active: false}
-	w := mustNewIdleWatcher(t, suspender, runtime, &fakeLogger{}, start, noHold, neverProxied)
+	w := mustNewIdleWatcher(t, suspender, runtime, &fakeLogger{}, start, false, time.Time{})
 
-	w.now = func() time.Time { return start.Add(testIdleTimeout - time.Minute) }
+	w.signals.now = func() time.Time { return start.Add(testIdleTimeout - time.Minute) }
 	w.poll()
 
 	if suspender.calls != 0 {
@@ -116,9 +117,9 @@ func TestAutoSuspendLogsTriggeredThenSucceededWithNilIdentityAndIdleDuration(t *
 	start := time.Now()
 	logger := &fakeLogger{}
 	runtime := &fakeContainerRuntime{active: false}
-	w := mustNewIdleWatcher(t, &fakeSuspender{}, runtime, logger, start, noHold, neverProxied)
+	w := mustNewIdleWatcher(t, &fakeSuspender{}, runtime, logger, start, false, time.Time{})
 
-	w.now = func() time.Time { return start.Add(testIdleTimeout) }
+	w.signals.now = func() time.Time { return start.Add(testIdleTimeout) }
 	w.poll()
 
 	if len(logger.events) != 2 {
@@ -150,9 +151,9 @@ func TestAutoSuspendLogsFailedWithNilIdentityWhenSuspenderFails(t *testing.T) {
 	logger := &fakeLogger{}
 	suspender := &fakeSuspender{err: errors.New("systemctl suspend: exit status 1")}
 	runtime := &fakeContainerRuntime{active: false}
-	w := mustNewIdleWatcher(t, suspender, runtime, logger, start, noHold, neverProxied)
+	w := mustNewIdleWatcher(t, suspender, runtime, logger, start, false, time.Time{})
 
-	w.now = func() time.Time { return start.Add(testIdleTimeout) }
+	w.signals.now = func() time.Time { return start.Add(testIdleTimeout) }
 	w.poll()
 
 	last := logger.events[len(logger.events)-1]
@@ -165,10 +166,11 @@ func TestLastActivityResetsAtConstructionTime(t *testing.T) {
 	start := time.Now()
 	suspender := &fakeSuspender{}
 	runtime := &fakeContainerRuntime{active: false}
-	w := NewIdleWatcher(suspender, runtime, &fakeLogger{}, noHold, neverProxied, testIdleTimeout, false)
+	signals := NewActivitySignals(&fakeLogger{}, testIdleTimeout, false)
+	w := NewIdleWatcher(suspender, runtime, &fakeLogger{}, signals)
 
-	if w.lastActivity.Before(start) {
-		t.Fatalf("got lastActivity %v, want it reset to construction time (>= %v)", w.lastActivity, start)
+	if w.signals.lastActivity.Before(start) {
+		t.Fatalf("got lastActivity %v, want it reset to construction time (>= %v)", w.signals.lastActivity, start)
 	}
 }
 
@@ -176,17 +178,17 @@ func TestLastActivityResetsImmediatelyAfterSuspendReturns(t *testing.T) {
 	start := time.Now()
 	suspender := &fakeSuspender{}
 	runtime := &fakeContainerRuntime{active: false}
-	w := mustNewIdleWatcher(t, suspender, runtime, &fakeLogger{}, start, noHold, neverProxied)
+	w := mustNewIdleWatcher(t, suspender, runtime, &fakeLogger{}, start, false, time.Time{})
 
 	wakeTime := start.Add(testIdleTimeout + 5*time.Hour) // stands in for time elapsed while suspended
-	w.now = func() time.Time { return wakeTime }
+	w.signals.now = func() time.Time { return wakeTime }
 	w.poll()
 
 	if suspender.calls != 1 {
 		t.Fatalf("got %d suspend calls, want 1", suspender.calls)
 	}
-	if !w.lastActivity.Equal(wakeTime) {
-		t.Fatalf("got lastActivity %v, want it reset to the post-Suspend wake time %v", w.lastActivity, wakeTime)
+	if !w.signals.lastActivity.Equal(wakeTime) {
+		t.Fatalf("got lastActivity %v, want it reset to the post-Suspend wake time %v", w.signals.lastActivity, wakeTime)
 	}
 
 	// Immediately re-polling at the same wake time must not immediately
@@ -203,9 +205,9 @@ func TestDryRunLogsDryRunEventAndNeverCallsSuspend(t *testing.T) {
 	suspender := &fakeSuspender{}
 	logger := &fakeLogger{}
 	runtime := &fakeContainerRuntime{active: false}
-	w := mustNewIdleWatcherDryRun(t, suspender, runtime, logger, start, noHold, neverProxied, true)
+	w := mustNewIdleWatcherDryRun(t, suspender, runtime, logger, start, false, time.Time{}, true)
 
-	w.now = func() time.Time { return start.Add(testIdleTimeout) }
+	w.signals.now = func() time.Time { return start.Add(testIdleTimeout) }
 	w.poll()
 
 	if suspender.calls != 0 {
@@ -228,10 +230,10 @@ func TestDryRunStillSuppressedByAnActiveHold(t *testing.T) {
 	suspender := &fakeSuspender{}
 	logger := &fakeLogger{}
 	runtime := &fakeContainerRuntime{active: false}
-	w := mustNewIdleWatcherDryRun(t, suspender, runtime, logger, start, func() bool { return true }, neverProxied, true)
+	w := mustNewIdleWatcherDryRun(t, suspender, runtime, logger, start, true, time.Time{}, true)
 
 	for i := 0; i < 5; i++ {
-		w.now = func() time.Time { return start.Add(time.Duration(i) * 2 * testIdleTimeout) }
+		w.signals.now = func() time.Time { return start.Add(time.Duration(i) * 2 * testIdleTimeout) }
 		w.poll()
 	}
 
@@ -245,12 +247,12 @@ func TestDryRunKeepsCyclingAndFiresAgainAfterASecondIdlePeriod(t *testing.T) {
 	suspender := &fakeSuspender{}
 	logger := &fakeLogger{}
 	runtime := &fakeContainerRuntime{active: false}
-	w := mustNewIdleWatcherDryRun(t, suspender, runtime, logger, start, noHold, neverProxied, true)
+	w := mustNewIdleWatcherDryRun(t, suspender, runtime, logger, start, false, time.Time{}, true)
 
-	w.now = func() time.Time { return start.Add(testIdleTimeout) }
+	w.signals.now = func() time.Time { return start.Add(testIdleTimeout) }
 	w.poll()
 
-	w.now = func() time.Time { return start.Add(2 * testIdleTimeout) }
+	w.signals.now = func() time.Time { return start.Add(2 * testIdleTimeout) }
 	w.poll()
 
 	if suspender.calls != 0 {
@@ -270,10 +272,10 @@ func TestDryRunKeepsCyclingAndFiresAgainAfterASecondIdlePeriod(t *testing.T) {
 func TestStatusReportsIdleDurationAndDryRunFlag(t *testing.T) {
 	start := time.Now()
 	runtime := &fakeContainerRuntime{active: false}
-	w := mustNewIdleWatcherDryRun(t, &fakeSuspender{}, runtime, &fakeLogger{}, start, noHold, neverProxied, true)
+	w := mustNewIdleWatcherDryRun(t, &fakeSuspender{}, runtime, &fakeLogger{}, start, false, time.Time{}, true)
 
-	w.now = func() time.Time { return start.Add(10 * time.Minute) }
-	idleDuration, dryRun := w.Status()
+	w.signals.now = func() time.Time { return start.Add(10 * time.Minute) }
+	idleDuration, _, _, dryRun := w.signals.Status()
 
 	if !dryRun {
 		t.Fatalf("got dryRun false, want true")

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
-	"sync"
 	"testing"
 	"time"
 
@@ -24,24 +23,11 @@ type loggedEvent struct {
 	extra     map[string]any
 }
 
-// mu guards events: the hold's expiry timer calls SendEvent from its own
-// goroutine, concurrently with whatever the test is doing on the main one.
 type fakeLogger struct {
-	mu     sync.Mutex
 	events []loggedEvent
 }
 
-// snapshot is the race-safe way to read events; tests with a live expiry
-// timer (a shrunk holdDuration) must use it instead of the field directly.
-func (f *fakeLogger) snapshot() []loggedEvent {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-	return append([]loggedEvent(nil), f.events...)
-}
-
 func (f *fakeLogger) SendEvent(eventType, outcome string, identity *string, extra map[string]any) {
-	f.mu.Lock()
-	defer f.mu.Unlock()
 	f.events = append(f.events, loggedEvent{eventType: eventType, outcome: outcome, identity: identity, extra: extra})
 }
 
@@ -86,7 +72,8 @@ func mustNewHandler(t *testing.T, suspender Suspender, logger EventLogger) *Hand
 
 func mustNewHandlerWithRuntime(t *testing.T, suspender Suspender, runtime ContainerRuntime, logger EventLogger) *Handler {
 	t.Helper()
-	h, err := NewHandler(testUIOrigin, suspender, runtime, logger, "127.0.0.1")
+	signals := NewActivitySignals(logger, time.Hour, false)
+	h, err := NewHandler(testUIOrigin, suspender, runtime, logger, "127.0.0.1", signals)
 	if err != nil {
 		t.Fatalf("NewHandler failed: %v", err)
 	}
@@ -194,7 +181,8 @@ func TestCorsRejectsOtherOrigins(t *testing.T) {
 }
 
 func TestNewHandlerRefusesOffTailnetBindHost(t *testing.T) {
-	_, err := NewHandler(testUIOrigin, &fakeSuspender{}, &fakeContainerRuntime{}, &fakeLogger{}, "0.0.0.0")
+	signals := NewActivitySignals(&fakeLogger{}, time.Hour, false)
+	_, err := NewHandler(testUIOrigin, &fakeSuspender{}, &fakeContainerRuntime{}, &fakeLogger{}, "0.0.0.0", signals)
 	var bindErr *tailnet.BindOffTailnetError
 	if !errors.As(err, &bindErr) {
 		t.Fatalf("got err %v, want *tailnet.BindOffTailnetError", err)
@@ -372,50 +360,45 @@ func TestHoldReleaseWithNoActiveHoldLogsNothing(t *testing.T) {
 	}
 }
 
-func withShortHoldDuration(t *testing.T, d time.Duration) {
-	t.Helper()
-	prev := holdDuration
-	holdDuration = d
-	t.Cleanup(func() { holdDuration = prev })
-}
+// Hold expiry is checked lazily (inside ActivitySignals.checkExpiry, run
+// from HoldActive/Status/Evaluate) rather than via a background timer, so
+// these tests advance a fake clock and then read hold state, instead of
+// shrinking holdDuration and sleeping for a real timer to fire.
 
-func TestHoldExpiresOnItsOwnAndLogsHoldExpiredWithNoIdentity(t *testing.T) {
-	withShortHoldDuration(t, 10*time.Millisecond)
+func TestHoldExpiresOnceItsTTLHasPassedAndLogsHoldExpiredWithNoIdentity(t *testing.T) {
 	logger := &fakeLogger{}
 	h := mustNewHandler(t, &fakeSuspender{}, logger)
 
 	h.ServeHTTP(httptest.NewRecorder(), authedRequest(http.MethodPost, "/hold"))
+	acquiredAt := h.signals.now()
+	h.signals.now = func() time.Time { return acquiredAt.Add(holdDuration + time.Second) }
 
-	deadline := time.Now().Add(2 * time.Second)
-	for time.Now().Before(deadline) {
-		for _, e := range logger.snapshot() {
-			if e.eventType == "hold_expired" {
-				if e.outcome != "expired" || e.identity != nil {
-					t.Fatalf("got expire event %+v, want hold_expired/expired/nil", e)
-				}
-				return
-			}
-		}
-		time.Sleep(5 * time.Millisecond)
+	h.ServeHTTP(httptest.NewRecorder(), authedRequest(http.MethodGet, "/status"))
+
+	last := logger.events[len(logger.events)-1]
+	if last.eventType != "hold_expired" || last.outcome != "expired" || last.identity != nil {
+		t.Fatalf("got last event %+v, want hold_expired/expired/nil", last)
 	}
-	t.Fatalf("hold_expired was never logged: %+v", logger.snapshot())
 }
 
-func TestHoldRenewalPreventsTheOriginalDeadlineFromLoggingAnExpiry(t *testing.T) {
-	withShortHoldDuration(t, 100*time.Millisecond)
+func TestHoldRenewalPreventsExpiryAtTheOriginalDeadline(t *testing.T) {
 	logger := &fakeLogger{}
 	h := mustNewHandler(t, &fakeSuspender{}, logger)
 
-	h.ServeHTTP(httptest.NewRecorder(), authedRequest(http.MethodPost, "/hold"))
-	time.Sleep(60 * time.Millisecond)
-	h.ServeHTTP(httptest.NewRecorder(), authedRequest(http.MethodPost, "/hold")) // renew, pushing deadline out again
+	h.ServeHTTP(httptest.NewRecorder(), authedRequest(http.MethodPost, "/hold")) // acquire
+	acquiredAt := h.signals.now()
 
-	// Past the original deadline (100ms from the first acquire) but well
-	// before the renewed one (100ms from the second, ~60ms in).
-	time.Sleep(60 * time.Millisecond)
-	for _, e := range logger.snapshot() {
+	h.signals.now = func() time.Time { return acquiredAt.Add(holdDuration / 2) }
+	h.ServeHTTP(httptest.NewRecorder(), authedRequest(http.MethodPost, "/hold")) // renew, pushes deadline out again
+
+	// Past the original deadline (holdDuration from the first acquire) but
+	// well before the renewed one (holdDuration from the second).
+	h.signals.now = func() time.Time { return acquiredAt.Add(holdDuration + holdDuration/4) }
+	h.ServeHTTP(httptest.NewRecorder(), authedRequest(http.MethodGet, "/status"))
+
+	for _, e := range logger.events {
 		if e.eventType == "hold_expired" {
-			t.Fatalf("got hold_expired from the stale timer after renewal, want none yet: %+v", logger.snapshot())
+			t.Fatalf("got hold_expired at the original deadline after renewal, want none yet: %+v", logger.events)
 		}
 	}
 }
@@ -442,7 +425,6 @@ type statusResponse struct {
 
 func TestStatusRequiresIdentityHeader(t *testing.T) {
 	h := mustNewHandler(t, &fakeSuspender{}, &fakeLogger{})
-	h.SetIdleStatus(func() (time.Duration, bool) { return 0, false })
 	rec := httptest.NewRecorder()
 
 	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/status", nil))
@@ -456,7 +438,6 @@ func TestStatusRejectsLoopbackWithNoIdentityHeader(t *testing.T) {
 	// Unlike /hold, /status is a read diagnostic, not an automation
 	// target -- no loopback exception.
 	h := mustNewHandler(t, &fakeSuspender{}, &fakeLogger{})
-	h.SetIdleStatus(func() (time.Duration, bool) { return 0, false })
 	rec := httptest.NewRecorder()
 
 	h.ServeHTTP(rec, loopbackRequest(http.MethodGet, "/status"))
@@ -467,9 +448,18 @@ func TestStatusRejectsLoopbackWithNoIdentityHeader(t *testing.T) {
 }
 
 func TestStatusReportsIdleDurationHoldStateAndDryRunFlag(t *testing.T) {
-	h := mustNewHandler(t, &fakeSuspender{}, &fakeLogger{})
-	h.SetIdleStatus(func() (time.Duration, bool) { return 90 * time.Second, true })
-	h.hold.acquire(&fakeLogger{}, testIdentity)
+	logger := &fakeLogger{}
+	start := time.Now()
+	signals := NewActivitySignals(logger, time.Hour, true)
+	signals.now = func() time.Time { return start }
+	signals.lastActivity = start
+	h, err := NewHandler(testUIOrigin, &fakeSuspender{}, &fakeContainerRuntime{}, logger, "127.0.0.1", signals)
+	if err != nil {
+		t.Fatalf("NewHandler failed: %v", err)
+	}
+
+	h.ServeHTTP(httptest.NewRecorder(), authedRequest(http.MethodPost, "/hold"))
+	signals.now = func() time.Time { return start.Add(90 * time.Second) }
 	rec := httptest.NewRecorder()
 
 	h.ServeHTTP(rec, authedRequest(http.MethodGet, "/status"))
@@ -497,7 +487,6 @@ func TestStatusReportsIdleDurationHoldStateAndDryRunFlag(t *testing.T) {
 
 func TestStatusReportsNoHoldWhenNoneActive(t *testing.T) {
 	h := mustNewHandler(t, &fakeSuspender{}, &fakeLogger{})
-	h.SetIdleStatus(func() (time.Duration, bool) { return 0, false })
 	rec := httptest.NewRecorder()
 
 	h.ServeHTTP(rec, authedRequest(http.MethodGet, "/status"))
