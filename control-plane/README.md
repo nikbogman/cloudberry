@@ -108,3 +108,4 @@ Shared identity-auth and bind-safety helpers, not a standalone service.
 Ships structured wake/suspend/reachability events to Grafana Cloud's Loki push endpoint.
 
 - **`grafanacloud.go`** — `GrafanaCloudLogger.SendEvent(...)`. Both apps are stateless, so Grafana Cloud is the only place this history lives. Transport failures are logged and swallowed.
+- **`config.go`** — `MustGrafanaConfig()` reads the `GRAFANA_CLOUD_LOKI_*` trio from the process environment. Shared by both `cmd/*/main.go`, since both apps log to the same endpoint.

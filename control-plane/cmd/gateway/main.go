@@ -7,7 +7,6 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/nikbogman/homelab/control-plane/internal/env"
 	"github.com/nikbogman/homelab/control-plane/internal/eventlog"
 	"github.com/nikbogman/homelab/control-plane/internal/gateway"
 )
@@ -24,30 +23,18 @@ func main() {
 		log.Fatal(err)
 	}
 
-	host := env.EnvOr("GATEWAY_HOST", "127.0.0.1")
-	port := env.EnvOr("GATEWAY_PORT", "5000")
+	cfg := gateway.ConfigFromEnv()
+	cfg.UIAssets = uiAssets
 
-	logger := eventlog.NewGrafanaCloudLogger(
-		env.MustEnv("GRAFANA_CLOUD_LOKI_URL"),
-		env.MustEnv("GRAFANA_CLOUD_LOKI_USER"),
-		env.MustEnv("GRAFANA_CLOUD_LOKI_API_KEY"),
-		"gateway",
-	)
+	grafanaCfg := eventlog.MustGrafanaConfig()
+	logger := eventlog.NewGrafanaCloudLogger(grafanaCfg.LokiURL, grafanaCfg.LokiUser, grafanaCfg.LokiAPIKey, "gateway")
 
-	cfg := gateway.Config{
-		MACAddress:       env.MustEnv("COMPUTE_MAC_ADDRESS"),
-		BindHost:         host,
-		UIAssets:         uiAssets,
-		ComputeHost:      env.MustEnv("COMPUTE_HOST"),
-		ComputeProxyPort: env.MustEnvInt("COMPUTE_PROXY_PORT"),
-	}
-
-	handler, err := gateway.NewHandler(cfg, gateway.NewWakeOnLanSender(), logger)
+	handler, err := gateway.NewHandler(cfg.Config, gateway.NewWakeOnLanSender(), logger)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	addr := net.JoinHostPort(host, port)
+	addr := net.JoinHostPort(cfg.BindHost, cfg.Port)
 	log.Printf("gateway listening on %s", addr)
 	log.Fatal(http.ListenAndServe(addr, handler))
 }

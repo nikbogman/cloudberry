@@ -29,7 +29,7 @@ from pyinfra.operations import server
 
 from common import DpkgArchitecture, TailscaleServeStatus, has_device_role
 from go_build import go_binary_systemd_service
-from settings import ComputeApiSecrets, ComputeApiSettings, InventorySettings
+from settings import ComputeApiSettings, GrafanaLokiSecrets, InventorySettings
 
 # dpkg's arch names happen to match Go's GOARCH for both values compute
 # realistically runs; anything else fails fast.
@@ -39,7 +39,7 @@ api_settings = ComputeApiSettings()
 inventory = InventorySettings()
 
 if has_device_role("compute"):
-    secrets = ComputeApiSecrets()
+    grafana = GrafanaLokiSecrets()
 
     dpkg_arch = host.get_fact(DpkgArchitecture)
     if dpkg_arch not in GOARCH_BY_DPKG_ARCH:
@@ -59,11 +59,10 @@ if has_device_role("compute"):
         description="Compute API -- exposes Suspend and the reachability health check",
         environment={
             "UI_ORIGIN": f"https://{inventory.gateway_tailnet_host}",
-            "COMPUTE_API_HOST": api_settings.compute_api_host,
             "COMPUTE_API_PORT": str(api_settings.compute_api_port),
-            "GRAFANA_CLOUD_LOKI_URL": secrets.grafana_cloud_loki_url,
-            "GRAFANA_CLOUD_LOKI_USER": secrets.grafana_cloud_loki_user,
-            "GRAFANA_CLOUD_LOKI_API_KEY": secrets.grafana_cloud_loki_api_key,
+            "GRAFANA_CLOUD_LOKI_URL": grafana.grafana_cloud_loki_url,
+            "GRAFANA_CLOUD_LOKI_USER": grafana.grafana_cloud_loki_user,
+            "GRAFANA_CLOUD_LOKI_API_KEY": grafana.grafana_cloud_loki_api_key,
         },
     )
 

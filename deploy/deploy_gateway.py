@@ -28,13 +28,14 @@ from pyinfra.operations import server
 
 from common import TailscaleServeStatus, has_device_role
 from go_build import go_binary_systemd_service
-from settings import GatewaySecrets, GatewaySettings, InventorySettings
+from settings import GatewaySecrets, GatewaySettings, GrafanaLokiSecrets, InventorySettings
 
 gateway_settings = GatewaySettings()
 inventory = InventorySettings()
 
 if has_device_role("gateway"):
     secrets = GatewaySecrets()
+    grafana = GrafanaLokiSecrets()
 
     # VITE_GATEWAY_API_URL is left unset -- same-origin works since the
     # Gateway serves both the UI and /wake.
@@ -58,13 +59,12 @@ if has_device_role("gateway"):
         description="Gateway -- serves the UI, sends Wake-on-LAN, and proxies to the compute host",
         environment={
             "COMPUTE_MAC_ADDRESS": secrets.compute_mac_address,
-            "GATEWAY_HOST": gateway_settings.gateway_bind_host,
             "GATEWAY_PORT": str(gateway_settings.gateway_port),
             "COMPUTE_HOST": gateway_settings.gateway_proxy_host,
             "COMPUTE_PROXY_PORT": str(gateway_settings.compute_proxy_port),
-            "GRAFANA_CLOUD_LOKI_URL": secrets.grafana_cloud_loki_url,
-            "GRAFANA_CLOUD_LOKI_USER": secrets.grafana_cloud_loki_user,
-            "GRAFANA_CLOUD_LOKI_API_KEY": secrets.grafana_cloud_loki_api_key,
+            "GRAFANA_CLOUD_LOKI_URL": grafana.grafana_cloud_loki_url,
+            "GRAFANA_CLOUD_LOKI_USER": grafana.grafana_cloud_loki_user,
+            "GRAFANA_CLOUD_LOKI_API_KEY": grafana.grafana_cloud_loki_api_key,
         },
     )
 

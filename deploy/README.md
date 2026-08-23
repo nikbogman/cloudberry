@@ -63,15 +63,15 @@ Bold variables are required.
 |---|---|---|
 | **`TAILSCALE_AUTH_KEY`** | — | Tailnet auth key, never committed; only required on first join |
 
-### deploy_gateway.py (`GatewaySettings`, `GatewaySecrets`)
+### deploy_gateway.py (`GatewaySettings`, `GatewaySecrets`, `GrafanaLokiSecrets`)
 
 Cross-compiles `control-plane/cmd/gateway` for the Pi Zero W (`GOARCH=arm GOARM=6`) and ships only the binary. The Gateway API does static serving, WoL, and proxying in one process (see [`docs/architecture.md`](../docs/architecture.md)), so this is the only Deploy file for the device.
 
-Bold variables are required.
+The Gateway binary is the source of truth for its own env vars and their defaults (`control-plane/internal/gateway/config.go`) -- this table only lists what deploy itself needs to supply. Bind host isn't one of them: deploy never sets `GATEWAY_HOST`, so the binary's own loopback default always applies. Bold variables are required.
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `GATEWAY_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address |
+| `GATEWAY_PORT` | `5000` | Listen port; deploy pins this explicitly (rather than relying on the binary's matching default) since it also has to point `tailscale serve` at the right port |
 | **`COMPUTE_MAC_ADDRESS`** | — | WoL target MAC |
 | `COMPUTE_HOST` | `main-server.tailnet` | Host `/server*` forwards to |
 | **`COMPUTE_PROXY_PORT`** | — | Port on `COMPUTE_HOST`; no default since the downstream proxy doesn't exist yet |
@@ -83,15 +83,15 @@ Bold variables are required.
 
 After the systemd unit, this file also runs `tailscale serve --bg --https=443 localhost:$GATEWAY_PORT`, guarded by `common.TailscaleServeStatus` so a second run is a no-op. `tailscale serve`'s CLI/JSON shape has moved across Tailscale versions — re-verify against the installed version before trusting it on a new device.
 
-### deploy_compute_api.py (`ComputeApiSettings`, `ComputeApiSecrets`)
+### deploy_compute_api.py (`ComputeApiSettings`, `GrafanaLokiSecrets`)
 
 Cross-compiles `control-plane/cmd/compute-api` and ships only the binary, same as the Gateway. `GOARCH` is read from the device's real architecture (`common.DpkgArchitecture`), since `compute` isn't a fixed known device.
 
-Bold variables are required.
+Same split as the Gateway above: `control-plane/internal/compute/config.go` is the source of truth for the binary's own env vars, so `COMPUTE_API_HOST` is never set here -- only what deploy has to supply. Bold variables are required.
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `COMPUTE_API_HOST`/`_PORT` | `127.0.0.1`, `5000` | Bind address |
+| `COMPUTE_API_PORT` | `5000` | Listen port; pinned explicitly for the same `tailscale serve` reason as `GATEWAY_PORT` above |
 | **`GRAFANA_CLOUD_LOKI_URL`** | — | Grafana Cloud's Loki push endpoint |
 | **`GRAFANA_CLOUD_LOKI_USER`** | — | Loki basic-auth username |
 | **`GRAFANA_CLOUD_LOKI_API_KEY`** | — | Grafana Cloud Access Policy token, scoped to `logs:write` |
