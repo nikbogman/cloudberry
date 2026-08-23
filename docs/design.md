@@ -33,7 +33,7 @@ control-plane/
   internal/eventlog/      shared: Grafana Cloud (Loki) event logger
   internal/httpresponse/  shared: JSON response + response-copy helpers
   internal/env/           shared: env-var lookup helpers
-provisioning/             pyinfra: inventory, settings, one deploy_<x>.py per concern
+deploy/                   pyinfra: inventory, settings, one deploy_<x>.py per concern
 ```
 
 ### How they interact
@@ -42,7 +42,7 @@ provisioning/             pyinfra: inventory, settings, one deploy_<x>.py per co
 - `/server/*` reverse-proxies through the Gateway API to a single fixed upstream on Compute. Which path reaches which Docker service is entirely that upstream's concern — Compute API's own reverse proxy, routing by a `homelab.route` label on each container, no sidecar or static config.
 - Gateway API's auto-wake is an **in-process call**: the proxy's error handler and the `/wake` handler both call the same private `doWake` directly. Compute API's idle watcher follows the identical pattern for suspend: it and the `/suspend` handler both call the same `Suspender.Suspend()`.
 - Every request Compute API's proxy forwards doubles as the idle watcher's activity signal — no separate metrics API to poll.
-- Provisioning depends on control-plane and ui; neither depends on provisioning.
+- The deploy layer depends on control-plane and ui; neither depends on it.
 
 ## Domain Model
 
@@ -150,7 +150,7 @@ sequenceDiagram
 
 - **New control-plane action**: add a route in the relevant `NewHandler`, define a small interface for external effects, fake it in tests. Follow `handleWake`/`handleSuspend`'s shape: log `_requested`, perform the effect, log `_succeeded`/`_failed`, write JSON.
 - **New workload service behind `/server/*`**: add `homelab.route=/path` to its compose file — no Gateway or Compute API change, no redeploy.
-- **New deployed component**: add `provisioning/deploy_<name>.py`, gate with `common.has_device_role(...)`, add settings if needed, `local.include(...)` it from `deploy.py`.
+- **New deployed component**: add `deploy/deploy_<name>.py`, gate with `common.has_device_role(...)`, add settings if needed, `local.include(...)` it from `deploy.py`.
 - **New event type**: call `logger.SendEvent(eventType, outcome, identity, extra)` — no schema migration; labels are fixed, everything else rides in the log line.
 
 ## Constraints

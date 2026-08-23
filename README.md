@@ -31,13 +31,13 @@ Two devices on the same tailnet and LAN broadcast domain:
 
 Auth is the `Tailscale-User-Login` header injected by `tailscale serve` — tailnet membership is the entire authorization boundary.
 
-See [`DESIGN.md`](DESIGN.md) for design decisions, data flow, and constraints.
+See [`docs/design.md`](docs/design.md) for design decisions, data flow, and constraints.
 
 ## Repo layout
 
 ```
 CONTEXT.md               domain glossary
-DESIGN.md          architecture/design reference
+docs/design.md           architecture/design reference
 control-plane/
   ui/                       browser SPA (TypeScript + Vite)
   go.mod                    one Go module for both binaries below
@@ -52,7 +52,7 @@ deploy.sh                forwards to deploy/deploy.sh
 
 ## Status
 
-Fully implemented — see [`DESIGN.md`](DESIGN.md).
+Fully implemented — see [`docs/design.md`](docs/design.md).
 
 Deploy ([`deploy/`](deploy)) converges both devices in one command. Tiers 2/3 of its testing procedure (disposable-container and real-device runs) haven't run against real infrastructure yet — see that README's Known gaps.
 

@@ -1,11 +1,11 @@
-# pyinfra provisioning
+# pyinfra deploy
 
 Declarative provisioning for the homelab control plane. Converges the Gateway (`gateway`, the Pi Zero) and the compute host (`compute`) to their declared state: Tailscale joined, Docker installed on `compute`, and both the Gateway API and Compute API (plus the UI's static build) deployed as systemd services. Domain vocabulary (Deploy, Deploy file, Host group) is in [`CONTEXT.md`](../CONTEXT.md).
 
 ## Layout
 
 ```
-provisioning/
+deploy/
   inventory.py                    # gateway / compute / test Host groups
   common.py                       # shared linux_codename()/linux_distro_id()/has_device_role()/TailscaleServeStatus helpers
   settings.py                     # pydantic-settings classes -- typed env var config
@@ -23,14 +23,14 @@ provisioning/
 ../.env.example                    # checked-in template -- copy to ../.env (gitignored)
 ```
 
-Run `./deploy.sh` from the repo root or from inside `provisioning/` — both resolve to the same script. Deploy files import from sibling modules and resolve `templates/*.j2` relative to cwd, so `deploy.sh` always `cd`s into `provisioning/` first.
+Run `./deploy.sh` from the repo root or from inside `deploy/` — both resolve to the same script. Deploy files import from sibling modules and resolve `templates/*.j2` relative to cwd, so `deploy.sh` always `cd`s into `deploy/` first.
 
 ## Setup
 
 An independent [uv](https://docs.astral.sh/uv/) project, not an installable package -- pyinfra's CLI executes these scripts directly. Also requires a Go toolchain on the dev machine:
 
 ```sh
-cd provisioning
+cd deploy
 uv sync
 ```
 
@@ -65,7 +65,7 @@ Bold variables are required.
 
 ### deploy_gateway.py (`GatewaySettings`, `GatewaySecrets`)
 
-Cross-compiles `control-plane/cmd/gateway` for the Pi Zero W (`GOARCH=arm GOARM=6`) and ships only the binary. The Gateway API does static serving, WoL, and proxying in one process (see [`ARCHITECTURE.md`](../ARCHITECTURE.md)), so this is the only Deploy file for the device.
+Cross-compiles `control-plane/cmd/gateway` for the Pi Zero W (`GOARCH=arm GOARM=6`) and ships only the binary. The Gateway API does static serving, WoL, and proxying in one process (see [`docs/design.md`](../docs/design.md)), so this is the only Deploy file for the device.
 
 Bold variables are required.
 
