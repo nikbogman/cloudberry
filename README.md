@@ -31,13 +31,13 @@ Two devices on the same tailnet and LAN broadcast domain:
 
 Auth is the `Tailscale-User-Login` header injected by `tailscale serve` — tailnet membership is the entire authorization boundary.
 
-See [`ARCHITECTURE.md`](ARCHITECTURE.md) for design decisions, data flow, and constraints.
+See [`DESIGN.md`](DESIGN.md) for design decisions, data flow, and constraints.
 
 ## Repo layout
 
 ```
 CONTEXT.md               domain glossary
-ARCHITECTURE.md          architecture/design reference
+DESIGN.md          architecture/design reference
 control-plane/
   ui/                       browser SPA (TypeScript + Vite)
   go.mod                    one Go module for both binaries below
@@ -45,21 +45,21 @@ control-plane/
   cmd/compute-api/          Compute API (Suspend, Hold, health, container proxy, idle watcher)
   internal/tailnet/         shared: identity-header auth, bind-safety
   internal/eventlog/        shared: Grafana Cloud event logging
-provisioning/               declarative provisioning (pyinfra)
-deploy.sh                   forwards to provisioning/deploy.sh
-.env.example                 template -- copy to .env (gitignored)
+deploy/                  declarative provisioning (pyinfra)
+deploy.sh                forwards to deploy/deploy.sh
+.env.example              template -- copy to .env (gitignored)
 ```
 
 ## Status
 
-Fully implemented — see [`ARCHITECTURE.md`](ARCHITECTURE.md).
+Fully implemented — see [`DESIGN.md`](DESIGN.md).
 
-Provisioning ([`provisioning/`](provisioning)) converges both devices in one command. Tiers 2/3 of its testing procedure (disposable-container and real-device runs) haven't run against real infrastructure yet — see that README's Known gaps.
+Deploy ([`deploy/`](deploy)) converges both devices in one command. Tiers 2/3 of its testing procedure (disposable-container and real-device runs) haven't run against real infrastructure yet — see that README's Known gaps.
 
 ## Development
 
-One Go module covers both binaries (`go build ./...`/`go test ./...` from `control-plane/`). `ui/` is a separate npm project; `provisioning/` an independent `uv` project. No root-level build.
+One Go module covers both binaries (`go build ./...`/`go test ./...` from `control-plane/`). `ui/` is a separate npm project; `deploy/` an independent `uv` project. No root-level build.
 
 - [control-plane/README.md](control-plane/README.md)
 - [control-plane/ui/README.md](control-plane/ui/README.md)
-- [provisioning/README.md](provisioning/README.md)
+- [deploy/README.md](deploy/README.md)

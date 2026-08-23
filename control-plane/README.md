@@ -1,6 +1,6 @@
 # Control-plane services
 
-Backend for the homelab control system: the Gateway API (Pi Zero, always on) and the Compute API (the host that sleeps). One Go module (`go.mod`, `github.com/nikbogman/homelab/control-plane`) covers both binaries. See [`ARCHITECTURE.md`](../ARCHITECTURE.md) for why.
+Backend for the homelab control system: the Gateway API (Pi Zero, always on) and the Compute API (the host that sleeps). One Go module (`go.mod`, `github.com/nikbogman/homelab/control-plane`) covers both binaries. See [`DESIGN.md`](../DESIGN.md) for why.
 
 ```
 control-plane/
@@ -59,7 +59,7 @@ Bold variables are required.
 | `GATEWAY_HOST` | Bind address (default `127.0.0.1`). Must be loopback or tailnet ([`tailnet.AssertTailnetOnlyBind`](internal/tailnet/bindsafety.go)). |
 | `GATEWAY_PORT` | Listen port (default `5000`). |
 
-Deployed as a systemd unit on the Pi Zero, cross-compiled and shipped from the dev machine (never runs a Go toolchain itself). Automated by [`provisioning/deploy_gateway.py`](../provisioning/deploy_gateway.py) — see [`provisioning/README.md`](../provisioning/README.md).
+Deployed as a systemd unit on the Pi Zero, cross-compiled and shipped from the dev machine (never runs a Go toolchain itself). Automated by [`deploy/deploy_gateway.py`](../deploy/deploy_gateway.py) — see [`deploy/README.md`](../deploy/README.md).
 
 ## Compute API
 
@@ -94,7 +94,7 @@ Bold variables are required.
 | `COMPUTE_API_CPU_BASELINE_PERCENT` | Container CPU% above which counts as activity (default `2`). |
 | `COMPUTE_API_AUTOSUSPEND_DRY_RUN` | If `true`, the idle watcher logs instead of actually suspending (default `false`). |
 
-Deployed as a systemd unit on the compute host (not Docker, so it stays controllable while Docker redeploys), built off-device same as the Gateway API. Automated by [`provisioning/deploy_compute_api.py`](../provisioning/deploy_compute_api.py).
+Deployed as a systemd unit on the compute host (not Docker, so it stays controllable while Docker redeploys), built off-device same as the Gateway API. Automated by [`deploy/deploy_compute_api.py`](../deploy/deploy_compute_api.py).
 
 ## `internal/tailnet`
 
