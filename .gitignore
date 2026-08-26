@@ -13,3 +13,6 @@ dist/
 # go:embed placeholder below has to stay tracked.
 control-plane/cmd/gateway/uidist/*
 !control-plane/cmd/gateway/uidist/.gitkeep
+
+# Generated knowledge graph -- rebuilt locally by `graphify update .`
+/graphify-out/

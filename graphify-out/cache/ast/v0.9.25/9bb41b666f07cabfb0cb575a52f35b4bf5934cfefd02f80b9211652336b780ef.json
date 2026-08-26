@@ -1,1 +1,0 @@
-{"nodes": [{"id": "pkg_github_com_nikbogman_homelab_control_plane", "label": "github.com/nikbogman/homelab/control-plane", "file_type": "code", "type": "package", "ecosystem": "go", "source_file": "control-plane/go.mod", "source_location": "L1"}], "edges": []}
