@@ -17,8 +17,7 @@ type SystemSuspender struct {
 	command []string
 }
 
-// NewSystemSuspender is the only constructor real callers should use;
-// NewSystemSuspenderWithCommand is for tests.
+// NewSystemSuspender is the only constructor real callers should use.
 func NewSystemSuspender() *SystemSuspender {
 	return &SystemSuspender{command: DefaultSuspendCommand}
 }

@@ -74,7 +74,7 @@ The Gateway binary is the source of truth for its own env vars and their default
 | `GATEWAY_PORT` | `5000` | Listen port; deploy pins this explicitly (rather than relying on the binary's matching default) since it also has to point `tailscale serve` at the right port |
 | **`COMPUTE_MAC_ADDRESS`** | — | WoL target MAC |
 | `COMPUTE_HOST` | `main-server.tailnet` | Host `/server*` forwards to |
-| **`COMPUTE_PROXY_PORT`** | — | Port on `COMPUTE_HOST`; no default since the downstream proxy doesn't exist yet |
+| **`COMPUTE_PROXY_PORT`** | — | Port on `COMPUTE_HOST` that `/server*` forwards to — the Compute API's own listen port. Required, not defaulted: no single correct target across every device the binary might run on |
 | **`GRAFANA_CLOUD_LOKI_URL`** | — | Grafana Cloud's Loki push endpoint |
 | **`GRAFANA_CLOUD_LOKI_USER`** | — | Loki basic-auth username (numeric instance ID) |
 | **`GRAFANA_CLOUD_LOKI_API_KEY`** | — | Grafana Cloud Access Policy token, scoped to `logs:write` |
@@ -165,4 +165,4 @@ Run the same Deploy twice in a row against **both** `test` and the real `gateway
 
 - **Tiers 2/3 haven't run against real infrastructure** — the `tailscale serve` automation for both Deploy files is unverified against a real device; re-check the CLI/JSON version caveat above before trusting it blindly.
 - **Bind-address enforcement** ("never bound off-tailnet") isn't checked by pyinfra.
-- **The server-side workload proxy** `/server*` forwards to doesn't exist yet — a manual prerequisite, out of pyinfra's scope.
+- **No labeled workload stack exists yet** for Compute's proxy to route to — Docker is provisioned, but standing up a container carrying a `homelab.route` label is a manual step outside pyinfra's scope.

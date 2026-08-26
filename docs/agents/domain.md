@@ -4,25 +4,10 @@ How the engineering skills should consume this repo's domain documentation when 
 
 ## Before exploring, read these
 
-- **`CONTEXT.md`** at the repo root, or
-- **`CONTEXT-MAP.md`** at the repo root if it exists — it points at one `CONTEXT.md` per context. Read each one relevant to the topic.
-- **`docs/adr/`** — read ADRs that touch the area you're about to work in. In multi-context repos, also check `src/<context>/docs/adr/` for context-scoped decisions.
+- **`CONTEXT.md`** at the repo root — this repo is single-context, so there's exactly one.
+- **`docs/adr/DECISIONS.md`** — decisions touching the area you're about to work in. A deliberate deviation from the default one-`NNNN-slug.md`-per-decision convention: related decisions from the same design session are kept together as sections in one file, and new ones are appended there rather than as separate numbered files.
 
-If any of these files don't exist, **proceed silently**. Don't flag their absence; don't suggest creating them upfront. The `/domain-modeling` skill (reached via `/grill-with-docs` and `/improve-codebase-architecture`) creates them lazily when terms or decisions actually get resolved.
-
-## File structure
-
-This repo is single-context:
-
-```
-/
-├── CONTEXT.md
-├── docs/adr/
-│   └── DECISIONS.md   ← single running log, not one file per decision
-└── control-plane/
-```
-
-`docs/adr/DECISIONS.md` is a deliberate deviation from the default one-`NNNN-slug.md`-per-decision convention — related decisions from the same design session are kept together as sections in one file (see the file's own header note). New decisions are appended as sections there, not as separate numbered files.
+Neither is created upfront, and neither exists yet. If one is missing, **proceed silently** — don't flag its absence, don't suggest creating it. The `/domain-modeling` skill (reached via `/grill-with-docs` and `/improve-codebase-architecture`) creates them lazily when terms or decisions actually get resolved.
 
 ## Use the glossary's vocabulary
 

@@ -1,6 +1,6 @@
 # Architecture
 
-Primary architecture reference for the homelab control plane: current architecture, key decisions, and constraints. Domain vocabulary: [`CONTEXT.md`](CONTEXT.md). Documents the system as it exists today, not superseded designs.
+Primary architecture reference for the homelab control plane: current architecture, key decisions, and constraints. Domain vocabulary: [`CONTEXT.md`](../CONTEXT.md). Documents the system as it exists today, not superseded designs.
 
 ## System Overview
 
@@ -8,7 +8,7 @@ Primary architecture reference for the homelab control plane: current architectu
 
 Two physical devices on the same tailnet and LAN broadcast domain.
 
-<p align="center"><img src="homelab.drawio.png" alt="High-level architecture"></p>
+<p align="center"><img src="../homelab.drawio.png" alt="High-level architecture"></p>
 
 | Component | Responsibility |
 |---|---|
@@ -46,7 +46,7 @@ deploy/                   pyinfra: inventory, settings, one deploy_<x>.py per co
 
 ## Domain Model
 
-See [`CONTEXT.md`](CONTEXT.md).
+See [`CONTEXT.md`](../CONTEXT.md).
 
 ### Key entities (code level)
 

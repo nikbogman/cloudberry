@@ -11,18 +11,7 @@ Two devices on the same tailnet and LAN broadcast domain:
 - **Gateway (Pi Zero)** — always on, low-power. Serves the UI and runs the Gateway API.
 - **Compute host** — runs the workloads, suspended to RAM most of the time.
 
-```
- Browser (tailnet) ──┬──> UI (Gateway, static, served by the Gateway API)
-                      │
-                      ├──POST /wake───────────────> Gateway API (Gateway) ──WoL──> Compute host
-                      │
-                      ├──any /server* request──────> Gateway API (Gateway) ──proxies + auto-WoL──> Compute host workloads
-                      │
-                      ├──GET /health, POST /suspend,
-                      │  POST/DELETE /hold, GET /status──> Compute API (compute host)
-                      │
-                      └──any /{prefix}* request────────> Compute API (compute host) ──proxies + idle watcher──> Compute host workloads
-```
+The pieces running on them:
 
 - **[UI](control-plane/ui)** — browser app. Polls reachability, offers Wake/Suspend.
 - **[Gateway API](control-plane/README.md#gateway-api)** — serves the UI, sends Wake-on-LAN, reverse-proxies `/server*` to Compute with auto-wake.
@@ -52,9 +41,7 @@ deploy.sh                forwards to deploy/deploy.sh
 
 ## Status
 
-Fully implemented — see [`docs/architecture.md`](docs/architecture.md).
-
-Deploy ([`deploy/`](deploy)) converges both devices in one command. Tiers 2/3 of its testing procedure (disposable-container and real-device runs) haven't run against real infrastructure yet — see that README's Known gaps.
+Fully implemented; Deploy ([`deploy/`](deploy)) converges both devices in one command. Outstanding gaps: [`deploy/README.md`](deploy/README.md#known-gaps) and [`docs/architecture.md`](docs/architecture.md#constraints).
 
 ## Development
 

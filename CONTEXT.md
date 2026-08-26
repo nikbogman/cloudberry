@@ -19,7 +19,7 @@ The browser app on the Gateway showing Compute reachability and Wake/Suspend act
 _Avoid_: Control UI, Panel, dashboard, frontend
 
 **Gateway API**:
-The backend on the Gateway: serves the UI's static files, sends WoL when the Wake button is pressed, and reverse-proxies `/server*` to a single upstream on Compute — not one route per workload service; which path reaches which service is Compute's own reverse proxy's concern. That proxy route also triggers a wake on any request while Compute is asleep, holding the request until it responds — a second, automatic trigger distinct from the Wake button. Same-origin with the UI; not reachable off-tailnet.
+The backend on the Gateway: serves the UI's static files, sends WoL, and reverse-proxies `/server*` to a single upstream on Compute — not one route per workload service; which path reaches which service is the Compute API's concern. That proxy route also wakes Compute on any request while it's asleep — a second trigger, distinct from the Wake button. Same-origin with the UI; not reachable off-tailnet.
 _Avoid_: Pi API, wake service, Gateway proxy, WoL plugin
 
 **Compute API**:
