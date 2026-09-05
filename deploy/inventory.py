@@ -18,7 +18,14 @@ from settings import InventorySettings
 settings = InventorySettings()
 
 gateway = [
-    (settings.gateway_host, {"ssh_user": settings.gateway_ssh_user, "device_role": "gateway"}),
+    (
+        settings.gateway_host,
+        {
+            "ssh_user": settings.gateway_ssh_user,
+            "device_role": "gateway",
+            "_sudo": True,
+        },
+    ),
 ]
 
 compute = [
@@ -27,6 +34,7 @@ compute = [
         {
             "ssh_user": settings.compute_ssh_user,
             "device_role": "compute",
+            "_sudo": True,
             "_sudo_password": settings.compute_sudo_password,
         },
     ),
