@@ -214,3 +214,42 @@ func TestNewHandlerRejectsAMalformedMacAddressAtStartup(t *testing.T) {
 		t.Fatal("NewHandler succeeded, want error")
 	}
 }
+
+func TestConfigJSExposesTheComputeAPIURLToTheBrowser(t *testing.T) {
+	cfg := Config{
+		MACAddress:       testMACAddress,
+		BindHost:         "127.0.0.1",
+		UIAssets:         os.DirFS(t.TempDir()),
+		ComputeHost:      "127.0.0.1",
+		ComputeProxyPort: 1,
+		ComputeAPIURL:    "https://compute.example.ts.net",
+	}
+	h := mustNewHandlerWithConfig(t, cfg, &fakeWaker{}, &fakeLogger{})
+	rec := httptest.NewRecorder()
+
+	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/config.js", nil))
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("got status %d, want 200", rec.Code)
+	}
+	if got, want := rec.Header().Get("Content-Type"), "text/javascript; charset=utf-8"; got != want {
+		t.Errorf("got Content-Type %q, want %q", got, want)
+	}
+	want := `window.COMPUTE_API_URL = "https://compute.example.ts.net"` + "\n"
+	if got := rec.Body.String(); got != want {
+		t.Errorf("got body %q, want %q", got, want)
+	}
+}
+
+// An unset COMPUTE_API_URL must still yield valid JS, not a bare
+// `= ` -- the UI reads the global unconditionally.
+func TestConfigJSEmitsAnEmptyStringWhenNoComputeAPIURLIsSet(t *testing.T) {
+	h := mustNewHandler(t, &fakeWaker{}, &fakeLogger{})
+	rec := httptest.NewRecorder()
+
+	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/config.js", nil))
+
+	if want := "window.COMPUTE_API_URL = \"\"\n"; rec.Body.String() != want {
+		t.Errorf("got body %q, want %q", rec.Body.String(), want)
+	}
+}

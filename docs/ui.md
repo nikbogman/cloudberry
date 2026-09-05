@@ -4,14 +4,15 @@ The browser app served by the [Gateway](gateway.md): shows whether Compute is
 [Reachable](../CONTEXT.md) and offers Wake/Suspend. The only user-facing surface
 in the system.
 
-A framework-light TypeScript + Vite SPA, kept minimal so it never needs to run
-on the Pi Zero itself.
+Plain static files — HTML, one ES module, one stylesheet. No framework, no
+bundler, no build step, no Node toolchain.
 
 Code: [`ui/`](../ui).
 
 ## Behavior
 
-All of it lives in [`mountUi`](../ui/src/app.ts):
+All of it lives in [`mountUi`](../ui/app.js), called by the inline module script
+in [`index.html`](../ui/index.html):
 
 - Polls the [Compute API](compute.md)'s `GET /health` every 12s (configurable),
   renders `Checking…` / `Reachable` / `Unreachable`.
@@ -19,23 +20,58 @@ All of it lives in [`mountUi`](../ui/src/app.ts):
   [Gateway API](gateway.md)'s `/wake` (same-origin by default).
 - **Suspend button** — enabled unless already unreachable. `POST`s to the
   Compute API's `/suspend` (a distinct origin).
-- Both actions are fire-and-forget: the outcome isn't surfaced in the UI.
+- Failures surface in an error line; successes don't.
 
 ## Configuration
 
-Read at build/dev time via Vite env vars (see
-[`main.ts`](../ui/src/main.ts)):
+One value, `window.COMPUTE_API_URL` — the Compute API's origin. `index.html`
+loads it from `/config.js`, which the [Gateway](gateway.md#routes) *serves* (from
+its `COMPUTE_API_URL` env var) rather than the UI shipping. That keeps `ui/` a
+pure static tree with nothing generated into it at deploy time.
 
-| Variable | Purpose |
-|---|---|
-| `VITE_COMPUTE_API_URL` | Compute API origin (default `''`, relative). |
-| `VITE_GATEWAY_API_URL` | Gateway API origin (default `''`, relative — works in production since it's same-origin with the UI). |
+Under a plain dev server `/config.js` 404s, the global stays undefined, and the
+UI falls back to `''` — a relative path. The 404 in the console is expected.
+
+The Gateway API origin is always relative — the Gateway serves both the UI and
+`/wake`, so they're same-origin.
+
+## Layout
+
+```
+index.html        markup + the inline mount script
+app.js            all the behavior
+style.css
+icons/            favicons + touch icons, referenced by index.html
+site.webmanifest  stays at the root; its icon paths point into icons/
+ui.go             the go:embed declaration -- six lines, no logic
+```
+
+## Development
+
+```sh
+./dev-ui.sh          # http://localhost:5173, or ./dev-ui.sh <port>
+```
+
+Serves `ui/` straight from disk, so edits show up on refresh with no rebuild.
+It writes `ui/config.js` (gitignored) from the repo root `.env`'s
+`COMPUTE_TAILNET_HOST`, the same value a Deploy uses — so the health poll hits
+the real Compute host and the status is live.
+
+Wake and `/server/*` are Gateway routes and 404 here. For those, run the real
+binary instead (see the README) — it serves the *embedded* UI, so edits need a
+restart.
+
+Absolute asset paths (`/app.js`, `/style.css`) mean the site must be served from
+its own root, either way. Opening `index.html` as a `file://` URL will not work
+— ES modules need an HTTP origin.
 
 ## Deployment
 
-Built on the dev machine (`npm run build`); only the static `dist/` output ships
-to the Pi Zero, which never runs a Node toolchain. The Gateway binary
-`//go:embed`s it at build time, so there is no separate UI artifact on the
-device. Automated by [`deploy/deploy_gateway.py`](../deploy/deploy_gateway.py) —
-the UI build must run before the Go build, which embeds whatever is in `uidist/`
-at that moment.
+[`ui/ui.go`](../ui/ui.go) `//go:embed`s this directory straight into the Gateway
+binary — no copy, no staging directory. The declaration sits *inside* `ui/`
+because `go:embed` patterns are relative to their own package directory and
+can't climb out of it: `cmd/gateway-api` cannot reach `../../ui`, but a package
+living here can embed its own contents. Its globs skip `ui.go` itself.
+
+[`deploy_gateway.py`](../deploy/deploy_gateway.py) just cross-compiles and ships
+that one binary; nothing else reaches the Pi Zero.

@@ -2,7 +2,7 @@
 
 Declarative provisioning with [pyinfra](https://pyinfra.com/). One run converges
 the Gateway and the compute host to their declared state: Tailscale joined,
-Docker installed on `compute`, and both binaries (plus the UI's static build)
+Docker installed on `compute`, and both binaries (with the UI embedded in the Gateway's)
 deployed as systemd services.
 
 Per-service deploy details live with the service: [`gateway.md`](gateway.md),
@@ -65,7 +65,7 @@ demands env vars an unrelated one needs.
 | `GATEWAY_HOST`, `GATEWAY_SSH_USER` | `pi-zero.tailnet`, `pi` | Gateway's SSH target |
 | `COMPUTE_HOST`, `COMPUTE_SSH_USER` | `main-server.tailnet`, `admin` | Compute's SSH target |
 | `GATEWAY_TAILNET_HOST` | `pi-zero.your-tailnet-name.ts.net` | Gateway's Tailscale MagicDNS name; derives `UI_ORIGIN` |
-| `COMPUTE_TAILNET_HOST` | `main-server.your-tailnet-name.ts.net` | Compute's Tailscale MagicDNS name; derives `VITE_COMPUTE_API_URL` |
+| `COMPUTE_TAILNET_HOST` | `main-server.your-tailnet-name.ts.net` | Compute's Tailscale MagicDNS name; derives the Gateway's `COMPUTE_API_URL` |
 | `GATEWAY_TEST_HOST`, `GATEWAY_TEST_SSH_PORT`, `GATEWAY_TEST_SSH_USER` | `localhost`, `2201`, `root` | `test` group's gateway stand-in |
 | `COMPUTE_TEST_HOST`, `COMPUTE_TEST_SSH_PORT`, `COMPUTE_TEST_SSH_USER` | `localhost`, `2202`, `root` | `test` group's compute stand-in |
 

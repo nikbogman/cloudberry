@@ -13,7 +13,7 @@ Two physical devices on the same tailnet and LAN broadcast domain.
 | Component | Responsibility |
 |---|---|
 | UI | Browser SPA. Polls Compute reachability, offers Wake/Suspend. |
-| Gateway API | Serves the UI's static build, sends WoL on `POST /wake`, reverse-proxies `/server/*` to Compute with auto-wake-on-failure. |
+| Gateway API | Serves the UI's static files, sends WoL on `POST /wake`, reverse-proxies `/server/*` to Compute with auto-wake-on-failure. |
 | Compute API | Exposes `GET /health`, `POST /suspend`, Hold (`POST`/`DELETE /hold`), `GET /status`, and its own reverse proxy to workload containers behind an idle watcher that auto-suspends. |
 | Provisioning (pyinfra) | Converges both devices to their target state — Tailscale, Docker, both binaries. |
 
@@ -80,7 +80,7 @@ sequenceDiagram
     participant C as Compute API/host
 
     B->>G: GET / (poll asset load)
-    G-->>B: UI static build (go:embed)
+    G-->>B: UI static files (go:embed)
 
     loop every 12s
         B->>C: GET /health (Identity header)
@@ -145,7 +145,8 @@ sequenceDiagram
 - **Tailnet membership is the entire authorization boundary** — no separate allow-list.
 - **Events ship directly to Grafana Cloud, no local collector** — not worth a self-hosted Alloy instance for low-volume audit events.
 - **Both apps are Go, built and shipped as binaries** — no interpreter/dependency tree on-device; suits low-resource hardware like the Pi Zero.
-- **The UI is also built off-device** — the Pi Zero is single-core/low-memory; only `dist/` ships.
+- **The UI has no build step** — static HTML/JS/CSS, `//go:embed`ded verbatim into the Gateway binary. The Pi Zero is single-core/low-memory, so a bundler was never going to run there; skipping one entirely means no Node toolchain anywhere, and no staging copy between `ui/` and the binary.
+- **The UI's one runtime value is served, not baked** — the Gateway answers `/config.js` from an env var, so `ui/` stays a static tree that a Deploy never writes into and `cmd/gateway-api` embeds as-is.
 - **systemd, not Docker, for both apps** — the Compute API must stay controllable while Docker itself redeploys.
 - **Deploys are manually triggered only** — no CI/cron/hook, to avoid unattended-deploy risk on a two-device setup.
 - **Secrets are plain dev-machine environment variables** — an encrypted-secrets workflow is unneeded for a single-operator setup.

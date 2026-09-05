@@ -1,6 +1,4 @@
-export type ReachabilityState = 'checking' | 'reachable' | 'unreachable'
-
-const STATUS_LABELS: Record<ReachabilityState, string> = {
+const STATUS_LABELS = {
   checking: 'Checking…',
   reachable: 'Reachable',
   unreachable: 'Unreachable',
@@ -10,15 +8,13 @@ const DEFAULT_POLL_INTERVAL_MS = 12_000
 // Caps how long a poll can hang in "Checking…" if the host is powered off.
 const HEALTH_CHECK_TIMEOUT_MS = 5_000
 
-export interface MountOptions {
-  computeApiBaseUrl: string
-  /** Same-origin as the UI by default, so '' (relative) works. */
-  gatewayApiBaseUrl?: string
-  intervalMs?: number
-}
-
-/** Returns a cleanup function that stops polling. */
-export function mountUi(container: HTMLElement, options: MountOptions): () => void {
+/**
+ * Renders the UI into `container` and starts polling.
+ *
+ * `gatewayApiBaseUrl` is same-origin as the UI by default, so '' (relative)
+ * works. Returns a cleanup function that stops polling.
+ */
+export function mountUi(container, options) {
   const { computeApiBaseUrl, gatewayApiBaseUrl = '', intervalMs = DEFAULT_POLL_INTERVAL_MS } = options
 
   container.innerHTML = `
@@ -31,13 +27,13 @@ export function mountUi(container: HTMLElement, options: MountOptions): () => vo
     </div>
     <p id="action-error" role="alert" hidden></p>
   `
-  const statusElement = container.querySelector<HTMLParagraphElement>('#reachability-status')!
-  const wakeButton = container.querySelector<HTMLButtonElement>('#wake-button')!
-  const suspendButton = container.querySelector<HTMLButtonElement>('#suspend-button')!
-  const refreshButton = container.querySelector<HTMLButtonElement>('#refresh-button')!
-  const errorElement = container.querySelector<HTMLParagraphElement>('#action-error')!
+  const statusElement = container.querySelector('#reachability-status')
+  const wakeButton = container.querySelector('#wake-button')
+  const suspendButton = container.querySelector('#suspend-button')
+  const refreshButton = container.querySelector('#refresh-button')
+  const errorElement = container.querySelector('#action-error')
 
-  let reachability: ReachabilityState = 'checking'
+  let reachability = 'checking'
   let pollInFlight = false
   let actionPending = false
 
@@ -49,7 +45,7 @@ export function mountUi(container: HTMLElement, options: MountOptions): () => vo
     refreshButton.disabled = actionPending || pollInFlight
   }
 
-  const setState = (state: ReachabilityState) => {
+  const setState = (state) => {
     reachability = state
     statusElement.textContent = STATUS_LABELS[state]
     statusElement.dataset.state = state
@@ -61,7 +57,7 @@ export function mountUi(container: HTMLElement, options: MountOptions): () => vo
     errorElement.textContent = ''
   }
 
-  const showError = (message: string) => {
+  const showError = (message) => {
     errorElement.hidden = false
     errorElement.textContent = message
   }
@@ -70,25 +66,20 @@ export function mountUi(container: HTMLElement, options: MountOptions): () => vo
     pollInFlight = true
     setState('checking')
     const controller = new AbortController()
-    const timeoutId = window.setTimeout(() => controller.abort(), HEALTH_CHECK_TIMEOUT_MS)
+    const timeoutId = setTimeout(() => controller.abort(), HEALTH_CHECK_TIMEOUT_MS)
     try {
       const response = await fetch(`${computeApiBaseUrl}/health`, { signal: controller.signal })
       setState(response.ok ? 'reachable' : 'unreachable')
     } catch {
       setState('unreachable')
     } finally {
-      window.clearTimeout(timeoutId)
+      clearTimeout(timeoutId)
       pollInFlight = false
       applyButtonState()
     }
   }
 
-  const runAction = async (
-    button: HTMLButtonElement,
-    idleLabel: string,
-    pendingLabel: string,
-    request: () => Promise<Response>,
-  ) => {
+  const runAction = async (button, idleLabel, pendingLabel, request) => {
     clearError()
     actionPending = true
     button.textContent = pendingLabel
@@ -123,7 +114,7 @@ export function mountUi(container: HTMLElement, options: MountOptions): () => vo
   })
 
   void poll()
-  const timerId = window.setInterval(poll, intervalMs)
+  const timerId = setInterval(poll, intervalMs)
 
-  return () => window.clearInterval(timerId)
+  return () => clearInterval(timerId)
 }

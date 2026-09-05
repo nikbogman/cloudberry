@@ -1,30 +1,18 @@
 package main
 
 import (
-	"embed"
-	"io/fs"
 	"log"
 	"net"
 	"net/http"
 
 	"github.com/nikbogman/homelab/internal/eventlog"
 	"github.com/nikbogman/homelab/internal/gateway"
+	"github.com/nikbogman/homelab/ui"
 )
 
-// .gitkeep satisfies go:embed's "at least one file" requirement before
-// deploy_gateway.py builds the UI into uidist/.
-//
-//go:embed all:uidist
-var embeddedUI embed.FS
-
 func main() {
-	uiAssets, err := fs.Sub(embeddedUI, "uidist")
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	cfg := gateway.ConfigFromEnv()
-	cfg.UIAssets = uiAssets
+	cfg.UIAssets = ui.Assets
 
 	grafanaCfg := eventlog.MustGrafanaConfig()
 	logger := eventlog.NewGrafanaCloudLogger(grafanaCfg.LokiURL, grafanaCfg.LokiUser, grafanaCfg.LokiAPIKey, "gateway")

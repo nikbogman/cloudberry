@@ -3,6 +3,7 @@
 package gateway
 
 import (
+	"fmt"
 	"io/fs"
 	"net/http"
 
@@ -26,6 +27,10 @@ type Config struct {
 	UIAssets         fs.FS
 	ComputeHost      string
 	ComputeProxyPort int
+	// Origin the UI sends its Compute API calls to, served at
+	// /config.js. "" means same-origin, which only suits local dev --
+	// in production Compute is a separate tailnet host.
+	ComputeAPIURL string
 }
 
 type Handler struct {
@@ -50,6 +55,12 @@ func NewHandler(cfg Config, waker Waker, logger EventLogger) (http.Handler, erro
 	// tailnet identity header.
 	mux.Handle("POST /wake", tailnet.RequireTailnetIdentityOrLoopback(http.HandlerFunc(h.handleWake)))
 	mux.Handle("/server/", newComputeProxy(cfg.ComputeHost, cfg.ComputeProxyPort, h.doWake))
+	// Served rather than embedded so the UI stays a pure static tree with
+	// nothing generated into it at deploy time.
+	mux.HandleFunc("GET /config.js", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/javascript; charset=utf-8")
+		fmt.Fprintf(w, "window.COMPUTE_API_URL = %q\n", cfg.ComputeAPIURL)
+	})
 	mux.Handle("/", http.FileServer(http.FS(cfg.UIAssets)))
 	return mux, nil
 }

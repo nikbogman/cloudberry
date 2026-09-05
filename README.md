@@ -22,7 +22,7 @@ tailnet membership is the entire authorization boundary.
 | [CONTEXT.md](CONTEXT.md) | Domain glossary — the vocabulary everything else uses |
 | [docs/gateway.md](docs/gateway.md) | Gateway API: routes, environment, deployment |
 | [docs/compute.md](docs/compute.md) | Compute API: routes, idle watcher, environment, deployment |
-| [docs/ui.md](docs/ui.md) | Browser SPA: behavior, build-time config |
+| [docs/ui.md](docs/ui.md) | Browser SPA: behavior, runtime config |
 | [docs/deploy.md](docs/deploy.md) | pyinfra: inventory, running a Deploy, the three test tiers |
 
 ## Repo layout
@@ -40,13 +40,16 @@ internal/tailnet/        shared: identity-header auth, bind-safety
 internal/eventlog/       shared: Grafana Cloud event logging
 internal/httpresponse/   shared: JSON response helpers
 internal/env/            shared: env-var lookup helpers
-ui/                      browser SPA (TypeScript + Vite)
+ui/                      browser SPA (static HTML/JS/CSS, no build step);
+                         ui.go is just its go:embed declaration
 deploy/                  declarative provisioning (pyinfra)
 deploy.sh                forwards to deploy/deploy.sh
+dev-ui.sh                fast-iteration UI dev server (see docs/ui.md)
 .env.example             template -- copy to .env (gitignored)
 ```
 
-Three independent toolchains: Go at the root, npm in `ui/`, uv in `deploy/`.
+Two toolchains: Go at the root, uv in `deploy/`. The UI is static files —
+no build step, no Node.
 
 ## Development
 
@@ -54,12 +57,8 @@ Three independent toolchains: Go at the root, npm in `ui/`, uv in `deploy/`.
 # Go, both binaries (repo root)
 go vet ./... && go test ./...
 
-# UI
-cd ui && npm install
-npm run dev          # Vite dev server
-npm run test         # vitest
-npm run typecheck    # tsc --noEmit
-npm run build        # tsc && vite build -> ../cmd/gateway-api/uidist
+# UI -- static files served from disk; edits show on refresh
+./dev-ui.sh
 
 # Deploy tooling
 cd deploy && uv sync
@@ -73,6 +72,7 @@ GRAFANA_CLOUD_LOKI_URL=https://logs-prod-000.grafana.net/loki/api/v1/push \
 GRAFANA_CLOUD_LOKI_USER=123456 GRAFANA_CLOUD_LOKI_API_KEY=glc_xxx \
 COMPUTE_HOST=main-server.tailnet \
 COMPUTE_PROXY_PORT=8081 \
+COMPUTE_API_URL=https://main-server.tailnet \
 go run ./cmd/gateway-api
 ```
 

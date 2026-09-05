@@ -8,11 +8,10 @@ __pycache__/
 node_modules/
 dist/
 
-# Vite build output for the embedded Gateway UI. Named uidist/, not dist/,
-# specifically so it's exempt from the blanket dist/ rule above -- the
-# go:embed placeholder below has to stay tracked.
-cmd/gateway-api/uidist/*
-!cmd/gateway-api/uidist/.gitkeep
+# Optional local dev override for the UI's one runtime value. In
+# production the Gateway serves /config.js from its own env var, and
+# that route shadows this file even if a stray copy gets embedded.
+/ui/config.js
 
 # Generated knowledge graph -- rebuilt locally by `graphify update .`
 /graphify-out/

@@ -16,7 +16,8 @@ entrypoint [`cmd/gateway-api/`](../cmd/gateway-api).
 |---|---|
 | `POST /wake` | Requires the identity header or a `127.0.0.1` caller. Sends WoL to `COMPUTE_MAC_ADDRESS`, logs `wake_requested`/`_succeeded`/`_failed`, returns `{"wake": ...}`. |
 | `/server/*` | Reverse-proxies to `http://{COMPUTE_HOST}:{COMPUTE_PROXY_PORT}`, path-stripped. A real backend response (even 502) passes through untouched; a transport failure triggers a throttled wake and retries for up to 60s. |
-| `/` (everything else) | Serves the UI's static build, `//go:embed`ded at build time. Unknown paths 404 (no SPA fallback). |
+| `GET /config.js` | One line of JS setting `window.COMPUTE_API_URL` from the env var, so the UI learns Compute's origin without anything being generated into `ui/`. |
+| `/` (everything else) | Serves the UI's static files, `//go:embed`ded from `ui/` at build time. Unknown paths 404 (no SPA fallback). |
 
 Requires the Gateway and compute host to share an L2 broadcast domain — WoL
 doesn't route across subnets.
@@ -64,11 +65,12 @@ always wins. Bold variables are required.
 | **`COMPUTE_MAC_ADDRESS`** | — | WoL target MAC |
 | `GATEWAY_PROXY_HOST` | `main-server.tailnet` | Host `/server*` forwards to. Deliberately *not* named `COMPUTE_HOST`: with no `env_prefix`, that name would alias `InventorySettings`' SSH target. Shipped to the device as the binary's `COMPUTE_HOST` |
 | **`COMPUTE_PROXY_PORT`** | — | Port on `GATEWAY_PROXY_HOST` that `/server*` forwards to — the Compute API's own listen port. Required, not defaulted: no single correct target across every device the binary might run on |
+| `COMPUTE_API_URL` | `''` | Compute API origin the UI calls; served to the browser at `/config.js`. Empty means same-origin, which only suits a local dev run |
 | **`GRAFANA_CLOUD_LOKI_URL`** | — | Grafana Cloud's Loki push endpoint |
 | **`GRAFANA_CLOUD_LOKI_USER`** | — | Loki basic-auth username (numeric instance ID) |
 | **`GRAFANA_CLOUD_LOKI_API_KEY`** | — | Grafana Cloud Access Policy token, scoped to `logs:write` |
 
-`VITE_COMPUTE_API_URL` (baked into the UI build) is derived from
-`InventorySettings.compute_tailnet_host`, not a separate secret.
+`COMPUTE_API_URL` is derived from `InventorySettings.compute_tailnet_host`, not
+a separate secret.
 
 See [`deploy.md`](deploy.md) for how to run a Deploy and how it's tested.
