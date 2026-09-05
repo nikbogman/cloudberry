@@ -52,7 +52,7 @@ A single pyinfra run against the inventory that converges the Gateway and Comput
 _Avoid_: playbook run, apply
 
 **Deploy file**:
-A single-responsibility pyinfra file scoped to one piece of infrastructure or app (e.g. Tailscale, the Gateway API). The unit a Deploy can be targeted or dry-run against in isolation. Logic shared across Deploy files (e.g. `go_binary_systemd_service`, used by both the Gateway API and Compute API) lives in a plain importable module like `go_deploy.py`.
+A single-responsibility pyinfra file scoped to one piece of infrastructure or app (e.g. Tailscale, the Gateway API). The unit a Deploy can be targeted or dry-run against in isolation. Logic shared across Deploy files (e.g. `go_binary_systemd_service`, used by both the Gateway API and Compute API) lives in a plain importable module like `go_build.py`.
 _Avoid_: Concern, role, task, module
 
 **Host group**:

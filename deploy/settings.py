@@ -1,12 +1,8 @@
-"""Typed configuration read from the dev machine's environment at Deploy
-time. One settings class per Deploy file's needs; fields with no default
-are required, and pydantic-settings raises a `ValidationError` listing
-every missing one at once. No `env_file` support -- these are a typed
-wrapper around plain environment variables, not a persistence mechanism.
+"""Typed env-var config read from the dev machine at Deploy time, one class
+per Deploy file's needs. Variables and defaults: docs/deploy.md#configuration.
 
-Deploy files construct a class lazily inside its `has_device_role(...)`
-guard, so `pyinfra ... deploy_x.py --limit y` never demands env vars an
-unrelated Deploy file doesn't need.
+No `env_file` support -- a typed wrapper around plain environment variables,
+not a persistence mechanism.
 """
 
 from pydantic_settings import BaseSettings
@@ -54,11 +50,6 @@ class GatewaySettings(BaseSettings):
     # Not named gateway_host/compute_host -- no env_prefix here, so those
     # names would alias InventorySettings' SSH targets via the shared env
     # var. These configure the Gateway binary at runtime instead.
-    #
-    # No bind-host field: the Gateway binary defaults GATEWAY_HOST to
-    # 127.0.0.1 itself (control-plane/internal/gateway/config.go), and
-    # that's the only value it's ever run with here, so there's nothing
-    # for deploy to override.
     gateway_port: int = 5000
     # gateway_proxy_host is what /server* reverse-proxies to -- distinct
     # from InventorySettings.compute_host despite the matching default:
@@ -66,7 +57,8 @@ class GatewaySettings(BaseSettings):
     # runtime target, and they're allowed to diverge (e.g. a LAN IP vs. a
     # tailnet name) even though today they're the same box.
     gateway_proxy_host: str = "main-server.tailnet"
-    # No default: the server-side proxy this points at doesn't exist yet.
+    # No default: no single correct target across every device the binary
+    # might run on.
     compute_proxy_port: int
 
 
@@ -75,7 +67,4 @@ class GatewaySecrets(BaseSettings):
 
 
 class ComputeApiSettings(BaseSettings):
-    # No bind-host field, matching GatewaySettings above -- the Compute
-    # API binary's own COMPUTE_API_HOST default (127.0.0.1) is never
-    # overridden here.
     compute_api_port: int = 5000

@@ -1,6 +1,6 @@
 # Architecture
 
-Primary architecture reference for the homelab control plane: current architecture, key decisions, and constraints. Domain vocabulary: [`CONTEXT.md`](../CONTEXT.md). Documents the system as it exists today, not superseded designs.
+Primary architecture reference for the homelab control plane: current architecture, key decisions, and constraints. Domain vocabulary: [`CONTEXT.md`](CONTEXT.md). Documents the system as it exists today, not superseded designs.
 
 ## System Overview
 
@@ -8,7 +8,7 @@ Primary architecture reference for the homelab control plane: current architectu
 
 Two physical devices on the same tailnet and LAN broadcast domain.
 
-<p align="center"><img src="../homelab.drawio.png" alt="High-level architecture"></p>
+<p align="center"><img src="docs/architecture.png" alt="High-level architecture"></p>
 
 | Component | Responsibility |
 |---|---|
@@ -19,22 +19,26 @@ Two physical devices on the same tailnet and LAN broadcast domain.
 
 ## Architecture
 
-### Major components
+Repo layout is in the [root README](README.md#repo-layout). Per-service detail —
+routes, environment, deployment — is in [`docs/gateway.md`](docs/gateway.md),
+[`docs/compute.md`](docs/compute.md), [`docs/ui.md`](docs/ui.md) and
+[`docs/deploy.md`](docs/deploy.md).
 
-```
-control-plane/
-  ui/                    TypeScript + Vite SPA
-  cmd/gateway/            Gateway API entrypoint (env → wiring → ListenAndServe)
-  cmd/compute-api/        Compute API entrypoint
-  internal/gateway/       Gateway API handlers: static serving, /wake, /server/* proxy
-  internal/compute/       Compute API handlers: CORS, /health, /suspend, /hold, /status,
-                          container proxy, idle watcher
-  internal/tailnet/       shared: identity-header auth, bind-safety
-  internal/eventlog/      shared: Grafana Cloud (Loki) event logger
-  internal/httpresponse/  shared: JSON response + response-copy helpers
-  internal/env/           shared: env-var lookup helpers
-deploy/                   pyinfra: inventory, settings, one deploy_<x>.py per concern
-```
+### Shared Go packages
+
+Four `internal/` packages both binaries depend on, none a standalone service:
+
+- **`tailnet`** — `RequireTailnetIdentity` middleware rejects requests missing
+  the Identity header with a 401; `GetCallerIdentity` reads it back (presence is
+  the entire check, no allow-list). `AssertTailnetOnlyBind(host)`, called at
+  handler construction, errors unless `host` is loopback or a Tailscale address.
+- **`eventlog`** — `GrafanaCloudLogger.SendEvent(...)` ships structured
+  wake/suspend/reachability events to Grafana Cloud's Loki push endpoint. Both
+  apps are stateless, so Grafana Cloud is the only place this history lives;
+  transport failures are logged and swallowed. `MustGrafanaConfig()` reads the
+  `GRAFANA_CLOUD_LOKI_*` trio, shared by both `cmd/*/main.go`.
+- **`httpresponse`** — JSON response writing and response pass-through.
+- **`env`** — env-var lookup helpers.
 
 ### How they interact
 
@@ -46,7 +50,7 @@ deploy/                   pyinfra: inventory, settings, one deploy_<x>.py per co
 
 ## Domain Model
 
-See [`CONTEXT.md`](../CONTEXT.md).
+See [`CONTEXT.md`](CONTEXT.md).
 
 ### Key entities (code level)
 
