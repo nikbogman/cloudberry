@@ -40,7 +40,7 @@ if has_device_role("gateway"):
     # VITE_GATEWAY_API_URL is left unset -- same-origin works since the
     # Gateway serves both the UI and /wake.
     local.shell(
-        f"cd ../control-plane/ui && npm ci && "
+        f"cd ../ui && npm ci && "
         f"VITE_COMPUTE_API_URL=https://{inventory.compute_tailnet_host} npm run build",
         print_output=True,
     )
@@ -48,14 +48,14 @@ if has_device_role("gateway"):
     # Pi Zero W is ARM1176 (armv6) -- GOARM=6. A Pi Zero 2 W would need
     # GOARCH=arm64 instead.
     go_binary_systemd_service(
-        module_dir="../control-plane",
-        package="./cmd/gateway",
+        module_dir="..",
+        package="./cmd/gateway-api",
         goos="linux",
         goarch="arm",
         goarm="6",
-        binary_name="gateway",
-        remote_binary="/usr/local/bin/gateway",
-        unit_name="gateway.service",
+        binary_name="gateway-api",
+        remote_binary="/usr/local/bin/gateway-api",
+        unit_name="gateway-api.service",
         description="Gateway -- serves the UI, sends Wake-on-LAN, and proxies to the compute host",
         environment={
             "COMPUTE_MAC_ADDRESS": secrets.compute_mac_address,

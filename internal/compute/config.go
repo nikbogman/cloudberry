@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/nikbogman/homelab/control-plane/internal/env"
+	"github.com/nikbogman/homelab/internal/env"
 )
 
 // EnvConfig holds compute-api runtime configuration read from the process

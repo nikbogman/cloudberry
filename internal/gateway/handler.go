@@ -6,8 +6,8 @@ import (
 	"io/fs"
 	"net/http"
 
-	"github.com/nikbogman/homelab/control-plane/internal/httpresponse"
-	"github.com/nikbogman/homelab/control-plane/internal/tailnet"
+	"github.com/nikbogman/homelab/internal/httpresponse"
+	"github.com/nikbogman/homelab/internal/tailnet"
 )
 
 type Waker interface {

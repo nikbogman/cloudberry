@@ -46,7 +46,7 @@ Four `internal/` packages both binaries depend on, none a standalone service:
 - `/server/*` reverse-proxies through the Gateway API to a single fixed upstream on Compute. Which path reaches which Docker service is entirely that upstream's concern — Compute API's own reverse proxy, routing by a `homelab.route` label on each container, no sidecar or static config.
 - Gateway API's auto-wake is an **in-process call**: the proxy's error handler and the `/wake` handler both call the same private `doWake` directly. Compute API's idle watcher follows the identical pattern for suspend: it and the `/suspend` handler both call the same `Suspender.Suspend()`.
 - Every request Compute API's proxy forwards doubles as the idle watcher's activity signal — no separate metrics API to poll.
-- The deploy layer depends on control-plane and ui; neither depends on it.
+- The deploy layer depends on the Go module and `ui/`; neither depends on it.
 
 ## Domain Model
 

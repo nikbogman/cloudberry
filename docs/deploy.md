@@ -166,6 +166,11 @@ gate instead of eyeballing the table.
   re-check the CLI/JSON version caveat before trusting it blindly.
 - Standing up a labeled workload container is a manual step, outside pyinfra's
   scope.
+- **One-time migration**: the Gateway's unit was renamed `gateway.service` →
+  `gateway-api.service`. pyinfra installs the new one but does not remove the
+  old, so on a device deployed before that rename, both would bind the same
+  port. Run `systemctl disable --now gateway && rm /etc/systemd/system/gateway.service`
+  on the Pi once, then delete this bullet.
 
 Bind-address enforcement and the system's other limitations are in
 [`ARCHITECTURE.md`](../ARCHITECTURE.md#constraints).

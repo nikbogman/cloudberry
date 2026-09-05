@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nikbogman/homelab/control-plane/internal/httpresponse"
-	"github.com/nikbogman/homelab/control-plane/internal/tailnet"
+	"github.com/nikbogman/homelab/internal/httpresponse"
+	"github.com/nikbogman/homelab/internal/tailnet"
 )
 
 // Package vars, not consts, so tests can shrink them.

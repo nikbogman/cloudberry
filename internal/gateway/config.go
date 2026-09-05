@@ -1,6 +1,6 @@
 package gateway
 
-import "github.com/nikbogman/homelab/control-plane/internal/env"
+import "github.com/nikbogman/homelab/internal/env"
 
 // EnvConfig is Config plus the gateway's own listen port, both read from
 // the process environment.

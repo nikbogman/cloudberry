@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nikbogman/homelab/control-plane/internal/tailnet"
+	"github.com/nikbogman/homelab/internal/tailnet"
 )
 
 const (

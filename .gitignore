@@ -11,8 +11,8 @@ dist/
 # Vite build output for the embedded Gateway UI. Named uidist/, not dist/,
 # specifically so it's exempt from the blanket dist/ rule above -- the
 # go:embed placeholder below has to stay tracked.
-control-plane/cmd/gateway/uidist/*
-!control-plane/cmd/gateway/uidist/.gitkeep
+cmd/gateway-api/uidist/*
+!cmd/gateway-api/uidist/.gitkeep
 
 # Generated knowledge graph -- rebuilt locally by `graphify update .`
 /graphify-out/

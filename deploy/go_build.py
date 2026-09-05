@@ -30,7 +30,7 @@ def go_binary_systemd_service(
     run_as_user: str = "root",
 ):
     """Cross-compile `package` (an import path relative to `module_dir`,
-    e.g. "./cmd/gateway") for `goos`/`goarch`(/`goarm`) on the dev machine,
+    e.g. "./cmd/gateway-api") for `goos`/`goarch`(/`goarm`) on the dev machine,
     ship the resulting binary to `remote_binary`, install/enable a systemd
     unit named `unit_name` running it directly, and restart iff this
     Deploy changed the binary or the unit file.

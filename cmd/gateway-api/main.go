@@ -7,8 +7,8 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/nikbogman/homelab/control-plane/internal/eventlog"
-	"github.com/nikbogman/homelab/control-plane/internal/gateway"
+	"github.com/nikbogman/homelab/internal/eventlog"
+	"github.com/nikbogman/homelab/internal/gateway"
 )
 
 // .gitkeep satisfies go:embed's "at least one file" requirement before

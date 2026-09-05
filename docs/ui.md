@@ -7,11 +7,11 @@ in the system.
 A framework-light TypeScript + Vite SPA, kept minimal so it never needs to run
 on the Pi Zero itself.
 
-Code: [`control-plane/ui/`](../control-plane/ui).
+Code: [`ui/`](../ui).
 
 ## Behavior
 
-All of it lives in [`mountUi`](../control-plane/ui/src/app.ts):
+All of it lives in [`mountUi`](../ui/src/app.ts):
 
 - Polls the [Compute API](compute.md)'s `GET /health` every 12s (configurable),
   renders `Checking…` / `Reachable` / `Unreachable`.
@@ -24,7 +24,7 @@ All of it lives in [`mountUi`](../control-plane/ui/src/app.ts):
 ## Configuration
 
 Read at build/dev time via Vite env vars (see
-[`main.ts`](../control-plane/ui/src/main.ts)):
+[`main.ts`](../ui/src/main.ts)):
 
 | Variable | Purpose |
 |---|---|

@@ -5,8 +5,8 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/nikbogman/homelab/control-plane/internal/compute"
-	"github.com/nikbogman/homelab/control-plane/internal/eventlog"
+	"github.com/nikbogman/homelab/internal/compute"
+	"github.com/nikbogman/homelab/internal/eventlog"
 )
 
 func main() {

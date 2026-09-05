@@ -31,36 +31,35 @@ tailnet membership is the entire authorization boundary.
 ARCHITECTURE.md          design reference
 CONTEXT.md               domain glossary
 docs/                    per-service docs; agents/ is agent-tooling contract
-control-plane/
-  go.mod                    one Go module for both binaries
-  cmd/gateway/              Gateway API entrypoint
-  cmd/compute-api/          Compute API entrypoint
-  internal/gateway/         Gateway API logic
-  internal/compute/         Compute API logic
-  internal/tailnet/         shared: identity-header auth, bind-safety
-  internal/eventlog/        shared: Grafana Cloud event logging
-  internal/httpresponse/    shared: JSON response helpers
-  internal/env/             shared: env-var lookup helpers
-  ui/                       browser SPA (TypeScript + Vite)
+go.mod                   one Go module for both binaries
+cmd/gateway-api/         Gateway API entrypoint
+cmd/compute-api/         Compute API entrypoint
+internal/gateway/        Gateway API logic
+internal/compute/        Compute API logic
+internal/tailnet/        shared: identity-header auth, bind-safety
+internal/eventlog/       shared: Grafana Cloud event logging
+internal/httpresponse/   shared: JSON response helpers
+internal/env/            shared: env-var lookup helpers
+ui/                      browser SPA (TypeScript + Vite)
 deploy/                  declarative provisioning (pyinfra)
 deploy.sh                forwards to deploy/deploy.sh
 .env.example             template -- copy to .env (gitignored)
 ```
 
-No root-level build: three independent toolchains.
+Three independent toolchains: Go at the root, npm in `ui/`, uv in `deploy/`.
 
 ## Development
 
 ```sh
-# Go, both binaries
-cd control-plane && go vet ./... && go test ./...
+# Go, both binaries (repo root)
+go vet ./... && go test ./...
 
 # UI
-cd control-plane/ui && npm install
+cd ui && npm install
 npm run dev          # Vite dev server
 npm run test         # vitest
 npm run typecheck    # tsc --noEmit
-npm run build        # tsc && vite build -> dist/
+npm run build        # tsc && vite build -> ../cmd/gateway-api/uidist
 
 # Deploy tooling
 cd deploy && uv sync
@@ -74,7 +73,7 @@ GRAFANA_CLOUD_LOKI_URL=https://logs-prod-000.grafana.net/loki/api/v1/push \
 GRAFANA_CLOUD_LOKI_USER=123456 GRAFANA_CLOUD_LOKI_API_KEY=glc_xxx \
 COMPUTE_HOST=main-server.tailnet \
 COMPUTE_PROXY_PORT=8081 \
-go run ./cmd/gateway
+go run ./cmd/gateway-api
 ```
 
 ## Deploying

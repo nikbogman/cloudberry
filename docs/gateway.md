@@ -7,8 +7,8 @@ Compute, and reverse-proxies workload traffic. Same-origin with the
 
 Vocabulary (Gateway, Wake, Identity header) is in [`CONTEXT.md`](../CONTEXT.md).
 
-Code: [`control-plane/internal/gateway/`](../control-plane/internal/gateway),
-entrypoint [`control-plane/cmd/gateway/`](../control-plane/cmd/gateway).
+Code: [`internal/gateway/`](../internal/gateway),
+entrypoint [`cmd/gateway-api/`](../cmd/gateway-api).
 
 ## Routes
 
@@ -23,7 +23,7 @@ doesn't route across subnets.
 
 ## Runtime environment
 
-Read by the binary itself ([`internal/gateway/config.go`](../control-plane/internal/gateway/config.go)),
+Read by the binary itself ([`internal/gateway/config.go`](../internal/gateway/config.go)),
 which is the source of truth for these names and defaults. Bold variables are
 required.
 
@@ -35,7 +35,7 @@ required.
 | **`GRAFANA_CLOUD_LOKI_URL`** | Grafana Cloud's Loki push endpoint. |
 | **`GRAFANA_CLOUD_LOKI_USER`** | Grafana Cloud Loki basic-auth username (numeric instance ID). |
 | **`GRAFANA_CLOUD_LOKI_API_KEY`** | Grafana Cloud Access Policy token, scoped to `logs:write`. |
-| `GATEWAY_HOST` | Bind address (default `127.0.0.1`). Must be loopback or tailnet ([`tailnet.AssertTailnetOnlyBind`](../control-plane/internal/tailnet/bindsafety.go)). |
+| `GATEWAY_HOST` | Bind address (default `127.0.0.1`). Must be loopback or tailnet ([`tailnet.AssertTailnetOnlyBind`](../internal/tailnet/bindsafety.go)). |
 | `GATEWAY_PORT` | Listen port (default `5000`). |
 
 ## Deployment
