@@ -48,7 +48,7 @@ A single pyinfra run against the inventory that converges the Waker and Sleeper 
 _Avoid_: playbook run, apply
 
 **Deploy file**:
-A single-responsibility pyinfra file scoped to one piece of infrastructure or app (e.g. Tailscale, the Waker API). The unit a Deploy can be targeted or dry-run against in isolation. Files owned by one service live in `deploy/<service>/`; files for homelab-wide infrastructure sit at the top of `deploy/`. Logic shared across Deploy files (e.g. `go_binary_systemd_service`, used by both the Waker API and Sleeper API) lives in a plain importable module like `go_build.py`.
+A single-responsibility pyinfra file scoped to one piece of infrastructure or app (e.g. Tailscale, the Waker API). The unit a Deploy can be targeted or dry-run against in isolation. Logic shared across Deploy files (e.g. `go_binary_systemd_service`, used by both the Waker API and Sleeper API) lives in a plain importable module like `go_build.py`.
 _Avoid_: Concern, role, task, module
 
 **Host group**:

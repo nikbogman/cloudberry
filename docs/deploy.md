@@ -34,17 +34,11 @@ deploy/
     binary.service.j2   systemd unit template, both binaries
 ```
 
-`../deploy.sh` is a repo-root forwarder to the same script. Every path resolves
-against `deploy/`, never against the file doing the resolving — sibling imports
-(`from common import ...`), `local.include(...)` in `deploy.py`,
-`templates/*.j2`, and `module_dir`. That holds for a Deploy file in a service
-folder too: pyinfra sets `state.cwd` to the process cwd and puts it on
-`sys.path`, and `deploy.sh` always `cd`s into `deploy/` first. Go-building
-Deploy files point `module_dir` at their service's source folder (e.g.
-`../waker-service`).
-
-A new service gets a folder here, its Deploy files `local.include`d from
-`deploy.py`, and its `.env` sourced in `deploy.sh`.
+`../deploy.sh` is a repo-root forwarder to the same script. Every path — sibling
+imports, `local.include(...)`, `templates/*.j2`, `module_dir` — resolves against
+`deploy/`, not against the file doing the resolving: pyinfra sets `state.cwd` to
+the process cwd and puts it on `sys.path`, and `deploy.sh` always `cd`s into
+`deploy/` first. That's why a Deploy file works unchanged from a service folder.
 
 ## Setup
 

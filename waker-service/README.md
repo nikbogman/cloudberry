@@ -47,9 +47,8 @@ dev-ui.sh                fast-iteration UI dev server (see docs/ui.md)
 .env.example             template -- copy to .env (gitignored)
 ```
 
-One Go module, no build step for the UI, no Node. Provisioning lives at
-the repo root in [../deploy/](../deploy/) — shared across every homelab
-service — and builds these binaries from here via `module_dir`.
+Provisioning lives at the repo root in [../deploy/](../deploy/), shared across
+every homelab service, and builds these binaries from here via `module_dir`.
 
 ## Development
 
@@ -82,8 +81,7 @@ From the repo root:
 ```
 
 This service's Deploy files are grouped in
-[`../deploy/waker-service/`](../deploy/waker-service/); the inventory, shared
-helpers, and homelab-wide infrastructure stay at the top of `../deploy/`.
+[`../deploy/waker-service/`](../deploy/waker-service/).
 
 Secrets split in two: this service's own vars in `waker-service/.env`
 (see `.env.example`), the device addresses in the repo root `.env`.

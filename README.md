@@ -1,7 +1,6 @@
 # Homelab
 
-Monorepo for the homelab. One service so far, plus the provisioning that
-converges every device in it.
+Monorepo for the homelab.
 
 | Path | What |
 |---|---|
@@ -11,9 +10,9 @@ converges every device in it.
 | [docs/deploy.md](docs/deploy.md) | Inventory, running a Deploy, the three test tiers |
 | [docs/agents/](docs/agents/) | Agent-tooling contract (issue tracker, triage labels, domain docs) |
 
-Each service owns its own code, docs, toolchain, and `.env`; the root
-`.env` holds the homelab-wide device addresses and the Tailscale auth key.
-`deploy/` sources both.
+Each service owns its own code, docs, toolchain, and `.env`; the root `.env`
+holds the device addresses and the Tailscale auth key. `deploy/deploy.sh`
+sources both — see [docs/deploy.md](docs/deploy.md#setup).
 
 ## Deploying
 

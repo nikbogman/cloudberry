@@ -1,9 +1,9 @@
 """Deploys the Sleeper API to `sleeper`.
 
-Cross-compiles the binary on the dev machine and ships it, same as
-waker.py -- keeps a Go toolchain off both target devices. Runs
-it as an enabled systemd service, then exposes it on the tailnet via
-`tailscale serve`. Targetable in isolation:
+Cross-compiles the binary on the dev machine and ships it, same as waker.py --
+keeps a Go toolchain off both target devices. Runs it as an enabled systemd
+service, then exposes it on the tailnet via `tailscale serve`. Targetable in
+isolation:
 
     pyinfra inventory.py waker-service/sleeper_api.py --limit sleeper
     pyinfra inventory.py waker-service/sleeper_api.py --limit sleeper --dry

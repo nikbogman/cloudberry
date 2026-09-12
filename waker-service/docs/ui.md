@@ -73,5 +73,4 @@ can't climb out of it: `cmd/waker-api` cannot reach `../../ui`, but a package
 living here can embed its own contents. Its globs skip `ui.go` itself.
 
 [`waker-service/waker.py`](../../deploy/waker-service/waker.py) just
-cross-compiles and ships
-that one binary; nothing else reaches the Pi Zero.
+cross-compiles and ships that one binary; nothing else reaches the Pi Zero.

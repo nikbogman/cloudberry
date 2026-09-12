@@ -60,9 +60,8 @@ required.
 ## Deployment
 
 [`deploy/waker-service/sleeper_api.py`](../../deploy/waker-service/sleeper_api.py)
-cross-compiles
-and ships only the binary, same as the Waker. `GOARCH` is read from the
-device's real architecture (`common.DpkgArchitecture`), since `sleeper` isn't a
+cross-compiles and ships only the binary, same as the Waker. `GOARCH` is read
+from the device's real architecture (`common.DpkgArchitecture`), since `sleeper` isn't a
 fixed known device.
 
 It runs as a systemd unit rather than a container, so it stays controllable
