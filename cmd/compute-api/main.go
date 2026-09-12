@@ -18,13 +18,9 @@ func main() {
 	grafanaCfg := eventlog.MustGrafanaConfig()
 	logger := eventlog.NewGrafanaCloudLogger(grafanaCfg.LokiURL, grafanaCfg.LokiUser, grafanaCfg.LokiAPIKey, "compute-api")
 
-	runtime, err := compute.NewDockerRuntime()
-	if err != nil {
-		log.Fatal(err)
-	}
 	suspender := compute.NewSystemSuspender()
 
-	handler, err := compute.NewHandler(cfg.UIOrigin, suspender, runtime, logger, cfg.Host)
+	handler, err := compute.NewHandler(cfg.UIOrigin, suspender, logger, cfg.Host)
 	if err != nil {
 		log.Fatal(err)
 	}

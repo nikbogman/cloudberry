@@ -39,31 +39,9 @@ func (f *fakeSuspender) Suspend() error {
 	return f.err
 }
 
-type fakeContainerRuntime struct {
-	containers []RoutableContainer
-	err        error
-
-	active   bool
-	statsErr error
-}
-
-func (f *fakeContainerRuntime) RoutableContainers() ([]RoutableContainer, error) {
-	if f.err != nil {
-		return nil, f.err
-	}
-	return f.containers, nil
-}
-
-// mustNewHandler is for tests unconcerned with proxy routing; it wires an
-// empty fakeContainerRuntime. Proxy tests use mustNewHandlerWithRuntime.
 func mustNewHandler(t *testing.T, suspender Suspender, logger EventLogger) *Handler {
 	t.Helper()
-	return mustNewHandlerWithRuntime(t, suspender, &fakeContainerRuntime{}, logger)
-}
-
-func mustNewHandlerWithRuntime(t *testing.T, suspender Suspender, runtime ContainerRuntime, logger EventLogger) *Handler {
-	t.Helper()
-	h, err := NewHandler(testUIOrigin, suspender, runtime, logger, "127.0.0.1")
+	h, err := NewHandler(testUIOrigin, suspender, logger, "127.0.0.1")
 	if err != nil {
 		t.Fatalf("NewHandler failed: %v", err)
 	}
@@ -171,7 +149,7 @@ func TestCorsRejectsOtherOrigins(t *testing.T) {
 }
 
 func TestNewHandlerRefusesOffTailnetBindHost(t *testing.T) {
-	_, err := NewHandler(testUIOrigin, &fakeSuspender{}, &fakeContainerRuntime{}, &fakeLogger{}, "0.0.0.0")
+	_, err := NewHandler(testUIOrigin, &fakeSuspender{}, &fakeLogger{}, "0.0.0.0")
 	var bindErr *tailnet.BindOffTailnetError
 	if !errors.As(err, &bindErr) {
 		t.Fatalf("got err %v, want *tailnet.BindOffTailnetError", err)

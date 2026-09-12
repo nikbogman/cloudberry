@@ -1,9 +1,8 @@
 # Compute
 
 The machine that sleeps and runs the workloads, and the Compute API binary it
-runs. Exposes a Reachable health check, the Suspend action, and its own
-reverse proxy to workload Docker containers. Fronted by its own `tailscale
-serve` instance — a distinct origin from the [UI](ui.md), hence the CORS
+runs. Exposes a Reachable health check and the Suspend action. Fronted by its
+own `tailscale serve` instance — a distinct origin from the [UI](ui.md), hence the CORS
 allow-list.
 
 Vocabulary (Compute, Reachable, Suspend) is in [`CONTEXT.md`](../CONTEXT.md).
@@ -17,15 +16,12 @@ entrypoint [`cmd/compute-api/`](../cmd/compute-api).
 |---|---|
 | `GET /health` | Requires the identity header. Returns `{"reachable": true}`. First time reachable, logs `reachability_changed` (see `reachabilityTracker` in [`handler.go`](../internal/compute/handler.go) — it can never observe going unreachable, since the process is asleep whenever that's true). |
 | `POST /suspend` | Requires the identity header. Runs the configured suspend command (`systemctl suspend` by default, see [`suspend.go`](../internal/compute/suspend.go)), logs `suspend_requested`/`_succeeded`/`_failed`, returns `{"suspend": ...}`. |
-| `/{prefix}/*` (everything else) | Not identity-gated — this is workload traffic, which browsers send here directly. Reverse-proxies to whichever Docker container carries a `homelab.route={prefix}` label, path-stripped (see [`proxy.go`](../internal/compute/proxy.go)). A container is only routable if it publishes a port to the host. A real backend response (even an error status) passes through untouched; an unmatched path 404s; a container-discovery failure 502s. |
 
 Suspend-to-RAM only — the suspend command isn't configurable via env var, so
 misconfiguration can't reintroduce a full shutdown.
 
-Container discovery talks to the local Docker daemon via the official Docker Go
-SDK ([`docker.go`](../internal/compute/docker.go)), injected as the
-`ContainerRuntime` interface — same construction pattern as
-`Suspender`/`EventLogger`, faked in tests with no real daemon required.
+Workload containers are not this binary's concern: each publishes its own port
+and is reached directly, so Compute API never talks to the Docker daemon.
 
 ## Runtime environment
 

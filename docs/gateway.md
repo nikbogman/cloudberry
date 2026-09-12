@@ -6,7 +6,7 @@ Compute. Same-origin with the [UI](ui.md), so no CORS entry is needed.
 
 It is deliberately *not* in the workload traffic path — the Pi is on Wi-Fi,
 so proxying workload traffic through it costs a hop and a bottleneck for
-nothing. Browsers reach Compute's own reverse proxy directly on the tailnet.
+nothing. Browsers reach workload containers on Compute directly on the tailnet.
 
 Vocabulary (Gateway, Wake, Identity header) is in [`CONTEXT.md`](../CONTEXT.md).
 

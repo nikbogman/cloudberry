@@ -18,20 +18,6 @@ type EventLogger interface {
 	SendEvent(eventType, outcome string, identity *string, extra map[string]any)
 }
 
-// RoutableContainer is a workload container discovered by its
-// homelab.route label -- Path is the label value (e.g. "/immich"), Addr
-// is where the proxy dials to reach it.
-type RoutableContainer struct {
-	Path string
-	Addr string
-}
-
-// ContainerRuntime abstracts Docker daemon access: the current set of
-// routable containers, sufficient to resolve a path to a proxy target.
-type ContainerRuntime interface {
-	RoutableContainers() ([]RoutableContainer, error)
-}
-
 // sync.Once, not a bool: net/http serves concurrently. Also the only
 // reachability edge this app can observe -- it's asleep whenever Compute
 // goes unreachable, so it can never log that transition.
@@ -48,27 +34,22 @@ func (t *reachabilityTracker) noteReachable(logger EventLogger) {
 type Handler struct {
 	uiOrigin     string
 	suspender    Suspender
-	runtime      ContainerRuntime
 	logger       EventLogger
 	reachability reachabilityTracker
 	serve        http.Handler
 }
 
 // NewHandler refuses to start if bindHost would expose the app off-tailnet.
-func NewHandler(uiOrigin string, suspender Suspender, runtime ContainerRuntime, logger EventLogger, bindHost string) (*Handler, error) {
+func NewHandler(uiOrigin string, suspender Suspender, logger EventLogger, bindHost string) (*Handler, error) {
 	if err := tailnet.AssertTailnetOnlyBind(bindHost); err != nil {
 		return nil, err
 	}
 
-	h := &Handler{uiOrigin: uiOrigin, suspender: suspender, runtime: runtime, logger: logger}
+	h := &Handler{uiOrigin: uiOrigin, suspender: suspender, logger: logger}
 
 	mux := http.NewServeMux()
 	mux.Handle("GET /health", tailnet.RequireTailnetIdentity(http.HandlerFunc(h.handleHealth)))
 	mux.Handle("POST /suspend", tailnet.RequireTailnetIdentity(http.HandlerFunc(h.handleSuspend)))
-	// Catch-all: routes /{prefix}/... to whichever container carries a
-	// matching homelab.route label. Not identity-gated -- this carries
-	// workload traffic, not a control-plane action.
-	mux.Handle("/", http.HandlerFunc(h.handleProxy))
 	h.serve = h.withCORS(mux)
 	return h, nil
 }

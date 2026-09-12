@@ -9,8 +9,8 @@ Two devices on the same tailnet and LAN broadcast domain:
   Wake-on-LAN. Not in the workload traffic path: it's on Wi-Fi, so routing
   workload traffic through it isn't worth the hop.
 - **Compute** — runs the workloads, suspended to RAM most of the time.
-  Exposes Suspend and the health check the UI polls, plus its own reverse
-  proxy to workload containers. Browsers reach it directly on the tailnet.
+  Exposes Suspend and the health check the UI polls. Workload containers
+  publish their own ports; browsers reach them directly on the tailnet.
 
 Auth is the `Tailscale-User-Login` header injected by `tailscale serve` —
 tailnet membership is the entire authorization boundary.

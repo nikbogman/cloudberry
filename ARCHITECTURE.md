@@ -14,7 +14,7 @@ Two physical devices on the same tailnet and LAN broadcast domain.
 |---|---|
 | UI | Browser SPA. Polls Compute reachability, offers Wake/Suspend. |
 | Gateway API | Serves the UI's static files and sends WoL on `POST /wake`. Carries no workload traffic. |
-| Compute API | Exposes `GET /health`, `POST /suspend`, and its own reverse proxy to workload containers. |
+| Compute API | Exposes `GET /health` and `POST /suspend`. |
 | Provisioning (pyinfra) | Converges both devices to their target state — Tailscale, Docker, both binaries. |
 
 ## Architecture
@@ -43,7 +43,7 @@ Four `internal/` packages both binaries depend on, none a standalone service:
 ### How they interact
 
 - The browser talks to **two origins directly** — Gateway (UI + Gateway API, same-origin) and Compute API (separate origin) — no server-side relay. Compute API's only extra cost is a one-entry CORS allow-list.
-- Workload traffic never touches the Gateway. Browsers hit Compute API's own reverse proxy directly, which routes by a `homelab.route` label on each container — no sidecar, no static config.
+- Workload traffic never touches the control plane. Each workload container publishes its own port on Compute and browsers reach it directly over the tailnet.
 - The deploy layer depends on the Go module and `ui/`; neither depends on it.
 
 ## Domain Model
@@ -90,9 +90,6 @@ sequenceDiagram
     C->>C: run suspend command + event log
     C-->>B: 200/500 {suspend: ...}
 
-    B->>C: /{prefix}/* (any method)
-    C->>C: resolve homelab.route label
-    C-->>B: proxied response, or 404/502
 ```
 
 ### External integrations
@@ -107,8 +104,7 @@ sequenceDiagram
 - **No server-side relay between the UI's two backend origins** — avoids the Compute API trusting a forwarded identity claim over the real header.
 - **The Gateway carries no workload traffic** — it's a Pi Zero W on Wi-Fi, so proxying workload traffic through it adds a hop and a bandwidth ceiling for nothing when `tailscale serve` already gives Compute its own reachable HTTPS origin. Cost: auto-wake-on-request is gone, since the Gateway no longer sees workload requests.
 - **Suspend-to-RAM only, no full shutdown** — WoL after ACPI S5 is unreliable across BIOS/NIC configs; the suspend command isn't configurable via env var.
-- **Compute is its own reverse proxy, no sidecar (Caddy/Traefik) or static routing config** — a sidecar adds a dependency with its own availability to reason about; static config would mean every new workload needs a compute-api change and redeploy.
-- **Workload routing is Docker-label auto-discovery** (`homelab.route=/path`) — a new workload becomes reachable by adding a label to its compose file, never by touching this repo.
+- **Nothing in this repo proxies workload traffic** — no sidecar (Caddy/Traefik), no routing config, no route awareness in Compute API. Each container publishes a host port and Docker serves it; a proxy would be a second thing to keep in sync with the compose files for no gain on a single-host tailnet.
 - **No graceful workload shutdown before suspend** — suspend-to-RAM freezes every process atomically via the kernel's freezer cgroup and resumes it in place; there's no in-flight work to lose, so nothing to drain.
 - **WoL requires the same L2 broadcast domain** — accepted rather than building a cross-subnet relay.
 - **Tailnet membership is the entire authorization boundary** — no separate allow-list.
@@ -123,7 +119,7 @@ sequenceDiagram
 ## Extension Points
 
 - **New control-plane action**: add a route in the relevant `NewHandler`, define a small interface for external effects, fake it in tests. Follow `handleWake`/`handleSuspend`'s shape: log `_requested`, perform the effect, log `_succeeded`/`_failed`, write JSON.
-- **New workload service**: add `homelab.route=/path` to its compose file — no Gateway or Compute API change, no redeploy. Reachable at Compute's own origin.
+- **New workload service**: publish its port in its compose file — no Gateway or Compute API change, no redeploy. Reachable at Compute's tailnet address on that port.
 - **New deployed component**: add `deploy/deploy_<name>.py`, gate with `common.has_device_role(...)`, add settings if needed, `local.include(...)` it from `deploy.py`.
 - **New event type**: call `logger.SendEvent(eventType, outcome, identity, extra)` — no schema migration; labels are fixed, everything else rides in the log line.
 
@@ -139,7 +135,7 @@ sequenceDiagram
 
 **Security**
 - Auth is tailnet membership via `Tailscale-User-Login` — no app-level user store or allow-list.
-- One exception, loopback-scoped: `/wake`. It was there for the Gateway's own in-process auto-wake trigger; with the proxy route gone it now only covers a shell on the Pi itself.
+- One exception, loopback-scoped: `/wake`. It was there for the Gateway's own in-process auto-wake trigger; with that trigger gone it now only covers a shell on the Pi itself.
 - `tailnet.AssertTailnetOnlyBind` is a structural backstop: both binaries refuse to start if their bind address isn't loopback or tailnet.
 - Compute API's CORS policy allows exactly one origin.
 
@@ -150,4 +146,4 @@ sequenceDiagram
 - The Grafana Cloud pipeline has no retry/buffering — a transient outage drops the event. Accepted for low-stakes audit events.
 - Bind-address enforcement is a runtime check per binary; pyinfra doesn't verify it at provisioning time.
 - Compute API's container-activity signal is CPU-only; a network-delta signal (for a low-CPU, high-network workload like a large file transfer) is deferred — nothing routable today needs it.
-- No workload Compose stack (Immich, etc.) has been deployed yet for Compute's proxy to route to — Docker is provisioned, but exercising the proxy end-to-end still needs a labeled container stood up.
+- No workload Compose stack (Immich, etc.) has been deployed yet — Docker is provisioned on Compute, but nothing runs on it.

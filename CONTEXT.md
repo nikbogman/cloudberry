@@ -19,11 +19,11 @@ The browser app on the Gateway showing Compute reachability and Wake/Suspend act
 _Avoid_: Control UI, Panel, dashboard, frontend
 
 **Gateway API**:
-The backend on the Gateway: serves the UI's static files and sends WoL. Carries no workload traffic — browsers reach the Compute API's own reverse proxy directly, so Wake has exactly one trigger, the UI's Wake button. Same-origin with the UI; not reachable off-tailnet.
+The backend on the Gateway: serves the UI's static files and sends WoL. Carries no workload traffic — browsers reach workload containers on Compute directly, so Wake has exactly one trigger, the UI's Wake button. Same-origin with the UI; not reachable off-tailnet.
 _Avoid_: Pi API, wake service, Gateway proxy, WoL plugin
 
 **Compute API**:
-The backend on Compute exposing Suspend and a reachability health check — and Compute's own reverse proxy for workload traffic, routing to Docker containers by label. A distinct origin from the UI, fronted by its own `tailscale serve` instance.
+The backend on Compute exposing Suspend and a reachability health check. Carries no workload traffic and knows nothing about Docker. A distinct origin from the UI, fronted by its own `tailscale serve` instance.
 _Avoid_: Server API, suspend service
 
 **Reachable**:
