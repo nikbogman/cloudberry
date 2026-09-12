@@ -18,21 +18,16 @@ func main() {
 	grafanaCfg := eventlog.MustGrafanaConfig()
 	logger := eventlog.NewGrafanaCloudLogger(grafanaCfg.LokiURL, grafanaCfg.LokiUser, grafanaCfg.LokiAPIKey, "compute-api")
 
-	runtime, err := compute.NewDockerRuntime(cfg.CPUBaselinePercent)
+	runtime, err := compute.NewDockerRuntime()
 	if err != nil {
 		log.Fatal(err)
 	}
 	suspender := compute.NewSystemSuspender()
 
-	signals := compute.NewActivitySignals(logger, cfg.IdleTimeout, cfg.AutosuspendDryRun)
-
-	handler, err := compute.NewHandler(cfg.UIOrigin, suspender, runtime, logger, cfg.Host, signals)
+	handler, err := compute.NewHandler(cfg.UIOrigin, suspender, runtime, logger, cfg.Host)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	watcher := compute.NewIdleWatcher(suspender, runtime, logger, signals)
-	go watcher.Run()
 
 	addr := net.JoinHostPort(cfg.Host, cfg.Port)
 	log.Printf("compute-api listening on %s", addr)

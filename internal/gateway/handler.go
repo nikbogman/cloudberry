@@ -1,5 +1,5 @@
-// Package gateway is path-routed under the same tailscale serve app as
-// the UI, so no CORS entry is needed.
+// Package gateway serves the UI and sends Wake-on-LAN. It is path-routed
+// under the same tailscale serve app as the UI, so no CORS entry is needed.
 package gateway
 
 import (
@@ -24,9 +24,7 @@ type Config struct {
 	BindHost   string
 	// Served at "/": the real binary passes an embed.FS via fs.Sub, tests
 	// pass os.DirFS.
-	UIAssets         fs.FS
-	ComputeHost      string
-	ComputeProxyPort int
+	UIAssets fs.FS
 	// Origin the UI sends its Compute API calls to, served at
 	// /config.js. "" means same-origin, which only suits local dev --
 	// in production Compute is a separate tailnet host.
@@ -51,10 +49,7 @@ func NewHandler(cfg Config, waker Waker, logger EventLogger) (http.Handler, erro
 	h := &Handler{macAddress: cfg.MACAddress, waker: waker, logger: logger}
 
 	mux := http.NewServeMux()
-	// Lets the compute proxy trigger auto-wake in-process without a
-	// tailnet identity header.
 	mux.Handle("POST /wake", tailnet.RequireTailnetIdentityOrLoopback(http.HandlerFunc(h.handleWake)))
-	mux.Handle("/server/", newComputeProxy(cfg.ComputeHost, cfg.ComputeProxyPort, h.doWake))
 	// Served rather than embedded so the UI stays a pure static tree with
 	// nothing generated into it at deploy time.
 	mux.HandleFunc("GET /config.js", func(w http.ResponseWriter, r *http.Request) {
@@ -74,8 +69,6 @@ func (h *Handler) handleWake(w http.ResponseWriter, r *http.Request) {
 	httpresponse.WriteJSON(w, http.StatusOK, map[string]string{"wake": "succeeded"})
 }
 
-// doWake is shared by the HTTP-facing /wake handler and the proxy's
-// in-process auto-wake trigger.
 func (h *Handler) doWake(identity string) error {
 	h.logger.SendEvent("wake_requested", "requested", &identity, nil)
 

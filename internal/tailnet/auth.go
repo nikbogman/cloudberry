@@ -13,9 +13,8 @@ import (
 const (
 	IdentityHeader = "Tailscale-User-Login"
 	// LoopbackIdentity is assigned to a caller on 127.0.0.1 with no
-	// identity header -- the Gateway API's own same-device auto-wake
-	// trigger. Kept as "gateway" for continuity with existing event
-	// history.
+	// identity header -- a script or shell on the device itself. Kept as
+	// "gateway" for continuity with existing event history.
 	LoopbackIdentity = "gateway"
 )
 
@@ -37,7 +36,8 @@ func RequireTailnetIdentity(next http.Handler) http.Handler {
 }
 
 // RequireTailnetIdentityOrLoopback also accepts a caller on 127.0.0.1 with
-// no identity header, for the Gateway API's own auto-wake trigger.
+// no identity header, for local scripts with no browser session to carry
+// an identity.
 func RequireTailnetIdentityOrLoopback(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		identity := strings.TrimSpace(r.Header.Get(IdentityHeader))

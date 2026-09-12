@@ -1,12 +1,10 @@
 package compute
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/nikbogman/homelab/internal/tailnet"
 )
@@ -56,13 +54,6 @@ func (f *fakeContainerRuntime) RoutableContainers() ([]RoutableContainer, error)
 	return f.containers, nil
 }
 
-func (f *fakeContainerRuntime) ActivityAboveBaseline() (bool, error) {
-	if f.statsErr != nil {
-		return false, f.statsErr
-	}
-	return f.active, nil
-}
-
 // mustNewHandler is for tests unconcerned with proxy routing; it wires an
 // empty fakeContainerRuntime. Proxy tests use mustNewHandlerWithRuntime.
 func mustNewHandler(t *testing.T, suspender Suspender, logger EventLogger) *Handler {
@@ -72,8 +63,7 @@ func mustNewHandler(t *testing.T, suspender Suspender, logger EventLogger) *Hand
 
 func mustNewHandlerWithRuntime(t *testing.T, suspender Suspender, runtime ContainerRuntime, logger EventLogger) *Handler {
 	t.Helper()
-	signals := NewActivitySignals(logger, time.Hour, false)
-	h, err := NewHandler(testUIOrigin, suspender, runtime, logger, "127.0.0.1", signals)
+	h, err := NewHandler(testUIOrigin, suspender, runtime, logger, "127.0.0.1")
 	if err != nil {
 		t.Fatalf("NewHandler failed: %v", err)
 	}
@@ -181,8 +171,7 @@ func TestCorsRejectsOtherOrigins(t *testing.T) {
 }
 
 func TestNewHandlerRefusesOffTailnetBindHost(t *testing.T) {
-	signals := NewActivitySignals(&fakeLogger{}, time.Hour, false)
-	_, err := NewHandler(testUIOrigin, &fakeSuspender{}, &fakeContainerRuntime{}, &fakeLogger{}, "0.0.0.0", signals)
+	_, err := NewHandler(testUIOrigin, &fakeSuspender{}, &fakeContainerRuntime{}, &fakeLogger{}, "0.0.0.0")
 	var bindErr *tailnet.BindOffTailnetError
 	if !errors.As(err, &bindErr) {
 		t.Fatalf("got err %v, want *tailnet.BindOffTailnetError", err)
@@ -262,147 +251,6 @@ func TestSuspendReturns500AndLogsFailedWhenSuspenderFails(t *testing.T) {
 	}
 }
 
-func loopbackRequest(method, path string) *http.Request {
-	r := httptest.NewRequest(method, path, nil)
-	r.RemoteAddr = "127.0.0.1:12345"
-	return r
-}
-
-func TestHoldAcquireRequiresIdentityHeaderOrLoopback(t *testing.T) {
-	h := mustNewHandler(t, &fakeSuspender{}, &fakeLogger{})
-	rec := httptest.NewRecorder()
-
-	h.ServeHTTP(rec, httptest.NewRequest(http.MethodPost, "/hold", nil))
-
-	if rec.Code != http.StatusUnauthorized {
-		t.Fatalf("got status %d, want 401", rec.Code)
-	}
-}
-
-func TestHoldAcquireAcceptsLoopbackCallerWithNoIdentityHeader(t *testing.T) {
-	h := mustNewHandler(t, &fakeSuspender{}, &fakeLogger{})
-	rec := httptest.NewRecorder()
-
-	h.ServeHTTP(rec, loopbackRequest(http.MethodPost, "/hold"))
-
-	if rec.Code != http.StatusOK {
-		t.Fatalf("got status %d, want 200", rec.Code)
-	}
-}
-
-func TestHoldAcquireLogsHoldAcquiredWithCallerIdentity(t *testing.T) {
-	logger := &fakeLogger{}
-	h := mustNewHandler(t, &fakeSuspender{}, logger)
-
-	h.ServeHTTP(httptest.NewRecorder(), authedRequest(http.MethodPost, "/hold"))
-
-	if len(logger.events) != 1 {
-		t.Fatalf("got %d events, want 1: %+v", len(logger.events), logger.events)
-	}
-	got := logger.events[0]
-	if got.eventType != "hold_acquired" || got.outcome != "acquired" || got.identity == nil || *got.identity != testIdentity {
-		t.Fatalf("got event %+v, want hold_acquired/acquired/%s", got, testIdentity)
-	}
-}
-
-func TestHoldAcquireAgainBeforeExpiryRenewsRatherThanStacking(t *testing.T) {
-	logger := &fakeLogger{}
-	h := mustNewHandler(t, &fakeSuspender{}, logger)
-	h.ServeHTTP(httptest.NewRecorder(), authedRequest(http.MethodPost, "/hold"))
-	h.ServeHTTP(httptest.NewRecorder(), authedRequest(http.MethodPost, "/hold"))
-
-	// A single release must clear the hold entirely -- if renewal had
-	// stacked a second hold underneath, one release wouldn't be enough
-	// and a second release would still find something active to log.
-	h.ServeHTTP(httptest.NewRecorder(), authedRequest(http.MethodDelete, "/hold"))
-	h.ServeHTTP(httptest.NewRecorder(), authedRequest(http.MethodDelete, "/hold"))
-
-	released := 0
-	for _, e := range logger.events {
-		if e.eventType == "hold_released" {
-			released++
-		}
-	}
-	if released != 1 {
-		t.Fatalf("got %d hold_released events across repeated deletes, want 1 (no stacking): %+v", released, logger.events)
-	}
-}
-
-func TestHoldReleaseEndsAnActiveHoldAndLogsHoldReleased(t *testing.T) {
-	logger := &fakeLogger{}
-	h := mustNewHandler(t, &fakeSuspender{}, logger)
-	h.ServeHTTP(httptest.NewRecorder(), authedRequest(http.MethodPost, "/hold"))
-	rec := httptest.NewRecorder()
-
-	h.ServeHTTP(rec, authedRequest(http.MethodDelete, "/hold"))
-
-	if rec.Code != http.StatusOK {
-		t.Fatalf("got status %d, want 200", rec.Code)
-	}
-	last := logger.events[len(logger.events)-1]
-	if last.eventType != "hold_released" || last.outcome != "released" || last.identity == nil || *last.identity != testIdentity {
-		t.Fatalf("got last event %+v, want hold_released/released/%s", last, testIdentity)
-	}
-}
-
-func TestHoldReleaseWithNoActiveHoldLogsNothing(t *testing.T) {
-	logger := &fakeLogger{}
-	h := mustNewHandler(t, &fakeSuspender{}, logger)
-	rec := httptest.NewRecorder()
-
-	h.ServeHTTP(rec, authedRequest(http.MethodDelete, "/hold"))
-
-	if rec.Code != http.StatusOK {
-		t.Fatalf("got status %d, want 200", rec.Code)
-	}
-	if len(logger.events) != 0 {
-		t.Fatalf("got %d events, want 0: %+v", len(logger.events), logger.events)
-	}
-}
-
-// Hold expiry is checked lazily (inside ActivitySignals.checkExpiry, run
-// from HoldActive/Status/Evaluate) rather than via a background timer, so
-// these tests advance a fake clock and then read hold state, instead of
-// shrinking holdDuration and sleeping for a real timer to fire.
-
-func TestHoldExpiresOnceItsTTLHasPassedAndLogsHoldExpiredWithNoIdentity(t *testing.T) {
-	logger := &fakeLogger{}
-	h := mustNewHandler(t, &fakeSuspender{}, logger)
-
-	h.ServeHTTP(httptest.NewRecorder(), authedRequest(http.MethodPost, "/hold"))
-	acquiredAt := h.signals.now()
-	h.signals.now = func() time.Time { return acquiredAt.Add(holdDuration + time.Second) }
-
-	h.ServeHTTP(httptest.NewRecorder(), authedRequest(http.MethodGet, "/status"))
-
-	last := logger.events[len(logger.events)-1]
-	if last.eventType != "hold_expired" || last.outcome != "expired" || last.identity != nil {
-		t.Fatalf("got last event %+v, want hold_expired/expired/nil", last)
-	}
-}
-
-func TestHoldRenewalPreventsExpiryAtTheOriginalDeadline(t *testing.T) {
-	logger := &fakeLogger{}
-	h := mustNewHandler(t, &fakeSuspender{}, logger)
-
-	h.ServeHTTP(httptest.NewRecorder(), authedRequest(http.MethodPost, "/hold")) // acquire
-	acquiredAt := h.signals.now()
-
-	h.signals.now = func() time.Time { return acquiredAt.Add(holdDuration / 2) }
-	h.ServeHTTP(httptest.NewRecorder(), authedRequest(http.MethodPost, "/hold")) // renew, pushes deadline out again
-
-	// Past the original deadline (holdDuration from the first acquire) but
-	// well before the renewed one (holdDuration from the second).
-	h.signals.now = func() time.Time { return acquiredAt.Add(holdDuration + holdDuration/4) }
-	h.ServeHTTP(httptest.NewRecorder(), authedRequest(http.MethodGet, "/status"))
-
-	for _, e := range logger.events {
-		if e.eventType == "hold_expired" {
-			t.Fatalf("got hold_expired at the original deadline after renewal, want none yet: %+v", logger.events)
-		}
-	}
-}
-
 func TestSuspendDoesNotGuardAgainstRepeatedRequests(t *testing.T) {
 	// The API always attempts the action -- the UI's disabled state is the only guard.
 	suspender := &fakeSuspender{}
@@ -413,89 +261,5 @@ func TestSuspendDoesNotGuardAgainstRepeatedRequests(t *testing.T) {
 
 	if suspender.calls != 2 {
 		t.Fatalf("got %d suspend calls, want 2", suspender.calls)
-	}
-}
-
-type statusResponse struct {
-	IdleSeconds          float64 `json:"idleSeconds"`
-	HoldActive           bool    `json:"holdActive"`
-	HoldRemainingSeconds float64 `json:"holdRemainingSeconds"`
-	DryRun               bool    `json:"dryRun"`
-}
-
-func TestStatusRequiresIdentityHeader(t *testing.T) {
-	h := mustNewHandler(t, &fakeSuspender{}, &fakeLogger{})
-	rec := httptest.NewRecorder()
-
-	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/status", nil))
-
-	if rec.Code != http.StatusUnauthorized {
-		t.Fatalf("got status %d, want 401", rec.Code)
-	}
-}
-
-func TestStatusRejectsLoopbackWithNoIdentityHeader(t *testing.T) {
-	// Unlike /hold, /status is a read diagnostic, not an automation
-	// target -- no loopback exception.
-	h := mustNewHandler(t, &fakeSuspender{}, &fakeLogger{})
-	rec := httptest.NewRecorder()
-
-	h.ServeHTTP(rec, loopbackRequest(http.MethodGet, "/status"))
-
-	if rec.Code != http.StatusUnauthorized {
-		t.Fatalf("got status %d, want 401", rec.Code)
-	}
-}
-
-func TestStatusReportsIdleDurationHoldStateAndDryRunFlag(t *testing.T) {
-	logger := &fakeLogger{}
-	start := time.Now()
-	signals := NewActivitySignals(logger, time.Hour, true)
-	signals.now = func() time.Time { return start }
-	signals.lastActivity = start
-	h, err := NewHandler(testUIOrigin, &fakeSuspender{}, &fakeContainerRuntime{}, logger, "127.0.0.1", signals)
-	if err != nil {
-		t.Fatalf("NewHandler failed: %v", err)
-	}
-
-	h.ServeHTTP(httptest.NewRecorder(), authedRequest(http.MethodPost, "/hold"))
-	signals.now = func() time.Time { return start.Add(90 * time.Second) }
-	rec := httptest.NewRecorder()
-
-	h.ServeHTTP(rec, authedRequest(http.MethodGet, "/status"))
-
-	if rec.Code != http.StatusOK {
-		t.Fatalf("got status %d, want 200", rec.Code)
-	}
-	var got statusResponse
-	if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
-		t.Fatalf("decoding response: %v", err)
-	}
-	if got.IdleSeconds != 90 {
-		t.Fatalf("got idleSeconds %v, want 90", got.IdleSeconds)
-	}
-	if !got.HoldActive {
-		t.Fatalf("got holdActive false, want true")
-	}
-	if got.HoldRemainingSeconds <= 0 || got.HoldRemainingSeconds > holdDuration.Seconds() {
-		t.Fatalf("got holdRemainingSeconds %v, want in (0, %v]", got.HoldRemainingSeconds, holdDuration.Seconds())
-	}
-	if !got.DryRun {
-		t.Fatalf("got dryRun false, want true")
-	}
-}
-
-func TestStatusReportsNoHoldWhenNoneActive(t *testing.T) {
-	h := mustNewHandler(t, &fakeSuspender{}, &fakeLogger{})
-	rec := httptest.NewRecorder()
-
-	h.ServeHTTP(rec, authedRequest(http.MethodGet, "/status"))
-
-	var got statusResponse
-	if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
-		t.Fatalf("decoding response: %v", err)
-	}
-	if got.HoldActive || got.HoldRemainingSeconds != 0 {
-		t.Fatalf("got holdActive=%v holdRemainingSeconds=%v, want false/0", got.HoldActive, got.HoldRemainingSeconds)
 	}
 }

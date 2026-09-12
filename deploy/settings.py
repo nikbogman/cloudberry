@@ -47,19 +47,10 @@ class GrafanaLokiSecrets(BaseSettings):
 
 
 class GatewaySettings(BaseSettings):
-    # Not named gateway_host/compute_host -- no env_prefix here, so those
-    # names would alias InventorySettings' SSH targets via the shared env
-    # var. These configure the Gateway binary at runtime instead.
+    # Not named gateway_host -- no env_prefix here, so that name would
+    # alias InventorySettings' SSH target via the shared env var. This
+    # configures the Gateway binary at runtime instead.
     gateway_port: int = 5000
-    # gateway_proxy_host is what /server* reverse-proxies to -- distinct
-    # from InventorySettings.compute_host despite the matching default:
-    # that one is pyinfra's SSH target, this is the Gateway binary's own
-    # runtime target, and they're allowed to diverge (e.g. a LAN IP vs. a
-    # tailnet name) even though today they're the same box.
-    gateway_proxy_host: str = "main-server.tailnet"
-    # No default: no single correct target across every device the binary
-    # might run on.
-    compute_proxy_port: int
 
 
 class GatewaySecrets(BaseSettings):

@@ -11,13 +11,11 @@ reaches the browser as `COMPUTE_API_URL`, which the Gateway serves at
 `/config.js`; it comes from `InventorySettings.compute_tailnet_host` --
 the Compute API's real Tailscale MagicDNS name, not a separate secret.
 
-This binary also serves the UI's static files and reverse-proxies
-`/server*` to the compute host, so it's also the sole thing standing up
-`tailscale serve` for this device.
+This binary also serves the UI's static files, so it's also the sole thing
+standing up `tailscale serve` for this device.
 
 Required env vars (only when targeting `gateway`/its `test` stand-in):
-`COMPUTE_MAC_ADDRESS`, `COMPUTE_PROXY_PORT`, and the `GRAFANA_CLOUD_LOKI_*`
-trio.
+`COMPUTE_MAC_ADDRESS` and the `GRAFANA_CLOUD_LOKI_*` trio.
 
 The local Go build always runs, even under `--dry` -- pyinfra's dry-run
 guarantee only covers remote operations.
@@ -48,12 +46,10 @@ if has_device_role("gateway"):
         binary_name="gateway-api",
         remote_binary="/usr/local/bin/gateway-api",
         unit_name="gateway-api.service",
-        description="Gateway -- serves the UI, sends Wake-on-LAN, and proxies to the compute host",
+        description="Gateway -- serves the UI and sends Wake-on-LAN",
         environment={
             "COMPUTE_MAC_ADDRESS": secrets.compute_mac_address,
             "GATEWAY_PORT": str(gateway_settings.gateway_port),
-            "COMPUTE_HOST": gateway_settings.gateway_proxy_host,
-            "COMPUTE_PROXY_PORT": str(gateway_settings.compute_proxy_port),
             # Reaches the browser via the Gateway's /config.js. No
             # equivalent for the Gateway API's own origin: it serves both
             # the UI and /wake, so the UI just uses a relative path.

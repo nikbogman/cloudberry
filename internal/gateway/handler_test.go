@@ -39,16 +39,12 @@ func (f *fakeLogger) SendEvent(eventType, outcome string, identity *string, extr
 	f.events = append(f.events, loggedEvent{eventType: eventType, outcome: outcome, identity: identity})
 }
 
-// mustNewHandler points ComputeHost/ComputeProxyPort at a closed port,
-// since no test here makes a /server* request.
 func mustNewHandler(t *testing.T, waker Waker, logger EventLogger) http.Handler {
 	t.Helper()
 	return mustNewHandlerWithConfig(t, Config{
-		MACAddress:       testMACAddress,
-		BindHost:         "127.0.0.1",
-		UIAssets:         os.DirFS(t.TempDir()),
-		ComputeHost:      "127.0.0.1",
-		ComputeProxyPort: 1,
+		MACAddress: testMACAddress,
+		BindHost:   "127.0.0.1",
+		UIAssets:   os.DirFS(t.TempDir()),
 	}, waker, logger)
 }
 
@@ -217,12 +213,10 @@ func TestNewHandlerRejectsAMalformedMacAddressAtStartup(t *testing.T) {
 
 func TestConfigJSExposesTheComputeAPIURLToTheBrowser(t *testing.T) {
 	cfg := Config{
-		MACAddress:       testMACAddress,
-		BindHost:         "127.0.0.1",
-		UIAssets:         os.DirFS(t.TempDir()),
-		ComputeHost:      "127.0.0.1",
-		ComputeProxyPort: 1,
-		ComputeAPIURL:    "https://compute.example.ts.net",
+		MACAddress:    testMACAddress,
+		BindHost:      "127.0.0.1",
+		UIAssets:      os.DirFS(t.TempDir()),
+		ComputeAPIURL: "https://compute.example.ts.net",
 	}
 	h := mustNewHandlerWithConfig(t, cfg, &fakeWaker{}, &fakeLogger{})
 	rec := httptest.NewRecorder()
@@ -251,5 +245,47 @@ func TestConfigJSEmitsAnEmptyStringWhenNoComputeAPIURLIsSet(t *testing.T) {
 
 	if want := "window.COMPUTE_API_URL = \"\"\n"; rec.Body.String() != want {
 		t.Errorf("got body %q, want %q", rec.Body.String(), want)
+	}
+}
+
+func TestStaticFilesAreServedFromUIAssets(t *testing.T) {
+	dir := t.TempDir()
+	writeFile(t, dir, "index.html", "<html>hi</html>")
+
+	h := mustNewHandlerWithConfig(t, Config{
+		MACAddress: testMACAddress, BindHost: "127.0.0.1", UIAssets: os.DirFS(dir),
+	}, &fakeWaker{}, &fakeLogger{})
+
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/", nil))
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("got status %d, want 200", rec.Code)
+	}
+	if rec.Body.String() != "<html>hi</html>" {
+		t.Fatalf("got body %q, want the file's contents", rec.Body.String())
+	}
+}
+
+func TestAnUnknownPathDoesNotFallBackToIndexHTML(t *testing.T) {
+	dir := t.TempDir()
+	writeFile(t, dir, "index.html", "<html>hi</html>")
+
+	h := mustNewHandlerWithConfig(t, Config{
+		MACAddress: testMACAddress, BindHost: "127.0.0.1", UIAssets: os.DirFS(dir),
+	}, &fakeWaker{}, &fakeLogger{})
+
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/some/spa/route", nil))
+
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("got status %d, want 404 -- no SPA/try_files fallback", rec.Code)
+	}
+}
+
+func writeFile(t *testing.T, dir, name, contents string) {
+	t.Helper()
+	if err := os.WriteFile(dir+"/"+name, []byte(contents), 0o644); err != nil {
+		t.Fatalf("failed to write %s: %v", name, err)
 	}
 }

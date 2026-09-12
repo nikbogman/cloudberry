@@ -57,9 +57,8 @@ It writes `ui/config.js` (gitignored) from the repo root `.env`'s
 `COMPUTE_TAILNET_HOST`, the same value a Deploy uses — so the health poll hits
 the real Compute host and the status is live.
 
-Wake and `/server/*` are Gateway routes and 404 here. For those, run the real
-binary instead (see the README) — it serves the *embedded* UI, so edits need a
-restart.
+Wake is a Gateway route and 404s here. For it, run the real binary instead (see
+the README) — it serves the *embedded* UI, so edits need a restart.
 
 Absolute asset paths (`/app.js`, `/style.css`) mean the site must be served from
 its own root, either way. Opening `index.html` as a `file://` URL will not work

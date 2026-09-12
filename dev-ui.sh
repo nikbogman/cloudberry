@@ -6,9 +6,9 @@
 #
 # Usage: ./dev-ui.sh [port]        # default 5173
 #
-# Wake and the /server/* proxy do NOT work here -- only the Gateway
-# serves those. Run `go run ./cmd/gateway-api` for the real thing; it
-# serves the *embedded* UI, so edits need a restart. See docs/ui.md.
+# Wake does NOT work here -- only the Gateway serves it. Run
+# `go run ./cmd/gateway-api` for the real thing; it serves the *embedded*
+# UI, so edits need a restart. See docs/ui.md.
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
 

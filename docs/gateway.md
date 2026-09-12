@@ -1,9 +1,12 @@
 # Gateway
 
 The always-on device (a Pi Zero W) and the Gateway API binary it runs. One
-process does three jobs: serves the UI's static files, sends Wake-on-LAN to
-Compute, and reverse-proxies workload traffic. Same-origin with the
-[UI](ui.md), so no CORS entry is needed.
+process does two jobs: serves the UI's static files and sends Wake-on-LAN to
+Compute. Same-origin with the [UI](ui.md), so no CORS entry is needed.
+
+It is deliberately *not* in the workload traffic path — the Pi is on Wi-Fi,
+so proxying workload traffic through it costs a hop and a bottleneck for
+nothing. Browsers reach Compute's own reverse proxy directly on the tailnet.
 
 Vocabulary (Gateway, Wake, Identity header) is in [`CONTEXT.md`](../CONTEXT.md).
 
@@ -15,7 +18,6 @@ entrypoint [`cmd/gateway-api/`](../cmd/gateway-api).
 | Route | Behavior |
 |---|---|
 | `POST /wake` | Requires the identity header or a `127.0.0.1` caller. Sends WoL to `COMPUTE_MAC_ADDRESS`, logs `wake_requested`/`_succeeded`/`_failed`, returns `{"wake": ...}`. |
-| `/server/*` | Reverse-proxies to `http://{COMPUTE_HOST}:{COMPUTE_PROXY_PORT}`, path-stripped. A real backend response (even 502) passes through untouched; a transport failure triggers a throttled wake and retries for up to 60s. |
 | `GET /config.js` | One line of JS setting `window.COMPUTE_API_URL` from the env var, so the UI learns Compute's origin without anything being generated into `ui/`. |
 | `/` (everything else) | Serves the UI's static files, `//go:embed`ded from `ui/` at build time. Unknown paths 404 (no SPA fallback). |
 
@@ -31,8 +33,6 @@ required.
 | Variable | Purpose |
 |---|---|
 | **`COMPUTE_MAC_ADDRESS`** | MAC address the magic packet targets. Validated at startup. |
-| **`COMPUTE_HOST`** | Host the `/server*` route forwards to. |
-| **`COMPUTE_PROXY_PORT`** | Port on `COMPUTE_HOST` that `/server*` forwards to; no default. |
 | **`GRAFANA_CLOUD_LOKI_URL`** | Grafana Cloud's Loki push endpoint. |
 | **`GRAFANA_CLOUD_LOKI_USER`** | Grafana Cloud Loki basic-auth username (numeric instance ID). |
 | **`GRAFANA_CLOUD_LOKI_API_KEY`** | Grafana Cloud Access Policy token, scoped to `logs:write`. |
@@ -45,8 +45,8 @@ required.
 it into the Gateway binary, cross-compiles for the Pi Zero W
 (`GOARCH=arm GOARM=6` — ARM1176; a Pi Zero 2 W would need `GOARCH=arm64`), and
 ships only the binary plus a systemd unit. The device never runs a Go or Node
-toolchain. Because the binary does all three jobs, this is the only Deploy file
-for the device.
+toolchain. Because the binary does both jobs, this is the only Deploy file for
+the device.
 
 It then runs `tailscale serve --bg --https=443 localhost:$GATEWAY_PORT`, guarded
 by `common.TailscaleServeStatus` so a second run is a no-op. `tailscale serve`'s
@@ -63,8 +63,6 @@ always wins. Bold variables are required.
 |---|---|---|
 | `GATEWAY_PORT` | `5000` | Listen port; pinned explicitly (rather than relying on the binary's matching default) since `tailscale serve` has to point at the right port |
 | **`COMPUTE_MAC_ADDRESS`** | — | WoL target MAC |
-| `GATEWAY_PROXY_HOST` | `main-server.tailnet` | Host `/server*` forwards to. Deliberately *not* named `COMPUTE_HOST`: with no `env_prefix`, that name would alias `InventorySettings`' SSH target. Shipped to the device as the binary's `COMPUTE_HOST` |
-| **`COMPUTE_PROXY_PORT`** | — | Port on `GATEWAY_PROXY_HOST` that `/server*` forwards to — the Compute API's own listen port. Required, not defaulted: no single correct target across every device the binary might run on |
 | `COMPUTE_API_URL` | `''` | Compute API origin the UI calls; served to the browser at `/config.js`. Empty means same-origin, which only suits a local dev run |
 | **`GRAFANA_CLOUD_LOKI_URL`** | — | Grafana Cloud's Loki push endpoint |
 | **`GRAFANA_CLOUD_LOKI_USER`** | — | Loki basic-auth username (numeric instance ID) |

@@ -5,17 +5,16 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"strings"
-	"time"
 )
 
 // handleProxy routes a request to whichever container's homelab.route
 // label prefixes the request path. A real HTTP response from the
 // container (even an error status) passes through untouched -- only a
 // transport-level failure to reach the container produces a 502, via
-// httputil.ReverseProxy's default ErrorHandler. Unlike the Gateway's
-// compute proxy, there is no retry/wake loop: workload containers run
-// continuously (restart: unless-stopped), so a container never needs
-// waking, only Compute itself does.
+// httputil.ReverseProxy's default ErrorHandler. There is no retry/wake
+// loop: workload containers run continuously (restart: unless-stopped),
+// so a container never needs waking, and if Compute itself is asleep
+// this process isn't running to be asked.
 func (h *Handler) handleProxy(w http.ResponseWriter, r *http.Request) {
 	container, err := matchRoute(r.URL.Path, h.runtime)
 	if err != nil {
@@ -29,10 +28,6 @@ func (h *Handler) handleProxy(w http.ResponseWriter, r *http.Request) {
 
 	target := &url.URL{Scheme: "http", Host: container.Addr}
 	proxy := httputil.NewSingleHostReverseProxy(target)
-	proxy.ModifyResponse = func(*http.Response) error {
-		h.signals.RecordProxied(time.Now())
-		return nil
-	}
 
 	http.StripPrefix(container.Path, proxy).ServeHTTP(w, r)
 }

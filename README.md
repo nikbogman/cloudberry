@@ -5,11 +5,12 @@ Immich) from anywhere on the tailnet, without leaving it running 24/7.
 
 Two devices on the same tailnet and LAN broadcast domain:
 
-- **Gateway (Pi Zero W)** — always on, low-power. Serves the UI, sends
-  Wake-on-LAN, reverse-proxies `/server*` to Compute with auto-wake.
+- **Gateway (Pi Zero W)** — always on, low-power. Serves the UI and sends
+  Wake-on-LAN. Not in the workload traffic path: it's on Wi-Fi, so routing
+  workload traffic through it isn't worth the hop.
 - **Compute** — runs the workloads, suspended to RAM most of the time.
-  Exposes Suspend, Hold, and the health check the UI polls, plus its own
-  reverse proxy to workload containers behind an idle watcher.
+  Exposes Suspend and the health check the UI polls, plus its own reverse
+  proxy to workload containers. Browsers reach it directly on the tailnet.
 
 Auth is the `Tailscale-User-Login` header injected by `tailscale serve` —
 tailnet membership is the entire authorization boundary.
@@ -21,7 +22,7 @@ tailnet membership is the entire authorization boundary.
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Design decisions, data flow, constraints, shared Go packages |
 | [CONTEXT.md](CONTEXT.md) | Domain glossary — the vocabulary everything else uses |
 | [docs/gateway.md](docs/gateway.md) | Gateway API: routes, environment, deployment |
-| [docs/compute.md](docs/compute.md) | Compute API: routes, idle watcher, environment, deployment |
+| [docs/compute.md](docs/compute.md) | Compute API: routes, environment, deployment |
 | [docs/ui.md](docs/ui.md) | Browser SPA: behavior, runtime config |
 | [docs/deploy.md](docs/deploy.md) | pyinfra: inventory, running a Deploy, the three test tiers |
 
@@ -70,8 +71,6 @@ Run a binary locally with its environment, e.g.:
 COMPUTE_MAC_ADDRESS=AA:BB:CC:DD:EE:FF \
 GRAFANA_CLOUD_LOKI_URL=https://logs-prod-000.grafana.net/loki/api/v1/push \
 GRAFANA_CLOUD_LOKI_USER=123456 GRAFANA_CLOUD_LOKI_API_KEY=glc_xxx \
-COMPUTE_HOST=main-server.tailnet \
-COMPUTE_PROXY_PORT=8081 \
 COMPUTE_API_URL=https://main-server.tailnet \
 go run ./cmd/gateway-api
 ```

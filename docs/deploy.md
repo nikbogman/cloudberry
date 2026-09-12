@@ -36,7 +36,7 @@ from sibling modules and resolve `templates/*.j2` relative to cwd, so
 
 An independent [uv](https://docs.astral.sh/uv/) project, not an installable
 package — pyinfra's CLI executes these scripts directly. Also requires a Go
-toolchain and Node on the dev machine.
+toolchain on the dev machine.
 
 ```sh
 cd deploy
