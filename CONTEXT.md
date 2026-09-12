@@ -8,7 +8,7 @@ Domain glossary for the control plane that lets the user wake, monitor, and susp
 
 **Waker**:
 Always-on device (currently a Pi Zero) fronting the system: hosts the UI and sends Wake-on-LAN — both the Waker API's job. Not in the workload traffic path: it's on Wi-Fi, so the hop isn't worth it. Named for its role, not its hardware.
-_Avoid_: Pi, Pi Zero (as a role name)
+_Avoid_: Gateway (its name until 2026-09-12, when it stopped carrying workload traffic), Pi, Pi Zero (as a role name)
 
 **Compute**:
 The machine that sleeps/wakes and runs the actual workloads. Named for its role, not its hardware.
@@ -19,8 +19,8 @@ The browser app on the Waker showing Compute reachability and Wake/Suspend actio
 _Avoid_: Control UI, Panel, dashboard, frontend
 
 **Waker API**:
-The backend on the Waker: serves the UI's static files and sends WoL. Carries no workload traffic — browsers reach workload containers on Compute directly, so Wake has exactly one trigger, the UI's Wake button. Same-origin with the UI; not reachable off-tailnet.
-_Avoid_: Pi API, wake service, Waker proxy, WoL plugin
+The backend on the Waker: serves the UI's static files and sends WoL. Carries no workload traffic — browsers reach workload containers on Compute directly. Same-origin with the UI; not reachable off-tailnet.
+_Avoid_: Gateway API, Pi API, wake service, WoL plugin
 
 **Compute API**:
 The backend on Compute exposing Suspend and a reachability health check. Carries no workload traffic and knows nothing about Docker. A distinct origin from the UI, fronted by its own `tailscale serve` instance.
@@ -38,7 +38,7 @@ Putting Compute into suspend-to-RAM — the only sleep state supported. Full shu
 _Avoid_: shutdown, sleep, power off
 
 **Identity header**:
-`Tailscale-User-Login`, injected by `tailscale serve` in front of both apps. The entire auth mechanism — tailnet membership is the entire authorization boundary, no separate allow-list. Exception: the Waker API's wake action also accepts a `127.0.0.1` caller in its place — originally for the Waker's own proxy route; with that route gone it now only covers a shell on the Pi itself.
+`Tailscale-User-Login`, injected by `tailscale serve` in front of both apps. The entire auth mechanism — tailnet membership is the entire authorization boundary, no separate allow-list. Exception: the Waker API's wake action also accepts a `127.0.0.1` caller in its place — originally for the in-process auto-wake trigger on the device's old proxy route; with that route gone it now only covers a shell on the Pi itself.
 _Avoid_: auth token, login header
 
 ### Provisioning

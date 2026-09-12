@@ -2,8 +2,8 @@
 
 The machine that sleeps and runs the workloads, and the Compute API binary it
 runs. Exposes a Reachable health check and the Suspend action. Fronted by its
-own `tailscale serve` instance — a distinct origin from the [UI](ui.md), hence the CORS
-allow-list.
+own `tailscale serve` instance — a distinct origin from the [UI](ui.md), hence
+the CORS allow-list.
 
 Vocabulary (Compute, Reachable, Suspend) is in [`CONTEXT.md`](../CONTEXT.md).
 
@@ -20,8 +20,8 @@ entrypoint [`cmd/compute-api/`](../cmd/compute-api).
 Suspend-to-RAM only — the suspend command isn't configurable via env var, so
 misconfiguration can't reintroduce a full shutdown.
 
-Workload containers are not this binary's concern: each publishes its own port
-and is reached directly, so Compute API never talks to the Docker daemon.
+Workload containers publish their own ports and are reached directly, so this
+binary never talks to the Docker daemon.
 
 ## Runtime environment
 

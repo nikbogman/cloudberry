@@ -20,7 +20,7 @@ deploy/
   go_build.py           shared off-device Go build+ship+systemd helper
   deploy_tailscale.py   ┐
   deploy_docker.py      │ one Deploy file per piece of infrastructure or app
-  deploy_waker.py     │
+  deploy_waker.py       │
   deploy_compute_api.py ┘
   deploy.py             entrypoint composing everything
   deploy.sh             wrapper: loads ../.env, resolves short Deploy-file names

@@ -41,12 +41,11 @@ required.
 
 ## Deployment
 
-[`deploy/deploy_waker.py`](../deploy/deploy_waker.py) builds the UI, embeds
-it into the Waker binary, cross-compiles for the Pi Zero W
-(`GOARCH=arm GOARM=6` — ARM1176; a Pi Zero 2 W would need `GOARCH=arm64`), and
-ships only the binary plus a systemd unit. The device never runs a Go or Node
-toolchain. Because the binary does both jobs, this is the only Deploy file for
-the device.
+[`deploy/deploy_waker.py`](../deploy/deploy_waker.py) cross-compiles for the
+Pi Zero W (`GOARCH=arm GOARM=6` — ARM1176; a Pi Zero 2 W would need
+`GOARCH=arm64`) with the UI `//go:embed`ded, and ships only the binary plus a
+systemd unit. The device never runs a Go toolchain. Because the binary does
+both jobs, this is the only Deploy file for the device.
 
 It then runs `tailscale serve --bg --https=443 localhost:$WAKER_PORT`, guarded
 by `common.TailscaleServeStatus` so a second run is a no-op. `tailscale serve`'s

@@ -89,7 +89,6 @@ sequenceDiagram
     B->>C: POST /suspend (Identity header)
     C->>C: run suspend command + event log
     C-->>B: 200/500 {suspend: ...}
-
 ```
 
 ### External integrations
@@ -102,9 +101,8 @@ sequenceDiagram
 ## Key Design Decisions
 
 - **No server-side relay between the UI's two backend origins** — avoids the Compute API trusting a forwarded identity claim over the real header.
-- **The Waker carries no workload traffic** — it's a Pi Zero W on Wi-Fi, so proxying workload traffic through it adds a hop and a bandwidth ceiling for nothing when `tailscale serve` already gives Compute its own reachable HTTPS origin. Cost: auto-wake-on-request is gone, since the Waker no longer sees workload requests.
+- **Nothing in this repo proxies workload traffic** — no sidecar (Caddy/Traefik), no routing config, no route awareness in either binary. Each container publishes a host port and `tailscale serve` already gives Compute a reachable HTTPS origin, so a proxy would only add a second thing to keep in sync with the compose files. Routing through the Waker would also cost a hop and a bandwidth ceiling, it being a Pi Zero W on Wi-Fi. Cost: auto-wake-on-request is gone, since nothing in the control plane sees workload requests.
 - **Suspend-to-RAM only, no full shutdown** — WoL after ACPI S5 is unreliable across BIOS/NIC configs; the suspend command isn't configurable via env var.
-- **Nothing in this repo proxies workload traffic** — no sidecar (Caddy/Traefik), no routing config, no route awareness in Compute API. Each container publishes a host port and Docker serves it; a proxy would be a second thing to keep in sync with the compose files for no gain on a single-host tailnet.
 - **No graceful workload shutdown before suspend** — suspend-to-RAM freezes every process atomically via the kernel's freezer cgroup and resumes it in place; there's no in-flight work to lose, so nothing to drain.
 - **WoL requires the same L2 broadcast domain** — accepted rather than building a cross-subnet relay.
 - **Tailnet membership is the entire authorization boundary** — no separate allow-list.
@@ -145,5 +143,4 @@ sequenceDiagram
 - `reachabilityTracker` can only observe Compute *becoming* reachable, never unreachable, since the process is asleep whenever that transition happens.
 - The Grafana Cloud pipeline has no retry/buffering — a transient outage drops the event. Accepted for low-stakes audit events.
 - Bind-address enforcement is a runtime check per binary; pyinfra doesn't verify it at provisioning time.
-- Compute API's container-activity signal is CPU-only; a network-delta signal (for a low-CPU, high-network workload like a large file transfer) is deferred — nothing routable today needs it.
 - No workload Compose stack (Immich, etc.) has been deployed yet — Docker is provisioned on Compute, but nothing runs on it.

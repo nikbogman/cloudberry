@@ -33,9 +33,9 @@ ARCHITECTURE.md          design reference
 CONTEXT.md               domain glossary
 docs/                    per-service docs; agents/ is agent-tooling contract
 go.mod                   one Go module for both binaries
-cmd/waker-api/         Waker API entrypoint
+cmd/waker-api/           Waker API entrypoint
 cmd/compute-api/         Compute API entrypoint
-internal/waker/        Waker API logic
+internal/waker/          Waker API logic
 internal/compute/        Compute API logic
 internal/tailnet/        shared: identity-header auth, bind-safety
 internal/eventlog/       shared: Grafana Cloud event logging
