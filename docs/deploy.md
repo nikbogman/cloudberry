@@ -182,19 +182,11 @@ gate instead of eyeballing the table.
   re-check the CLI/JSON version caveat before trusting it blindly.
 - Standing up a labeled workload container is a manual step, outside pyinfra's
   scope.
-- **One-time migration**: Compute was renamed Sleeper on 2026-09-12, which
-  renamed every `COMPUTE_*` variable to `SLEEPER_*`. `sleeper_api.py`
-  removes the old `compute-api` unit and binaries itself, but the `.env`
-  files are yours to update: `SLEEPER_HOST`, `SLEEPER_SSH_USER`,
-  `SLEEPER_TAILNET_HOST` and `SLEEPER_SUDO_PASSWORD` in the repo root
-  `.env`, `SLEEPER_MAC_ADDRESS` in `waker-service/.env`. Every one of them
-  has a default or is read on one device only, so a missed rename fails
-  quietly rather than loudly — `--dry` first. Delete this bullet once done.
-- **One-time migration**: the Waker's unit was renamed `waker.service` →
-  `waker-api.service`. pyinfra installs the new one but does not remove the
-  old, so on a device deployed before that rename, both would bind the same
-  port. Run `systemctl disable --now waker && rm /etc/systemd/system/waker.service`
-  on the Pi once, then delete this bullet.
+- **One-time migration**: the 2026-09-12 rename (Gateway → Waker, Compute →
+  Sleeper) left older units enabled on any device deployed before it.
+  `waker.py` and `sleeper_api.py` each remove theirs at the top of the run —
+  delete those two `server.shell` blocks once every device has been deployed
+  at least once since the rename.
 
 Bind-address enforcement and the system's other limitations are in
 [`ARCHITECTURE.md`](../waker-service/ARCHITECTURE.md#constraints).

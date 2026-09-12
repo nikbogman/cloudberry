@@ -36,20 +36,25 @@ if has_device_role("waker"):
     secrets = WakerSecrets()
     grafana = GrafanaLokiSecrets()
 
-    # The Waker was called the Gateway until 2026-09-12. Its old unit is
-    # still enabled on an already-deployed device and still holds the
-    # listen port, so installing the new one isn't enough -- the old one
-    # has to go first.
+    # The Waker was called the Gateway until 2026-09-12, and gateway.service
+    # until 2026-09-05. Either old unit is still enabled on a device deployed
+    # back then and still holds the listen port, so installing the new one
+    # isn't enough -- both have to go first.
     # ponytail: unconditional shell, delete this block once every device
     # has been deployed at least once since the rename.
     server.shell(
-        name="Remove the pre-rename gateway-api unit and binaries",
+        name="Remove the pre-rename gateway/gateway-api units and binaries",
         commands=[
             "systemctl disable --now gateway-api.service 2>/dev/null || true",
+            "systemctl disable --now gateway.service 2>/dev/null || true",
             "rm -f /etc/systemd/system/gateway-api.service"
             " /usr/local/bin/gateway-api"
             " /usr/local/bin/gateway-api.new"
-            " /usr/local/bin/gateway-api.swap",
+            " /usr/local/bin/gateway-api.swap"
+            " /etc/systemd/system/gateway.service"
+            " /usr/local/bin/gateway"
+            " /usr/local/bin/gateway.new"
+            " /usr/local/bin/gateway.swap",
             "systemctl daemon-reload",
         ],
     )
