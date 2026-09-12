@@ -1,6 +1,6 @@
 package waker
 
-import "github.com/nikbogman/homelab/internal/env"
+import "github.com/nikbogman/homelab/waker-service/internal/env"
 
 // EnvConfig is Config plus the waker's own listen port, both read from
 // the process environment.
@@ -9,16 +9,16 @@ type EnvConfig struct {
 	Port string
 }
 
-// ConfigFromEnv reads the Waker's runtime configuration. COMPUTE_MAC_ADDRESS
-// has no safe default, so it's required; COMPUTE_API_URL's "" means
+// ConfigFromEnv reads the Waker's runtime configuration. SLEEPER_MAC_ADDRESS
+// has no safe default, so it's required; SLEEPER_API_URL's "" means
 // same-origin, which only suits a local dev run. UIAssets is left unset --
 // callers fill it in from the embedded UI.
 func ConfigFromEnv() EnvConfig {
 	return EnvConfig{
 		Config: Config{
-			MACAddress:    env.MustEnv("COMPUTE_MAC_ADDRESS"),
+			MACAddress:    env.MustEnv("SLEEPER_MAC_ADDRESS"),
 			BindHost:      env.EnvOr("WAKER_HOST", "127.0.0.1"),
-			ComputeAPIURL: env.EnvOr("COMPUTE_API_URL", ""),
+			SleeperAPIURL: env.EnvOr("SLEEPER_API_URL", ""),
 		},
 		Port: env.EnvOr("WAKER_PORT", "5000"),
 	}

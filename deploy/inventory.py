@@ -1,13 +1,13 @@
 """Host groups for the homelab control plane.
 
-Two real devices, `waker` and `compute`, plus a `test` group of
+Two real devices, `waker` and `sleeper`, plus a `test` group of
 disposable, systemd-capable containers standing in for both. No Deploy
-file hardcodes a host -- they target `waker`/`compute`/`test` by name.
+file hardcodes a host -- they target `waker`/`sleeper`/`test` by name.
 Real addresses come from `settings.InventorySettings`.
 
 `device_role` (host data, not a pyinfra group) records which application
 logic a host runs, independent of whether it's the real device or its
-`test` stand-in. Test hosts aren't added to the `waker`/`compute`
+`test` stand-in. Test hosts aren't added to the `waker`/`sleeper`
 groups themselves, since those must stay targetable in isolation via
 `--limit`. See docs/deploy.md for how to stand up these
 containers.
@@ -28,19 +28,19 @@ waker = [
     ),
 ]
 
-compute = [
+sleeper = [
     (
-        settings.compute_host,
+        settings.sleeper_host,
         {
-            "ssh_user": settings.compute_ssh_user,
-            "device_role": "compute",
+            "ssh_user": settings.sleeper_ssh_user,
+            "device_role": "sleeper",
             "_sudo": True,
-            "_sudo_password": settings.compute_sudo_password,
+            "_sudo_password": settings.sleeper_sudo_password,
         },
     ),
 ]
 
-# Separate identities ("waker-test"/"compute-test") with the connect
+# Separate identities ("waker-test"/"sleeper-test") with the connect
 # address in `ssh_hostname` -- pyinfra dedupes hosts by identity, and both
 # containers share the same dev-machine address on different ports.
 test = [
@@ -54,12 +54,12 @@ test = [
         },
     ),
     (
-        "compute-test",
+        "sleeper-test",
         {
-            "ssh_hostname": settings.compute_test_host,
-            "ssh_port": settings.compute_test_ssh_port,
-            "ssh_user": settings.compute_test_ssh_user,
-            "device_role": "compute",
+            "ssh_hostname": settings.sleeper_test_host,
+            "ssh_port": settings.sleeper_test_ssh_port,
+            "ssh_user": settings.sleeper_test_ssh_user,
+            "device_role": "sleeper",
         },
     ),
 ]

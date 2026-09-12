@@ -7,7 +7,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/nikbogman/homelab/internal/tailnet"
+	"github.com/nikbogman/homelab/waker-service/internal/tailnet"
 )
 
 const (
@@ -211,12 +211,12 @@ func TestNewHandlerRejectsAMalformedMacAddressAtStartup(t *testing.T) {
 	}
 }
 
-func TestConfigJSExposesTheComputeAPIURLToTheBrowser(t *testing.T) {
+func TestConfigJSExposesTheSleeperAPIURLToTheBrowser(t *testing.T) {
 	cfg := Config{
 		MACAddress:    testMACAddress,
 		BindHost:      "127.0.0.1",
 		UIAssets:      os.DirFS(t.TempDir()),
-		ComputeAPIURL: "https://compute.example.ts.net",
+		SleeperAPIURL: "https://sleeper.example.ts.net",
 	}
 	h := mustNewHandlerWithConfig(t, cfg, &fakeSender{}, &fakeLogger{})
 	rec := httptest.NewRecorder()
@@ -229,21 +229,21 @@ func TestConfigJSExposesTheComputeAPIURLToTheBrowser(t *testing.T) {
 	if got, want := rec.Header().Get("Content-Type"), "text/javascript; charset=utf-8"; got != want {
 		t.Errorf("got Content-Type %q, want %q", got, want)
 	}
-	want := `window.COMPUTE_API_URL = "https://compute.example.ts.net"` + "\n"
+	want := `window.SLEEPER_API_URL = "https://sleeper.example.ts.net"` + "\n"
 	if got := rec.Body.String(); got != want {
 		t.Errorf("got body %q, want %q", got, want)
 	}
 }
 
-// An unset COMPUTE_API_URL must still yield valid JS, not a bare
+// An unset SLEEPER_API_URL must still yield valid JS, not a bare
 // `= ` -- the UI reads the global unconditionally.
-func TestConfigJSEmitsAnEmptyStringWhenNoComputeAPIURLIsSet(t *testing.T) {
+func TestConfigJSEmitsAnEmptyStringWhenNoSleeperAPIURLIsSet(t *testing.T) {
 	h := mustNewHandler(t, &fakeSender{}, &fakeLogger{})
 	rec := httptest.NewRecorder()
 
 	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/config.js", nil))
 
-	if want := "window.COMPUTE_API_URL = \"\"\n"; rec.Body.String() != want {
+	if want := "window.SLEEPER_API_URL = \"\"\n"; rec.Body.String() != want {
 		t.Errorf("got body %q, want %q", rec.Body.String(), want)
 	}
 }

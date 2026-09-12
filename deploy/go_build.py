@@ -1,5 +1,5 @@
 """Shared off-device Go build + systemd deploy helper, used by both the
-Waker API and Compute API: cross-compile locally, ship only the binary,
+Waker API and Sleeper API: cross-compile locally, ship only the binary,
 install/enable a systemd unit that runs it directly. Neither device ever
 runs a Go toolchain.
 

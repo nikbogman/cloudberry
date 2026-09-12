@@ -6,10 +6,10 @@ wires up the apt repo itself), enables `tailscaled`, then runs
 environment -- never written to a file. Targetable in isolation:
 
     pyinfra inventory.py deploy_tailscale.py --limit waker
-    pyinfra inventory.py deploy_tailscale.py --limit compute --dry
+    pyinfra inventory.py deploy_tailscale.py --limit sleeper --dry
 
 Install steps also run against `test` stand-ins; the `tailscale up` join
-is restricted to `waker`/`compute` so a disposable container never enrolls in
+is restricted to `waker`/`sleeper` so a disposable container never enrolls in
 the real tailnet.
 """
 
@@ -43,7 +43,7 @@ class TailscaleBackendState(FactBase):
             return None
 
 
-if has_device_role("waker", "compute"):
+if has_device_role("waker", "sleeper"):
     if not host.get_fact(Which, command="tailscale"):
         server.shell(
             name="Install Tailscale via the official install script",
@@ -57,7 +57,7 @@ if has_device_role("waker", "compute"):
         enabled=True,
     )
 
-    if "waker" in host.groups or "compute" in host.groups:
+    if "waker" in host.groups or "sleeper" in host.groups:
         already_joined = host.get_fact(TailscaleBackendState) == "Running"
         if not already_joined:
             auth_key = TailscaleSettings().tailscale_auth_key

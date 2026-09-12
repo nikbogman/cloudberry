@@ -1,13 +1,13 @@
-// Package compute runs on the compute host behind its own tailscale serve
+// Package sleeper runs on the sleeper host behind its own tailscale serve
 // instance, a distinct origin from the UI -- hence the CORS allow-list.
-package compute
+package sleeper
 
 import (
 	"net/http"
 	"sync"
 
-	"github.com/nikbogman/homelab/internal/httpresponse"
-	"github.com/nikbogman/homelab/internal/tailnet"
+	"github.com/nikbogman/homelab/waker-service/internal/httpresponse"
+	"github.com/nikbogman/homelab/waker-service/internal/tailnet"
 )
 
 type Suspender interface {
@@ -19,7 +19,7 @@ type EventLogger interface {
 }
 
 // sync.Once, not a bool: net/http serves concurrently. Also the only
-// reachability edge this app can observe -- it's asleep whenever Compute
+// reachability edge this app can observe -- it's asleep whenever Sleeper
 // goes unreachable, so it can never log that transition.
 type reachabilityTracker struct {
 	once sync.Once

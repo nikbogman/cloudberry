@@ -5,9 +5,9 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/nikbogman/homelab/internal/eventlog"
-	"github.com/nikbogman/homelab/internal/waker"
-	"github.com/nikbogman/homelab/ui"
+	"github.com/nikbogman/homelab/waker-service/internal/eventlog"
+	"github.com/nikbogman/homelab/waker-service/internal/waker"
+	"github.com/nikbogman/homelab/waker-service/ui"
 )
 
 func main() {

@@ -7,8 +7,8 @@ import (
 	"io/fs"
 	"net/http"
 
-	"github.com/nikbogman/homelab/internal/httpresponse"
-	"github.com/nikbogman/homelab/internal/tailnet"
+	"github.com/nikbogman/homelab/waker-service/internal/httpresponse"
+	"github.com/nikbogman/homelab/waker-service/internal/tailnet"
 )
 
 type Sender interface {
@@ -25,10 +25,10 @@ type Config struct {
 	// Served at "/": the real binary passes an embed.FS via fs.Sub, tests
 	// pass os.DirFS.
 	UIAssets fs.FS
-	// Origin the UI sends its Compute API calls to, served at
+	// Origin the UI sends its Sleeper API calls to, served at
 	// /config.js. "" means same-origin, which only suits local dev --
-	// in production Compute is a separate tailnet host.
-	ComputeAPIURL string
+	// in production Sleeper is a separate tailnet host.
+	SleeperAPIURL string
 }
 
 type Handler struct {
@@ -54,7 +54,7 @@ func NewHandler(cfg Config, sender Sender, logger EventLogger) (http.Handler, er
 	// nothing generated into it at deploy time.
 	mux.HandleFunc("GET /config.js", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/javascript; charset=utf-8")
-		fmt.Fprintf(w, "window.COMPUTE_API_URL = %q\n", cfg.ComputeAPIURL)
+		fmt.Fprintf(w, "window.SLEEPER_API_URL = %q\n", cfg.SleeperAPIURL)
 	})
 	mux.Handle("/", http.FileServer(http.FS(cfg.UIAssets)))
 	return mux, nil

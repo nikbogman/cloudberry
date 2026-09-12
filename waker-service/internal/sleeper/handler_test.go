@@ -1,4 +1,4 @@
-package compute
+package sleeper
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/nikbogman/homelab/internal/tailnet"
+	"github.com/nikbogman/homelab/waker-service/internal/tailnet"
 )
 
 const (

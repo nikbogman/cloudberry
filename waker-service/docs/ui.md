@@ -1,7 +1,7 @@
 # UI
 
-The browser app served by the [Waker](waker.md): shows whether Compute is
-[Reachable](../CONTEXT.md) and offers Wake/Suspend. The only user-facing surface
+The browser app served by the [Waker](waker.md): shows whether Sleeper is
+[Reachable](../../CONTEXT.md) and offers Wake/Suspend. The only user-facing surface
 in the system.
 
 Plain static files — HTML, one ES module, one stylesheet. No framework, no
@@ -14,19 +14,19 @@ Code: [`ui/`](../ui).
 All of it lives in [`mountUi`](../ui/app.js), called by the inline module script
 in [`index.html`](../ui/index.html):
 
-- Polls the [Compute API](compute.md)'s `GET /health` every 12s (configurable),
+- Polls the [Sleeper API](sleeper.md)'s `GET /health` every 12s (configurable),
   renders `Checking…` / `Reachable` / `Unreachable`.
 - **Wake button** — enabled unless already reachable. `POST`s to the
   [Waker API](waker.md)'s `/wake` (same-origin by default).
 - **Suspend button** — enabled unless already unreachable. `POST`s to the
-  Compute API's `/suspend` (a distinct origin).
+  Sleeper API's `/suspend` (a distinct origin).
 - Failures surface in an error line; successes don't.
 
 ## Configuration
 
-One value, `window.COMPUTE_API_URL` — the Compute API's origin. `index.html`
+One value, `window.SLEEPER_API_URL` — the Sleeper API's origin. `index.html`
 loads it from `/config.js`, which the [Waker](waker.md#routes) *serves* (from
-its `COMPUTE_API_URL` env var) rather than the UI shipping. That keeps `ui/` a
+its `SLEEPER_API_URL` env var) rather than the UI shipping. That keeps `ui/` a
 pure static tree with nothing generated into it at deploy time.
 
 Under a plain dev server `/config.js` 404s, the global stays undefined, and the
@@ -54,8 +54,8 @@ ui.go             the go:embed declaration -- six lines, no logic
 
 Serves `ui/` straight from disk, so edits show up on refresh with no rebuild.
 It writes `ui/config.js` (gitignored) from the repo root `.env`'s
-`COMPUTE_TAILNET_HOST`, the same value a Deploy uses — so the health poll hits
-the real Compute host and the status is live.
+`SLEEPER_TAILNET_HOST`, the same value a Deploy uses — so the health poll hits
+the real Sleeper host and the status is live.
 
 Wake is a Waker route and 404s here. For it, run the real binary instead (see
 the README) — it serves the *embedded* UI, so edits need a restart.
@@ -72,5 +72,6 @@ because `go:embed` patterns are relative to their own package directory and
 can't climb out of it: `cmd/waker-api` cannot reach `../../ui`, but a package
 living here can embed its own contents. Its globs skip `ui.go` itself.
 
-[`deploy_waker.py`](../deploy/deploy_waker.py) just cross-compiles and ships
+[`waker-service/waker.py`](../../deploy/waker-service/waker.py) just
+cross-compiles and ships
 that one binary; nothing else reaches the Pi Zero.

@@ -1,8 +1,8 @@
-"""Installs and enables the Docker engine on `compute`, for workload
+"""Installs and enables the Docker engine on `sleeper`, for workload
 Compose stacks (Immich, AI agents, etc.). Targetable in isolation:
 
-    pyinfra inventory.py deploy_docker.py --limit compute
-    pyinfra inventory.py deploy_docker.py --limit compute --dry
+    pyinfra inventory.py deploy_docker.py --limit sleeper
+    pyinfra inventory.py deploy_docker.py --limit sleeper --dry
 
 Applies to the `test` stand-in too; never to `waker`, which runs no Docker
 workloads.
@@ -10,7 +10,7 @@ workloads.
 pyinfra has no built-in "install Docker" operation, so this composes
 Docker's official apt-repo instructions from apt/systemd primitives.
 Distro ID and architecture are read from the host (`common.linux_distro_id`,
-`common.DpkgArchitecture`) rather than hardcoded, since `compute` isn't a
+`common.DpkgArchitecture`) rather than hardcoded, since `sleeper` isn't a
 fixed, known image.
 """
 
@@ -20,7 +20,7 @@ from pyinfra.operations import apt, systemd
 from common import DpkgArchitecture, has_device_role, linux_codename, linux_distro_id
 
 
-if has_device_role("compute"):
+if has_device_role("sleeper"):
     codename = linux_codename()
     distro_id = linux_distro_id()
     arch = host.get_fact(DpkgArchitecture)

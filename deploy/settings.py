@@ -14,24 +14,24 @@ class InventorySettings(BaseSettings):
     # Safe to leave as a plain LAN address permanently.
     waker_host: str = "pi-zero.tailnet"
     waker_ssh_user: str = "pi"
-    compute_host: str = "main-server.tailnet"
-    compute_ssh_user: str = "admin"
+    sleeper_host: str = "main-server.tailnet"
+    sleeper_ssh_user: str = "admin"
     # Real Tailscale MagicDNS names, separate from the SSH targets above
     # (which may be bare LAN IPs). Used to derive the *other* Deploy
     # file's CORS/build-time origin, since only the MagicDNS name gets a
     # valid `tailscale serve` HTTPS cert.
     waker_tailnet_host: str = "pi-zero.your-tailnet-name.ts.net"
-    compute_tailnet_host: str = "main-server.your-tailnet-name.ts.net"
+    sleeper_tailnet_host: str = "main-server.your-tailnet-name.ts.net"
     waker_test_host: str = "localhost"
     waker_test_ssh_port: int = 2201
     waker_test_ssh_user: str = "root"
-    compute_test_host: str = "localhost"
-    compute_test_ssh_port: int = 2202
-    compute_test_ssh_user: str = "root"
-    # Passed as pyinfra's `_sudo_password` host arg. Needed on compute
+    sleeper_test_host: str = "localhost"
+    sleeper_test_ssh_port: int = 2202
+    sleeper_test_ssh_user: str = "root"
+    # Passed as pyinfra's `_sudo_password` host arg. Needed on sleeper
     # because its sudo is aliased to sudo-rs, whose prompt text
     # pyinfra's --use-sudo-password doesn't recognize.
-    compute_sudo_password: str | None = None
+    sleeper_sudo_password: str | None = None
 
 
 class TailscaleSettings(BaseSettings):
@@ -39,7 +39,8 @@ class TailscaleSettings(BaseSettings):
 
 
 class GrafanaLokiSecrets(BaseSettings):
-    # Shared by deploy_waker.py and deploy_compute_api.py -- both
+    # Shared by waker-service/waker.py and waker-service/sleeper_api.py --
+    # both
     # binaries log to the same Grafana Cloud Loki endpoint.
     grafana_cloud_loki_url: str
     grafana_cloud_loki_user: str
@@ -54,8 +55,8 @@ class WakerSettings(BaseSettings):
 
 
 class WakerSecrets(BaseSettings):
-    compute_mac_address: str
+    sleeper_mac_address: str
 
 
-class ComputeApiSettings(BaseSettings):
-    compute_api_port: int = 5000
+class SleeperApiSettings(BaseSettings):
+    sleeper_api_port: int = 5000

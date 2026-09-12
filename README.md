@@ -1,91 +1,32 @@
-# Homelab Control System
+# Homelab
 
-Wakes, monitors, and suspends the main workload server (Docker services like
-Immich) from anywhere on the tailnet, without leaving it running 24/7.
+Monorepo for the homelab. One service so far, plus the provisioning that
+converges every device in it.
 
-Two devices on the same tailnet and LAN broadcast domain:
-
-- **Waker (Pi Zero W)** — always on, low-power. Serves the UI and sends
-  Wake-on-LAN. Not in the workload traffic path: it's on Wi-Fi, so routing
-  workload traffic through it isn't worth the hop.
-- **Compute** — runs the workloads, suspended to RAM most of the time.
-  Exposes Suspend and the health check the UI polls. Workload containers
-  publish their own ports; browsers reach them directly on the tailnet.
-
-Auth is the `Tailscale-User-Login` header injected by `tailscale serve` —
-tailnet membership is the entire authorization boundary.
-
-## Docs
-
-| Document | Owns |
+| Path | What |
 |---|---|
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Design decisions, data flow, constraints, shared Go packages |
+| [waker-service/](waker-service/) | Wake, monitor, and suspend the Sleeper from the tailnet — Waker API, Sleeper API, UI |
+| [deploy/](deploy/) | pyinfra: one run converges every device across every service |
 | [CONTEXT.md](CONTEXT.md) | Domain glossary — the vocabulary everything else uses |
-| [docs/waker.md](docs/waker.md) | Waker API: routes, environment, deployment |
-| [docs/compute.md](docs/compute.md) | Compute API: routes, environment, deployment |
-| [docs/ui.md](docs/ui.md) | Browser SPA: behavior, runtime config |
-| [docs/deploy.md](docs/deploy.md) | pyinfra: inventory, running a Deploy, the three test tiers |
+| [docs/deploy.md](docs/deploy.md) | Inventory, running a Deploy, the three test tiers |
+| [docs/agents/](docs/agents/) | Agent-tooling contract (issue tracker, triage labels, domain docs) |
 
-## Repo layout
-
-```
-ARCHITECTURE.md          design reference
-CONTEXT.md               domain glossary
-docs/                    per-service docs; agents/ is agent-tooling contract
-go.mod                   one Go module for both binaries
-cmd/waker-api/           Waker API entrypoint
-cmd/compute-api/         Compute API entrypoint
-internal/waker/          Waker API logic
-internal/compute/        Compute API logic
-internal/tailnet/        shared: identity-header auth, bind-safety
-internal/eventlog/       shared: Grafana Cloud event logging
-internal/httpresponse/   shared: JSON response helpers
-internal/env/            shared: env-var lookup helpers
-ui/                      browser SPA (static HTML/JS/CSS, no build step);
-                         ui.go is just its go:embed declaration
-deploy/                  declarative provisioning (pyinfra)
-deploy.sh                forwards to deploy/deploy.sh
-dev-ui.sh                fast-iteration UI dev server (see docs/ui.md)
-.env.example             template -- copy to .env (gitignored)
-```
-
-Two toolchains: Go at the root, uv in `deploy/`. The UI is static files —
-no build step, no Node.
-
-## Development
-
-```sh
-# Go, both binaries (repo root)
-go vet ./... && go test ./...
-
-# UI -- static files served from disk; edits show on refresh
-./dev-ui.sh
-
-# Deploy tooling
-cd deploy && uv sync
-```
-
-Run a binary locally with its environment, e.g.:
-
-```sh
-COMPUTE_MAC_ADDRESS=AA:BB:CC:DD:EE:FF \
-GRAFANA_CLOUD_LOKI_URL=https://logs-prod-000.grafana.net/loki/api/v1/push \
-GRAFANA_CLOUD_LOKI_USER=123456 GRAFANA_CLOUD_LOKI_API_KEY=glc_xxx \
-COMPUTE_API_URL=https://main-server.tailnet \
-go run ./cmd/waker-api
-```
+Each service owns its own code, docs, toolchain, and `.env`; the root
+`.env` holds the homelab-wide device addresses and the Tailscale auth key.
+`deploy/` sources both.
 
 ## Deploying
 
 ```sh
-./deploy.sh --dry    # preview
-./deploy.sh          # converge both devices
+./deploy.sh --dry    # preview every device
+./deploy.sh          # converge every device
 ```
 
 See [docs/deploy.md](docs/deploy.md).
 
-## Status
+## Adding a service
 
-Fully implemented; one command converges both devices. Outstanding gaps:
-[docs/deploy.md](docs/deploy.md#known-gaps) and
-[ARCHITECTURE.md](ARCHITECTURE.md#constraints).
+A top-level folder with its own docs and `.env`. If it deploys anything, its
+Deploy files go in `deploy/<service>/`, get `local.include`d from
+`deploy/deploy.py`, and its `.env` gets sourced in `deploy/deploy.sh`. Follow
+[waker-service/](waker-service/README.md) as the worked example.
