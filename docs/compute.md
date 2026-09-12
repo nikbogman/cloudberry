@@ -32,14 +32,14 @@ required.
 | Variable | Purpose |
 |---|---|
 | **`UI_ORIGIN`** | Origin allowed by the CORS policy. |
-| **`GRAFANA_CLOUD_LOKI_*`** | The same trio as the [Gateway](gateway.md#runtime-environment) — both binaries log to one endpoint. |
+| **`GRAFANA_CLOUD_LOKI_*`** | The same trio as the [Waker](waker.md#runtime-environment) — both binaries log to one endpoint. |
 | `COMPUTE_API_HOST` | Bind address (default `127.0.0.1`). Must be loopback or tailnet. |
 | `COMPUTE_API_PORT` | Listen port (default `5000`). |
 
 ## Deployment
 
 [`deploy/deploy_compute_api.py`](../deploy/deploy_compute_api.py) cross-compiles
-and ships only the binary, same as the Gateway. `GOARCH` is read from the
+and ships only the binary, same as the Waker. `GOARCH` is read from the
 device's real architecture (`common.DpkgArchitecture`), since `compute` isn't a
 fixed known device.
 
@@ -54,11 +54,11 @@ loopback default applies. Bold variables are required.
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `COMPUTE_API_PORT` | `5000` | Listen port; pinned explicitly for the same `tailscale serve` reason as the Gateway's port |
-| **`GRAFANA_CLOUD_LOKI_*`** | — | The same trio as the [Gateway](gateway.md#deploy-time-variables) — both binaries log to one endpoint |
+| `COMPUTE_API_PORT` | `5000` | Listen port; pinned explicitly for the same `tailscale serve` reason as the Waker's port |
+| **`GRAFANA_CLOUD_LOKI_*`** | — | The same trio as the [Waker](waker.md#deploy-time-variables) — both binaries log to one endpoint |
 
 `UI_ORIGIN` (the CORS allow-list entry) is derived from `InventorySettings`, not
 a separate secret. This file also runs `tailscale serve` for
-`$COMPUTE_API_PORT`, same mechanism and version caveat as the Gateway.
+`$COMPUTE_API_PORT`, same mechanism and version caveat as the Waker.
 
 See [`deploy.md`](deploy.md) for how to run a Deploy and how it's tested.

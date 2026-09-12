@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Fast-iteration UI dev server: serves ui/ straight from disk, so edits
 # show up on refresh with no rebuild. Writes the gitignored ui/config.js
-# that the Gateway would otherwise serve at /config.js, deriving it from
+# that the Waker would otherwise serve at /config.js, deriving it from
 # the repo root .env the same way a Deploy does.
 #
 # Usage: ./dev-ui.sh [port]        # default 5173
 #
-# Wake does NOT work here -- only the Gateway serves it. Run
-# `go run ./cmd/gateway-api` for the real thing; it serves the *embedded*
+# Wake does NOT work here -- only the Waker serves it. Run
+# `go run ./cmd/waker-api` for the real thing; it serves the *embedded*
 # UI, so edits need a restart. See docs/ui.md.
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"

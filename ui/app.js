@@ -11,11 +11,11 @@ const HEALTH_CHECK_TIMEOUT_MS = 5_000
 /**
  * Renders the UI into `container` and starts polling.
  *
- * `gatewayApiBaseUrl` is same-origin as the UI by default, so '' (relative)
+ * `wakerApiBaseUrl` is same-origin as the UI by default, so '' (relative)
  * works. Returns a cleanup function that stops polling.
  */
 export function mountUi(container, options) {
-  const { computeApiBaseUrl, gatewayApiBaseUrl = '', intervalMs = DEFAULT_POLL_INTERVAL_MS } = options
+  const { computeApiBaseUrl, wakerApiBaseUrl = '', intervalMs = DEFAULT_POLL_INTERVAL_MS } = options
 
   container.innerHTML = `
     <h1>Homelab Control</h1>
@@ -99,11 +99,11 @@ export function mountUi(container, options) {
   }
 
   wakeButton.addEventListener('click', () => {
-    void runAction(wakeButton, 'Wake', 'Waking…', () => fetch(`${gatewayApiBaseUrl}/wake`, { method: 'POST' }))
+    void runAction(wakeButton, 'Wake', 'Waking…', () => fetch(`${wakerApiBaseUrl}/wake`, { method: 'POST' }))
   })
 
   suspendButton.addEventListener('click', () => {
-    // Suspend lives on the Compute API (not the Gateway API) -- unlike Wake.
+    // Suspend lives on the Compute API (not the Waker API) -- unlike Wake.
     void runAction(suspendButton, 'Suspend', 'Suspending…', () =>
       fetch(`${computeApiBaseUrl}/suspend`, { method: 'POST' }),
     )

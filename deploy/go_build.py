@@ -1,5 +1,5 @@
 """Shared off-device Go build + systemd deploy helper, used by both the
-Gateway API and Compute API: cross-compile locally, ship only the binary,
+Waker API and Compute API: cross-compile locally, ship only the binary,
 install/enable a systemd unit that runs it directly. Neither device ever
 runs a Go toolchain.
 
@@ -30,7 +30,7 @@ def go_binary_systemd_service(
     run_as_user: str = "root",
 ):
     """Cross-compile `package` (an import path relative to `module_dir`,
-    e.g. "./cmd/gateway-api") for `goos`/`goarch`(/`goarm`) on the dev machine,
+    e.g. "./cmd/waker-api") for `goos`/`goarch`(/`goarm`) on the dev machine,
     ship the resulting binary to `remote_binary`, install/enable a systemd
     unit named `unit_name` running it directly, and restart iff this
     Deploy changed the binary or the unit file.

@@ -4,7 +4,7 @@ Compose stacks (Immich, AI agents, etc.). Targetable in isolation:
     pyinfra inventory.py deploy_docker.py --limit compute
     pyinfra inventory.py deploy_docker.py --limit compute --dry
 
-Applies to the `test` stand-in too; never to `gateway`, which runs no Docker
+Applies to the `test` stand-in too; never to `waker`, which runs no Docker
 workloads.
 
 pyinfra has no built-in "install Docker" operation, so this composes

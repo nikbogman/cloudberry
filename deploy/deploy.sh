@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Loads the repo root's .env into this script's own process (never the
 # interactive shell), execs pyinfra with inventory.py, and resolves a
-# short name (e.g. "gateway") to its deploy_gateway.py file.
+# short name (e.g. "waker") to its deploy_waker.py file.
 #
-# Usage: ./deploy.sh --limit gateway --dry           # no target -> deploy.py (everything)
-#        ./deploy.sh gateway --limit gateway --dry   # -> deploy_gateway.py
-#        ./deploy.sh deploy.py --limit gateway       # full filename still works
+# Usage: ./deploy.sh --limit waker --dry           # no target -> deploy.py (everything)
+#        ./deploy.sh waker --limit waker --dry   # -> deploy_waker.py
+#        ./deploy.sh deploy.py --limit waker       # full filename still works
 #        ./deploy.sh --version                       # flags pass through untouched
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"

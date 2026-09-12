@@ -1,4 +1,4 @@
-package gateway
+package waker
 
 import (
 	"encoding/hex"

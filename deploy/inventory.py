@@ -1,13 +1,13 @@
 """Host groups for the homelab control plane.
 
-Two real devices, `gateway` and `compute`, plus a `test` group of
+Two real devices, `waker` and `compute`, plus a `test` group of
 disposable, systemd-capable containers standing in for both. No Deploy
-file hardcodes a host -- they target `gateway`/`compute`/`test` by name.
+file hardcodes a host -- they target `waker`/`compute`/`test` by name.
 Real addresses come from `settings.InventorySettings`.
 
 `device_role` (host data, not a pyinfra group) records which application
 logic a host runs, independent of whether it's the real device or its
-`test` stand-in. Test hosts aren't added to the `gateway`/`compute`
+`test` stand-in. Test hosts aren't added to the `waker`/`compute`
 groups themselves, since those must stay targetable in isolation via
 `--limit`. See docs/deploy.md for how to stand up these
 containers.
@@ -17,12 +17,12 @@ from settings import InventorySettings
 
 settings = InventorySettings()
 
-gateway = [
+waker = [
     (
-        settings.gateway_host,
+        settings.waker_host,
         {
-            "ssh_user": settings.gateway_ssh_user,
-            "device_role": "gateway",
+            "ssh_user": settings.waker_ssh_user,
+            "device_role": "waker",
             "_sudo": True,
         },
     ),
@@ -40,17 +40,17 @@ compute = [
     ),
 ]
 
-# Separate identities ("gateway-test"/"compute-test") with the connect
+# Separate identities ("waker-test"/"compute-test") with the connect
 # address in `ssh_hostname` -- pyinfra dedupes hosts by identity, and both
 # containers share the same dev-machine address on different ports.
 test = [
     (
-        "gateway-test",
+        "waker-test",
         {
-            "ssh_hostname": settings.gateway_test_host,
-            "ssh_port": settings.gateway_test_ssh_port,
-            "ssh_user": settings.gateway_test_ssh_user,
-            "device_role": "gateway",
+            "ssh_hostname": settings.waker_test_host,
+            "ssh_port": settings.waker_test_ssh_port,
+            "ssh_user": settings.waker_test_ssh_user,
+            "device_role": "waker",
         },
     ),
     (

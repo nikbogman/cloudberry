@@ -1,16 +1,16 @@
-package gateway
+package waker
 
 import "github.com/nikbogman/homelab/internal/env"
 
-// EnvConfig is Config plus the gateway's own listen port, both read from
+// EnvConfig is Config plus the waker's own listen port, both read from
 // the process environment.
 type EnvConfig struct {
 	Config
 	Port string
 }
 
-// ConfigFromEnv reads gateway runtime configuration from the process
-// environment. GATEWAY_HOST/GATEWAY_PORT default to loopback/5000;
+// ConfigFromEnv reads waker runtime configuration from the process
+// environment. WAKER_HOST/WAKER_PORT default to loopback/5000;
 // COMPUTE_MAC_ADDRESS has no safe default, so it's required.
 // COMPUTE_API_URL defaults
 // to "" (same-origin), which is what a local dev run wants; a real
@@ -20,9 +20,9 @@ func ConfigFromEnv() EnvConfig {
 	return EnvConfig{
 		Config: Config{
 			MACAddress:    env.MustEnv("COMPUTE_MAC_ADDRESS"),
-			BindHost:      env.EnvOr("GATEWAY_HOST", "127.0.0.1"),
+			BindHost:      env.EnvOr("WAKER_HOST", "127.0.0.1"),
 			ComputeAPIURL: env.EnvOr("COMPUTE_API_URL", ""),
 		},
-		Port: env.EnvOr("GATEWAY_PORT", "5000"),
+		Port: env.EnvOr("WAKER_PORT", "5000"),
 	}
 }

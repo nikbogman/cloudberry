@@ -1,6 +1,6 @@
-// Package gateway serves the UI and sends Wake-on-LAN. It is path-routed
+// Package waker serves the UI and sends Wake-on-LAN. It is path-routed
 // under the same tailscale serve app as the UI, so no CORS entry is needed.
-package gateway
+package waker
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 	"github.com/nikbogman/homelab/internal/tailnet"
 )
 
-type Waker interface {
+type Sender interface {
 	Send(macAddress string) error
 }
 
@@ -33,11 +33,11 @@ type Config struct {
 
 type Handler struct {
 	macAddress string
-	waker      Waker
+	sender     Sender
 	logger     EventLogger
 }
 
-func NewHandler(cfg Config, waker Waker, logger EventLogger) (http.Handler, error) {
+func NewHandler(cfg Config, sender Sender, logger EventLogger) (http.Handler, error) {
 	if err := tailnet.AssertTailnetOnlyBind(cfg.BindHost); err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func NewHandler(cfg Config, waker Waker, logger EventLogger) (http.Handler, erro
 		return nil, err
 	}
 
-	h := &Handler{macAddress: cfg.MACAddress, waker: waker, logger: logger}
+	h := &Handler{macAddress: cfg.MACAddress, sender: sender, logger: logger}
 
 	mux := http.NewServeMux()
 	mux.Handle("POST /wake", tailnet.RequireTailnetIdentityOrLoopback(http.HandlerFunc(h.handleWake)))
@@ -72,7 +72,7 @@ func (h *Handler) handleWake(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) doWake(identity string) error {
 	h.logger.SendEvent("wake_requested", "requested", &identity, nil)
 
-	if err := h.waker.Send(h.macAddress); err != nil {
+	if err := h.sender.Send(h.macAddress); err != nil {
 		h.logger.SendEvent("wake_failed", "failed", &identity, nil)
 		return err
 	}

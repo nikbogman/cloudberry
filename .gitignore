@@ -9,7 +9,7 @@ node_modules/
 dist/
 
 # Optional local dev override for the UI's one runtime value. In
-# production the Gateway serves /config.js from its own env var, and
+# production the Waker serves /config.js from its own env var, and
 # that route shadows this file even if a stray copy gets embedded.
 /ui/config.js
 

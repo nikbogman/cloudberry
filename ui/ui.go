@@ -1,7 +1,7 @@
-// Package ui embeds the browser app's static files into the Gateway
+// Package ui embeds the browser app's static files into the Waker
 // binary. It lives here, beside the files themselves, because go:embed
 // patterns are relative to their own package directory and cannot climb
-// out of it -- cmd/gateway-api can't reach up to ../../ui.
+// out of it -- cmd/waker-api can't reach up to ../../ui.
 //
 // The globs are deliberate: a new .html/.js/.css file is picked up with
 // no edit here, and Go fails the build if any pattern matches nothing.

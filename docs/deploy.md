@@ -1,11 +1,11 @@
 # Deploy
 
 Declarative provisioning with [pyinfra](https://pyinfra.com/). One run converges
-the Gateway and the compute host to their declared state: Tailscale joined,
-Docker installed on `compute`, and both binaries (with the UI embedded in the Gateway's)
+the Waker and the compute host to their declared state: Tailscale joined,
+Docker installed on `compute`, and both binaries (with the UI embedded in the Waker's)
 deployed as systemd services.
 
-Per-service deploy details live with the service: [`gateway.md`](gateway.md),
+Per-service deploy details live with the service: [`waker.md`](waker.md),
 [`compute.md`](compute.md). Vocabulary (Deploy, Deploy file, Host group) is in
 [`CONTEXT.md`](../CONTEXT.md).
 
@@ -13,14 +13,14 @@ Per-service deploy details live with the service: [`gateway.md`](gateway.md),
 
 ```
 deploy/
-  inventory.py          gateway / compute / test Host groups
+  inventory.py          waker / compute / test Host groups
   common.py             shared helpers: linux_codename/linux_distro_id/
                         has_device_role, DpkgArchitecture, TailscaleServeStatus
   settings.py           pydantic-settings classes -- typed env var config
   go_build.py           shared off-device Go build+ship+systemd helper
   deploy_tailscale.py   ┐
   deploy_docker.py      │ one Deploy file per piece of infrastructure or app
-  deploy_gateway.py     │
+  deploy_waker.py     │
   deploy_compute_api.py ┘
   deploy.py             entrypoint composing everything
   deploy.sh             wrapper: loads ../.env, resolves short Deploy-file names
@@ -62,18 +62,18 @@ demands env vars an unrelated one needs.
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `GATEWAY_HOST`, `GATEWAY_SSH_USER` | `pi-zero.tailnet`, `pi` | Gateway's SSH target |
+| `WAKER_HOST`, `WAKER_SSH_USER` | `pi-zero.tailnet`, `pi` | Waker's SSH target |
 | `COMPUTE_HOST`, `COMPUTE_SSH_USER` | `main-server.tailnet`, `admin` | Compute's SSH target |
-| `GATEWAY_TAILNET_HOST` | `pi-zero.your-tailnet-name.ts.net` | Gateway's Tailscale MagicDNS name; derives `UI_ORIGIN` |
-| `COMPUTE_TAILNET_HOST` | `main-server.your-tailnet-name.ts.net` | Compute's Tailscale MagicDNS name; derives the Gateway's `COMPUTE_API_URL` |
-| `GATEWAY_TEST_HOST`, `GATEWAY_TEST_SSH_PORT`, `GATEWAY_TEST_SSH_USER` | `localhost`, `2201`, `root` | `test` group's gateway stand-in |
+| `WAKER_TAILNET_HOST` | `pi-zero.your-tailnet-name.ts.net` | Waker's Tailscale MagicDNS name; derives `UI_ORIGIN` |
+| `COMPUTE_TAILNET_HOST` | `main-server.your-tailnet-name.ts.net` | Compute's Tailscale MagicDNS name; derives the Waker's `COMPUTE_API_URL` |
+| `WAKER_TEST_HOST`, `WAKER_TEST_SSH_PORT`, `WAKER_TEST_SSH_USER` | `localhost`, `2201`, `root` | `test` group's waker stand-in |
 | `COMPUTE_TEST_HOST`, `COMPUTE_TEST_SSH_PORT`, `COMPUTE_TEST_SSH_USER` | `localhost`, `2202`, `root` | `test` group's compute stand-in |
 
-`GATEWAY_HOST`/`COMPUTE_HOST` are pure SSH targets, used even by
+`WAKER_HOST`/`COMPUTE_HOST` are pure SSH targets, used even by
 `deploy_tailscale.py` itself — on a fresh device, use a plain LAN address, not a
 tailnet name.
 
-`GATEWAY_TAILNET_HOST`/`COMPUTE_TAILNET_HOST` are separate from the SSH targets:
+`WAKER_TAILNET_HOST`/`COMPUTE_TAILNET_HOST` are separate from the SSH targets:
 each service's Deploy file derives the *other* device's browser-facing origin
 from these, since only the real MagicDNS name gets a valid `tailscale serve`
 HTTPS cert.
@@ -84,20 +84,20 @@ HTTPS cert.
 |---|---|---|
 | **`TAILSCALE_AUTH_KEY`** | — | Tailnet auth key, never committed; only required on first join |
 
-Service-specific variables are in [`gateway.md`](gateway.md#deploy-time-variables)
+Service-specific variables are in [`waker.md`](waker.md#deploy-time-variables)
 and [`compute.md`](compute.md#deploy-time-variables).
 
 ## Running a Deploy
 
 `./deploy.sh` loads `.env` and execs pyinfra with `inventory.py` plus whatever
 args you pass. No target defaults to `deploy.py` (everything); a short name
-resolves to its `deploy_<name>.py` file (e.g. `gateway` → `deploy_gateway.py`):
+resolves to its `deploy_<name>.py` file (e.g. `waker` → `deploy_waker.py`):
 
 ```sh
 ./deploy.sh                              # everything, both groups
 ./deploy.sh --dry                        # preview: connects and diffs, mutates nothing
-./deploy.sh gateway --limit gateway      # one Deploy file against one Host group
-./deploy.sh gateway --limit gateway --dry
+./deploy.sh waker --limit waker      # one Deploy file against one Host group
+./deploy.sh waker --limit waker --dry
 ```
 
 pyinfra 3.x has no `--check` flag — use `--dry`. `deploy.py` is never invoked
@@ -120,10 +120,10 @@ estimate, not a correctness proof.
 containers over plain `@ssh` — not pyinfra's `@docker` connector, since
 `@docker` image-mode containers run no init system and can't run
 `systemd.service` operations. `@ssh` exercises the same connector path
-`gateway`/`compute` use.
+`waker`/`compute` use.
 
 ```sh
-docker run -d --name gateway-test --privileged --cgroupns=host \
+docker run -d --name waker-test --privileged --cgroupns=host \
   -v /sys/fs/cgroup:/sys/fs/cgroup:rw -p 2201:22 \
   jrei/systemd-debian:12
 docker run -d --name compute-test --privileged --cgroupns=host \
@@ -137,22 +137,22 @@ docker run -d --name compute-test --privileged --cgroupns=host \
 ./deploy.sh --limit test
 ```
 
-`device_role` host data makes `gateway-test`/`compute-test` behave like
-`gateway`/`compute` for gating, so every Deploy file runs against both.
+`device_role` host data makes `waker-test`/`compute-test` behave like
+`waker`/`compute` for gating, so every Deploy file runs against both.
 `deploy_tailscale.py` skips the actual `tailscale up` join for `test`, so a
 container never enrolls in the real tailnet.
 
 ### Tier 3 — idempotency, the actual correctness check
 
 Run the same Deploy twice in a row against **both** `test` and the real
-`gateway`/`compute`:
+`waker`/`compute`:
 
 ```sh
 ./deploy.sh --limit test
 ./deploy.sh --limit test        # again, immediately
 
-./deploy.sh --limit gateway
-./deploy.sh --limit gateway     # again, immediately
+./deploy.sh --limit waker
+./deploy.sh --limit waker     # again, immediately
 ```
 
 **Pass condition**: the second run's `Grand total` row has an empty `Success`
@@ -166,10 +166,10 @@ gate instead of eyeballing the table.
   re-check the CLI/JSON version caveat before trusting it blindly.
 - Standing up a labeled workload container is a manual step, outside pyinfra's
   scope.
-- **One-time migration**: the Gateway's unit was renamed `gateway.service` →
-  `gateway-api.service`. pyinfra installs the new one but does not remove the
+- **One-time migration**: the Waker's unit was renamed `waker.service` →
+  `waker-api.service`. pyinfra installs the new one but does not remove the
   old, so on a device deployed before that rename, both would bind the same
-  port. Run `systemctl disable --now gateway && rm /etc/systemd/system/gateway.service`
+  port. Run `systemctl disable --now waker && rm /etc/systemd/system/waker.service`
   on the Pi once, then delete this bullet.
 
 Bind-address enforcement and the system's other limitations are in

@@ -1,7 +1,7 @@
 """Deploys the Compute API to `compute`.
 
 Cross-compiles the binary on the dev machine and ships it, same as
-deploy_gateway.py -- keeps a Go toolchain off both target devices. Runs
+deploy_waker.py -- keeps a Go toolchain off both target devices. Runs
 it as an enabled systemd service, then exposes it on the tailnet via
 `tailscale serve`. Targetable in isolation:
 
@@ -13,7 +13,7 @@ which `deploy.py` runs first) -- `tailscale serve` needs a joined
 `tailscaled`, and this file doesn't re-check that when run standalone.
 
 `UI_ORIGIN` (the CORS allow-list entry) is derived from
-`InventorySettings.gateway_tailnet_host`, the Gateway's real Tailscale
+`InventorySettings.waker_tailnet_host`, the Waker's real Tailscale
 MagicDNS name -- not a separate secret.
 
 Required env vars (only when targeting `compute`/its `test` stand-in):
@@ -58,7 +58,7 @@ if has_device_role("compute"):
         unit_name="compute-api.service",
         description="Compute API -- exposes Suspend and the reachability health check",
         environment={
-            "UI_ORIGIN": f"https://{inventory.gateway_tailnet_host}",
+            "UI_ORIGIN": f"https://{inventory.waker_tailnet_host}",
             "COMPUTE_API_PORT": str(api_settings.compute_api_port),
             "GRAFANA_CLOUD_LOKI_URL": grafana.grafana_cloud_loki_url,
             "GRAFANA_CLOUD_LOKI_USER": grafana.grafana_cloud_loki_user,

@@ -5,7 +5,7 @@ Immich) from anywhere on the tailnet, without leaving it running 24/7.
 
 Two devices on the same tailnet and LAN broadcast domain:
 
-- **Gateway (Pi Zero W)** — always on, low-power. Serves the UI and sends
+- **Waker (Pi Zero W)** — always on, low-power. Serves the UI and sends
   Wake-on-LAN. Not in the workload traffic path: it's on Wi-Fi, so routing
   workload traffic through it isn't worth the hop.
 - **Compute** — runs the workloads, suspended to RAM most of the time.
@@ -21,7 +21,7 @@ tailnet membership is the entire authorization boundary.
 |---|---|
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Design decisions, data flow, constraints, shared Go packages |
 | [CONTEXT.md](CONTEXT.md) | Domain glossary — the vocabulary everything else uses |
-| [docs/gateway.md](docs/gateway.md) | Gateway API: routes, environment, deployment |
+| [docs/waker.md](docs/waker.md) | Waker API: routes, environment, deployment |
 | [docs/compute.md](docs/compute.md) | Compute API: routes, environment, deployment |
 | [docs/ui.md](docs/ui.md) | Browser SPA: behavior, runtime config |
 | [docs/deploy.md](docs/deploy.md) | pyinfra: inventory, running a Deploy, the three test tiers |
@@ -33,9 +33,9 @@ ARCHITECTURE.md          design reference
 CONTEXT.md               domain glossary
 docs/                    per-service docs; agents/ is agent-tooling contract
 go.mod                   one Go module for both binaries
-cmd/gateway-api/         Gateway API entrypoint
+cmd/waker-api/         Waker API entrypoint
 cmd/compute-api/         Compute API entrypoint
-internal/gateway/        Gateway API logic
+internal/waker/        Waker API logic
 internal/compute/        Compute API logic
 internal/tailnet/        shared: identity-header auth, bind-safety
 internal/eventlog/       shared: Grafana Cloud event logging
@@ -72,7 +72,7 @@ COMPUTE_MAC_ADDRESS=AA:BB:CC:DD:EE:FF \
 GRAFANA_CLOUD_LOKI_URL=https://logs-prod-000.grafana.net/loki/api/v1/push \
 GRAFANA_CLOUD_LOKI_USER=123456 GRAFANA_CLOUD_LOKI_API_KEY=glc_xxx \
 COMPUTE_API_URL=https://main-server.tailnet \
-go run ./cmd/gateway-api
+go run ./cmd/waker-api
 ```
 
 ## Deploying

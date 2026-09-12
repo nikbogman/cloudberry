@@ -1,4 +1,4 @@
-package gateway
+package waker
 
 import (
 	"errors"
@@ -15,12 +15,12 @@ const (
 	testIdentity   = "nicola@example.com"
 )
 
-type fakeWaker struct {
+type fakeSender struct {
 	calls []string
 	err   error
 }
 
-func (f *fakeWaker) Send(macAddress string) error {
+func (f *fakeSender) Send(macAddress string) error {
 	f.calls = append(f.calls, macAddress)
 	return f.err
 }
@@ -39,18 +39,18 @@ func (f *fakeLogger) SendEvent(eventType, outcome string, identity *string, extr
 	f.events = append(f.events, loggedEvent{eventType: eventType, outcome: outcome, identity: identity})
 }
 
-func mustNewHandler(t *testing.T, waker Waker, logger EventLogger) http.Handler {
+func mustNewHandler(t *testing.T, sender Sender, logger EventLogger) http.Handler {
 	t.Helper()
 	return mustNewHandlerWithConfig(t, Config{
 		MACAddress: testMACAddress,
 		BindHost:   "127.0.0.1",
 		UIAssets:   os.DirFS(t.TempDir()),
-	}, waker, logger)
+	}, sender, logger)
 }
 
-func mustNewHandlerWithConfig(t *testing.T, cfg Config, waker Waker, logger EventLogger) http.Handler {
+func mustNewHandlerWithConfig(t *testing.T, cfg Config, sender Sender, logger EventLogger) http.Handler {
 	t.Helper()
-	h, err := NewHandler(cfg, waker, logger)
+	h, err := NewHandler(cfg, sender, logger)
 	if err != nil {
 		t.Fatalf("NewHandler failed: %v", err)
 	}
@@ -58,7 +58,7 @@ func mustNewHandlerWithConfig(t *testing.T, cfg Config, waker Waker, logger Even
 }
 
 func TestWakeRequiresIdentityHeader(t *testing.T) {
-	h := mustNewHandler(t, &fakeWaker{}, &fakeLogger{})
+	h := mustNewHandler(t, &fakeSender{}, &fakeLogger{})
 	req := httptest.NewRequest(http.MethodPost, "/wake", nil)
 	req.RemoteAddr = "10.0.0.5:12345"
 	rec := httptest.NewRecorder()
@@ -71,8 +71,8 @@ func TestWakeRequiresIdentityHeader(t *testing.T) {
 }
 
 func TestWakeAllowsALoopbackCallerWithNoIdentityHeader(t *testing.T) {
-	waker := &fakeWaker{}
-	h := mustNewHandler(t, waker, &fakeLogger{})
+	sender := &fakeSender{}
+	h := mustNewHandler(t, sender, &fakeLogger{})
 	req := httptest.NewRequest(http.MethodPost, "/wake", nil)
 	req.RemoteAddr = "127.0.0.1:12345"
 	rec := httptest.NewRecorder()
@@ -82,14 +82,14 @@ func TestWakeAllowsALoopbackCallerWithNoIdentityHeader(t *testing.T) {
 	if rec.Code != http.StatusOK {
 		t.Fatalf("got status %d, want 200", rec.Code)
 	}
-	if len(waker.calls) != 1 || waker.calls[0] != testMACAddress {
-		t.Fatalf("got waker calls %v, want [%q]", waker.calls, testMACAddress)
+	if len(sender.calls) != 1 || sender.calls[0] != testMACAddress {
+		t.Fatalf("got sender calls %v, want [%q]", sender.calls, testMACAddress)
 	}
 }
 
 func TestWakeStillHonorsIdentityHeaderFromANonLoopbackCaller(t *testing.T) {
-	waker := &fakeWaker{}
-	h := mustNewHandler(t, waker, &fakeLogger{})
+	sender := &fakeSender{}
+	h := mustNewHandler(t, sender, &fakeLogger{})
 	req := httptest.NewRequest(http.MethodPost, "/wake", nil)
 	req.RemoteAddr = "10.0.0.5:12345"
 	req.Header.Set(tailnet.IdentityHeader, testIdentity)
@@ -100,27 +100,27 @@ func TestWakeStillHonorsIdentityHeaderFromANonLoopbackCaller(t *testing.T) {
 	if rec.Code != http.StatusOK {
 		t.Fatalf("got status %d, want 200", rec.Code)
 	}
-	if len(waker.calls) != 1 || waker.calls[0] != testMACAddress {
-		t.Fatalf("got waker calls %v, want [%q]", waker.calls, testMACAddress)
+	if len(sender.calls) != 1 || sender.calls[0] != testMACAddress {
+		t.Fatalf("got sender calls %v, want [%q]", sender.calls, testMACAddress)
 	}
 }
 
 func TestWakeSendsMagicPacketToConfiguredMac(t *testing.T) {
-	waker := &fakeWaker{}
-	h := mustNewHandler(t, waker, &fakeLogger{})
+	sender := &fakeSender{}
+	h := mustNewHandler(t, sender, &fakeLogger{})
 	req := httptest.NewRequest(http.MethodPost, "/wake", nil)
 	req.Header.Set(tailnet.IdentityHeader, testIdentity)
 	rec := httptest.NewRecorder()
 
 	h.ServeHTTP(rec, req)
 
-	if len(waker.calls) != 1 || waker.calls[0] != testMACAddress {
-		t.Fatalf("got waker calls %v, want [%q]", waker.calls, testMACAddress)
+	if len(sender.calls) != 1 || sender.calls[0] != testMACAddress {
+		t.Fatalf("got sender calls %v, want [%q]", sender.calls, testMACAddress)
 	}
 }
 
 func TestWakeReturns200OnSuccess(t *testing.T) {
-	h := mustNewHandler(t, &fakeWaker{}, &fakeLogger{})
+	h := mustNewHandler(t, &fakeSender{}, &fakeLogger{})
 	req := httptest.NewRequest(http.MethodPost, "/wake", nil)
 	req.Header.Set(tailnet.IdentityHeader, testIdentity)
 	rec := httptest.NewRecorder()
@@ -138,7 +138,7 @@ func TestWakeReturns200OnSuccess(t *testing.T) {
 
 func TestWakeLogsRequestedThenSucceededWithCallerIdentity(t *testing.T) {
 	logger := &fakeLogger{}
-	h := mustNewHandler(t, &fakeWaker{}, logger)
+	h := mustNewHandler(t, &fakeSender{}, logger)
 	req := httptest.NewRequest(http.MethodPost, "/wake", nil)
 	req.Header.Set(tailnet.IdentityHeader, testIdentity)
 	rec := httptest.NewRecorder()
@@ -159,9 +159,9 @@ func TestWakeLogsRequestedThenSucceededWithCallerIdentity(t *testing.T) {
 }
 
 func TestWakeReturns500AndLogsFailedWhenSenderFails(t *testing.T) {
-	waker := &fakeWaker{err: errors.New("network is unreachable")}
+	sender := &fakeSender{err: errors.New("network is unreachable")}
 	logger := &fakeLogger{}
-	h := mustNewHandler(t, waker, logger)
+	h := mustNewHandler(t, sender, logger)
 	req := httptest.NewRequest(http.MethodPost, "/wake", nil)
 	req.Header.Set(tailnet.IdentityHeader, testIdentity)
 	rec := httptest.NewRecorder()
@@ -178,8 +178,8 @@ func TestWakeReturns500AndLogsFailedWhenSenderFails(t *testing.T) {
 }
 
 func TestWakeDoesNotGuardAgainstRepeatedRequests(t *testing.T) {
-	waker := &fakeWaker{}
-	h := mustNewHandler(t, waker, &fakeLogger{})
+	sender := &fakeSender{}
+	h := mustNewHandler(t, sender, &fakeLogger{})
 	req := func() *http.Request {
 		r := httptest.NewRequest(http.MethodPost, "/wake", nil)
 		r.Header.Set(tailnet.IdentityHeader, testIdentity)
@@ -189,14 +189,14 @@ func TestWakeDoesNotGuardAgainstRepeatedRequests(t *testing.T) {
 	h.ServeHTTP(httptest.NewRecorder(), req())
 	h.ServeHTTP(httptest.NewRecorder(), req())
 
-	if len(waker.calls) != 2 {
-		t.Fatalf("got %d waker calls, want 2", len(waker.calls))
+	if len(sender.calls) != 2 {
+		t.Fatalf("got %d sender calls, want 2", len(sender.calls))
 	}
 }
 
 func TestNewHandlerRefusesOffTailnetBindHost(t *testing.T) {
 	cfg := Config{MACAddress: testMACAddress, BindHost: "0.0.0.0", UIAssets: os.DirFS(t.TempDir())}
-	_, err := NewHandler(cfg, &fakeWaker{}, &fakeLogger{})
+	_, err := NewHandler(cfg, &fakeSender{}, &fakeLogger{})
 	var bindErr *tailnet.BindOffTailnetError
 	if !errors.As(err, &bindErr) {
 		t.Fatalf("got err %v, want *tailnet.BindOffTailnetError", err)
@@ -205,7 +205,7 @@ func TestNewHandlerRefusesOffTailnetBindHost(t *testing.T) {
 
 func TestNewHandlerRejectsAMalformedMacAddressAtStartup(t *testing.T) {
 	cfg := Config{MACAddress: "not-a-mac", BindHost: "127.0.0.1", UIAssets: os.DirFS(t.TempDir())}
-	_, err := NewHandler(cfg, &fakeWaker{}, &fakeLogger{})
+	_, err := NewHandler(cfg, &fakeSender{}, &fakeLogger{})
 	if err == nil {
 		t.Fatal("NewHandler succeeded, want error")
 	}
@@ -218,7 +218,7 @@ func TestConfigJSExposesTheComputeAPIURLToTheBrowser(t *testing.T) {
 		UIAssets:      os.DirFS(t.TempDir()),
 		ComputeAPIURL: "https://compute.example.ts.net",
 	}
-	h := mustNewHandlerWithConfig(t, cfg, &fakeWaker{}, &fakeLogger{})
+	h := mustNewHandlerWithConfig(t, cfg, &fakeSender{}, &fakeLogger{})
 	rec := httptest.NewRecorder()
 
 	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/config.js", nil))
@@ -238,7 +238,7 @@ func TestConfigJSExposesTheComputeAPIURLToTheBrowser(t *testing.T) {
 // An unset COMPUTE_API_URL must still yield valid JS, not a bare
 // `= ` -- the UI reads the global unconditionally.
 func TestConfigJSEmitsAnEmptyStringWhenNoComputeAPIURLIsSet(t *testing.T) {
-	h := mustNewHandler(t, &fakeWaker{}, &fakeLogger{})
+	h := mustNewHandler(t, &fakeSender{}, &fakeLogger{})
 	rec := httptest.NewRecorder()
 
 	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/config.js", nil))
@@ -254,7 +254,7 @@ func TestStaticFilesAreServedFromUIAssets(t *testing.T) {
 
 	h := mustNewHandlerWithConfig(t, Config{
 		MACAddress: testMACAddress, BindHost: "127.0.0.1", UIAssets: os.DirFS(dir),
-	}, &fakeWaker{}, &fakeLogger{})
+	}, &fakeSender{}, &fakeLogger{})
 
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/", nil))
@@ -273,7 +273,7 @@ func TestAnUnknownPathDoesNotFallBackToIndexHTML(t *testing.T) {
 
 	h := mustNewHandlerWithConfig(t, Config{
 		MACAddress: testMACAddress, BindHost: "127.0.0.1", UIAssets: os.DirFS(dir),
-	}, &fakeWaker{}, &fakeLogger{})
+	}, &fakeSender{}, &fakeLogger{})
 
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/some/spa/route", nil))
