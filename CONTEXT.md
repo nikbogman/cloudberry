@@ -1,18 +1,18 @@
-# Homelab
+# Cloudberry
 
-Domain glossary for this monorepo. One service so far — the control plane in [`waker-service/`](waker-service/) that lets the user wake, monitor, and suspend the Sleeper from anywhere on the tailnet — plus the root [`deploy/`](deploy/) that converges every device.
+Domain glossary for this monorepo. One service so far — [`waker-service/`](waker-service/), which lets the user wake, monitor, and suspend the Sleeper from anywhere on the tailnet — plus the root [`deploy/`](deploy/) that converges every device.
 
 ## Language
 
-### Control plane
+### System
 
 **Waker**:
 Always-on device (currently a Pi Zero) fronting the system: hosts the UI and sends Wake-on-LAN — both the Waker API's job. Not in the workload traffic path: it's on Wi-Fi, so the hop isn't worth it. Named for its role, not its hardware.
-_Avoid_: Gateway (its name until 2026-09-12, when it stopped carrying workload traffic), Pi, Pi Zero (as a role name)
+_Avoid_: Gateway (its name until 2026-09-12, when it stopped carrying workload traffic), Pi, Pi Zero, raspberry (its hardware name — see [README.md](README.md#name) — used as a role name)
 
 **Sleeper**:
 The machine that sleeps/wakes and runs the actual workloads. Named for its role, not its hardware — and to pair with the Waker.
-_Avoid_: Compute (its name until 2026-09-12), server, main server, compute host, worker (implies it works for the Waker — backwards)
+_Avoid_: Compute (its name until 2026-09-12), server, main server, compute host, worker (implies it works for the Waker — backwards), blackberry (its hardware name — see [README.md](README.md#name) — used as a role name)
 
 **UI**:
 The browser app on the Waker showing Sleeper reachability and Wake/Suspend actions. The only user-facing surface.

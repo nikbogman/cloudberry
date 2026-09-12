@@ -1,4 +1,4 @@
-"""Host groups for the homelab control plane.
+"""Host groups for the homelab.
 
 Two real devices, `waker` and `sleeper`, plus a `test` group of
 disposable, systemd-capable containers standing in for both. No Deploy

@@ -1,6 +1,6 @@
 # Architecture
 
-Primary architecture reference for the homelab control plane: current architecture, key decisions, and constraints. Domain vocabulary: [`CONTEXT.md`](../CONTEXT.md). Documents the system as it exists today, not superseded designs.
+Primary architecture reference for the homelab: current architecture, key decisions, and constraints. Domain vocabulary: [`CONTEXT.md`](../CONTEXT.md). Documents the system as it exists today, not superseded designs.
 
 ## System Overview
 
@@ -43,7 +43,7 @@ Four `internal/` packages both binaries depend on, none a standalone service:
 ### How they interact
 
 - The browser talks to **two origins directly** — Waker (UI + Waker API, same-origin) and Sleeper API (separate origin) — no server-side relay. Sleeper API's only extra cost is a one-entry CORS allow-list.
-- Workload traffic never touches the control plane. Each workload container publishes its own port on Sleeper and browsers reach it directly over the tailnet.
+- Workload traffic never touches Waker or the Sleeper API. Each workload container publishes its own port on Sleeper and browsers reach it directly over the tailnet.
 - The deploy layer depends on the Go module and `ui/`; neither depends on it.
 
 ## Domain Model
@@ -101,7 +101,7 @@ sequenceDiagram
 ## Key Design Decisions
 
 - **No server-side relay between the UI's two backend origins** — avoids the Sleeper API trusting a forwarded identity claim over the real header.
-- **Nothing in this repo proxies workload traffic** — no sidecar (Caddy/Traefik), no routing config, no route awareness in either binary. Each container publishes a host port and `tailscale serve` already gives Sleeper a reachable HTTPS origin, so a proxy would only add a second thing to keep in sync with the compose files. Routing through the Waker would also cost a hop and a bandwidth ceiling, it being a Pi Zero W on Wi-Fi. Cost: auto-wake-on-request is gone, since nothing in the control plane sees workload requests.
+- **Nothing in this repo proxies workload traffic** — no sidecar (Caddy/Traefik), no routing config, no route awareness in either binary. Each container publishes a host port and `tailscale serve` already gives Sleeper a reachable HTTPS origin, so a proxy would only add a second thing to keep in sync with the compose files. Routing through the Waker would also cost a hop and a bandwidth ceiling, it being a Pi Zero W on Wi-Fi. Cost: auto-wake-on-request is gone, since nothing in this repo sees workload requests.
 - **Suspend-to-RAM only, no full shutdown** — WoL after ACPI S5 is unreliable across BIOS/NIC configs; the suspend command isn't configurable via env var.
 - **No graceful workload shutdown before suspend** — suspend-to-RAM freezes every process atomically via the kernel's freezer cgroup and resumes it in place; there's no in-flight work to lose, so nothing to drain.
 - **WoL requires the same L2 broadcast domain** — accepted rather than building a cross-subnet relay.
