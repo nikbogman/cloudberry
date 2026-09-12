@@ -177,16 +177,13 @@ gate instead of eyeballing the table.
 
 ## Known gaps
 
-- **Tiers 2/3 haven't run against real infrastructure** — the `tailscale serve`
-  automation for both Deploy files is unverified against a real device;
-  re-check the CLI/JSON version caveat before trusting it blindly.
+- **The `tailscale serve` operations are still unverified** — tiers 2/3 passed
+  against the real `waker`/`sleeper` on 2026-09-12, but both devices were
+  already served, so the `TailscaleServeStatus` check short-circuited every
+  run. Re-check the CLI/JSON version caveat before trusting it on a device
+  that isn't serving yet.
 - Standing up a labeled workload container is a manual step, outside pyinfra's
   scope.
-- **One-time migration**: the 2026-09-12 rename (Gateway → Waker, Compute →
-  Sleeper) left older units enabled on any device deployed before it.
-  `waker.py` and `sleeper_api.py` each remove theirs at the top of the run —
-  delete those two `server.shell` blocks once every device has been deployed
-  at least once since the rename.
 
 Bind-address enforcement and the system's other limitations are in
 [`ARCHITECTURE.md`](../waker-service/ARCHITECTURE.md#constraints).

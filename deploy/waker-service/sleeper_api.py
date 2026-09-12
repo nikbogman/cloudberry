@@ -41,24 +41,6 @@ inventory = InventorySettings()
 if has_device_role("sleeper"):
     grafana = GrafanaLokiSecrets()
 
-    # The Sleeper was called Compute until 2026-09-12. Its old unit is
-    # still enabled on an already-deployed device and still holds the
-    # listen port, so installing the new one isn't enough -- the old one
-    # has to go first.
-    # ponytail: unconditional shell, delete this block once every device
-    # has been deployed at least once since the rename.
-    server.shell(
-        name="Remove the pre-rename compute-api unit and binaries",
-        commands=[
-            "systemctl disable --now compute-api.service 2>/dev/null || true",
-            "rm -f /etc/systemd/system/compute-api.service"
-            " /usr/local/bin/compute-api"
-            " /usr/local/bin/compute-api.new"
-            " /usr/local/bin/compute-api.swap",
-            "systemctl daemon-reload",
-        ],
-    )
-
     dpkg_arch = host.get_fact(DpkgArchitecture)
     if dpkg_arch not in GOARCH_BY_DPKG_ARCH:
         raise ValueError(
