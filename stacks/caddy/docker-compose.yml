@@ -1,9 +1,9 @@
 services:
   caddy:
-    image: ghcr.io/tailscale/caddy-tailscale:latest
+    image: ghcr.io/tailscale/caddy-tailscale:main
     restart: unless-stopped
     env_file:
-      - path: .env
+      - path: ../../.env
         required: false
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro

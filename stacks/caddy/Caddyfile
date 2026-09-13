@@ -3,10 +3,7 @@
 		# /data is /srv/stacks/caddy/data on blackberry -- see docker-compose.yml's volume mount
 		state_dir /data/tailscale
 		ephemeral false
-
-		jellyfin {
-			auth_key {$JELLYFIN_TS_AUTHKEY}
-		}
+		auth_key {$TAILSCALE_AUTH_KEY}
 	}
 }
 

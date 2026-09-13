@@ -9,7 +9,7 @@ Full rationale: `.scratch/workload-stacks/spec.md`. This doc is the short-form c
 - One directory per workload: `stacks/<name>/docker-compose.yml`, plain Compose. No pyinfra Deploy file, no repo script, no CI/lint for these files — this repo's own tooling never knows a stack exists.
 - Every service: `restart: unless-stopped`.
 - Persistent data: `/srv/stacks/<name>/` on blackberry, created by hand per stack.
-- Secrets: `stacks/<name>/.env`, created directly on blackberry over SSH, box-only, never committed (`.gitignore`'s bare `.env` pattern already covers it at any depth — no per-stack entry needed).
+- Secrets: `stacks/<name>/.env`, box-only, never committed (`.gitignore`'s bare `.env` pattern already covers it at any depth — no per-stack entry needed). Correction to the spec's original assumption: `.env` must exist wherever `docker compose` is actually *invoked* (the dev machine's repo checkout), not on blackberry's filesystem — `docker compose --context blackberry` resolves `env_file` locally before sending the container's environment to blackberry's daemon over the SSH context, it never reads anything from blackberry's disk.
 - Deploy and inspect from a dev machine via the `blackberry` Docker context (one-time setup, `.scratch/workload-stacks/issues/01-onetime-environment-setup.md`):
   - `docker compose --context blackberry -f stacks/<name>/docker-compose.yml up -d`
   - `docker --context blackberry ps` (also what Docker Desktop / the VS Code Docker extension use for read-only visibility)
@@ -32,8 +32,9 @@ Caddy fronts every other stack using the `caddy-tailscale` plugin (`ghcr.io/tail
 - One site block per fronted stack, `bind tailscale/<name>` + `tls { get_certificate tailscale }` — not the plain hostname as the site address, since there's no public ACME path here.
 - `ephemeral false` globally (the plugin default, but stated explicitly — `ephemeral true` would drop the tsnet node's registration, and its hostname, on every container restart).
 - `state_dir` under `/srv/stacks/caddy/` (mounted into the container), not the image's default XDG dirs, so tsnet state survives a container recreate.
-- One Tailscale auth key per fronted site, as its own env var in Caddy's `.env` (e.g. `JELLYFIN_TS_AUTHKEY`), referenced from the matching per-node block in the Caddyfile's global `tailscale { }` options as `{$<NAME>_TS_AUTHKEY}`. Don't rely on the plugin's `TS_AUTHKEY_<NODE>` fallback — its own docs mark that path deprecated.
-- Adding a new fronted stack = add its site block + per-node `auth_key` entry to `stacks/caddy/Caddyfile`, add the matching key to `stacks/caddy/.env`, join the new stack to the `stacks` network.
+- One Tailscale auth key, `TAILSCALE_AUTH_KEY` in Caddy's `.env`, referenced once as the global `auth_key {$TAILSCALE_AUTH_KEY}` in the Caddyfile's `tailscale { }` options — applies to every node this Caddy instance registers. Move to a per-site key (its own env var, set in a per-node block inside `tailscale { }`) if a future site needs to authenticate as a different tailnet identity or use different tags; don't rely on the plugin's `TS_AUTHKEY_<NODE>` fallback for that, its own docs mark that path deprecated.
+- Adding a new fronted stack = add its site block to `stacks/caddy/Caddyfile` (`bind tailscale/<name>`), join the new stack to the `stacks` network. The existing `auth_key` covers it automatically.
+- Deviation from the `stacks/<name>/.env` convention above: Caddy's `.env` currently lives at the repo root, and `stacks/caddy/docker-compose.yml`'s `env_file` points at it via `../../.env`. Move it to `stacks/caddy/.env` and drop the relative path whenever convenient — not urgent, since either location is equally untracked and equally readable by whoever runs the deploy.
 
 ## Naming
 
