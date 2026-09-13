@@ -67,7 +67,9 @@ if has_device_role("sleeper"):
     )
 
     serve_target = f"localhost:{api_settings.sleeper_api_port}"
-    already_served = serve_target in host.get_fact(TailscaleServeStatus)
+    serve_status = host.get_fact(TailscaleServeStatus)
+    # Both substrings, not just serve_target: see waker.py's matching check.
+    already_served = f"{inventory.sleeper_tailnet_host}:443" in serve_status and serve_target in serve_status
     if not already_served:
         server.shell(
             name="Expose the Sleeper API on the tailnet via tailscale serve",

@@ -62,7 +62,12 @@ if has_device_role("waker"):
     )
 
     serve_target = f"localhost:{waker_settings.waker_port}"
-    already_served = serve_target in host.get_fact(TailscaleServeStatus)
+    serve_status = host.get_fact(TailscaleServeStatus)
+    # Both substrings, not just serve_target: the MagicDNS name is only
+    # absent when serve was set up under a since-renamed hostname (as on
+    # 2026-09-12's pi0 -> raspberry rename) -- serve_target alone would
+    # still match the stale config and skip re-serving under the new name.
+    already_served = f"{inventory.waker_tailnet_host}:443" in serve_status and serve_target in serve_status
     if not already_served:
         server.shell(
             name="Expose the UI/Waker on the tailnet via tailscale serve",
