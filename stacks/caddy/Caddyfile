@@ -1,0 +1,19 @@
+{
+	tailscale {
+		# /data is /srv/stacks/caddy/data on blackberry -- see docker-compose.yml's volume mount
+		state_dir /data/tailscale
+		ephemeral false
+
+		jellyfin {
+			auth_key {$JELLYFIN_TS_AUTHKEY}
+		}
+	}
+}
+
+:443 {
+	bind tailscale/jellyfin
+	tls {
+		get_certificate tailscale
+	}
+	reverse_proxy jellyfin:8096
+}

@@ -1,0 +1,14 @@
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    restart: unless-stopped
+    volumes:
+      - /srv/stacks/jellyfin/config:/config
+      - /srv/stacks/jellyfin/cache:/cache
+      - /srv/stacks/jellyfin/media:/media
+    networks:
+      - stacks
+
+networks:
+  stacks:
+    external: true
