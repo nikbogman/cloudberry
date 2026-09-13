@@ -16,8 +16,10 @@ Nothing in this spec is proven until Jellyfin + Caddy are actually deployed to b
 
 ## Notes
 
-Human-only: requires SSH/Tailscale access to blackberry that isn't available to an AFK agent. Blocked by issues 01, 02, 03.
+Human-only: requires SSH/Tailscale access to blackberry that isn't available to an AFK agent.
+
+Environment setup (Docker context, `/srv/stacks/`, shared network) and the Caddy stack are both done against the real box. Jellyfin was implemented as the first proof of the `stacks/<name>/` convention, then dropped by user request before ever being deployed — Caddy currently has no site blocks and fronts nothing.
 
 ## Comments
 
-2026-09-13: Issue 02 (Jellyfin) was implemented then dropped by user request — see its Comments. Acceptance criteria here still reference Jellyfin as the fronted stack; re-target them at whatever stack actually gets deployed once one exists (issue 05's AI agent workload, once scoped, or another). Issue 01's environment setup and issue 03's Caddy stack (now with no site blocks) are otherwise complete against the real box.
+2026-09-13: Acceptance criteria above still reference Jellyfin as the fronted stack; re-target them at whatever stack actually gets deployed once one exists (issue 05's AI agent workload, once scoped, or another).
