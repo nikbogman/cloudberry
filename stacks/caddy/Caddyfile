@@ -7,10 +7,4 @@
 	}
 }
 
-:443 {
-	bind tailscale/jellyfin
-	tls {
-		get_certificate tailscale
-	}
-	reverse_proxy jellyfin:8096
-}
+# No fronted stacks yet -- see docs/agents/stacks.md's Routing section.

@@ -1,6 +1,6 @@
 # Jellyfin stack
 
-Status: ready-for-agent
+Status: wontfix
 
 ## Problem
 
@@ -22,3 +22,7 @@ Jellyfin is the first proof of the `stacks/<name>/` convention — simplest work
 ## Notes
 
 See spec.md User Stories 2, 4, 5, 6, 8 and Implementation Decisions ("Scope", "Persistence", "Restart behavior").
+
+## Comments
+
+2026-09-13: Implemented, deployed against real infra (blackberry context/network/directories from issue 01), then dropped by user request — Jellyfin is no longer a feature of this stacks effort. `stacks/jellyfin/` removed; `stacks/caddy/Caddyfile`'s Jellyfin site block removed. The `stacks/<name>/` convention itself (proved via this ticket before the drop) stands; see `docs/agents/stacks.md`.

@@ -1,6 +1,6 @@
 # Stacks
 
-Agent-facing reference for `stacks/<name>/` — user-facing workloads (Jellyfin, an AI agent, etc.) running on blackberry, outside pyinfra and outside the Waker/Sleeper services. Read this before touching anything under `stacks/`.
+Agent-facing reference for `stacks/<name>/` — user-facing workloads running on blackberry, outside pyinfra and outside the Waker/Sleeper services. Read this before touching anything under `stacks/`.
 
 Full rationale: `.scratch/workload-stacks/spec.md`. This doc is the short-form convention reference; the spec is the "why".
 
