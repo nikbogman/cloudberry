@@ -34,8 +34,9 @@ Caddy fronts every other stack using the `caddy-tailscale` plugin (`ghcr.io/tail
 - `state_dir` under `/srv/stacks/caddy/` (mounted into the container), not the image's default XDG dirs, so tsnet state survives a container recreate.
 - One Tailscale auth key, `TAILSCALE_AUTH_KEY` in Caddy's `.env`, referenced once as the global `auth_key {$TAILSCALE_AUTH_KEY}` in the Caddyfile's `tailscale { }` options — applies to every node this Caddy instance registers. Move to a per-site key (its own env var, set in a per-node block inside `tailscale { }`) if a future site needs to authenticate as a different tailnet identity or use different tags; don't rely on the plugin's `TS_AUTHKEY_<NODE>` fallback for that, its own docs mark that path deprecated.
 - Adding a new fronted stack = add its site block to `stacks/caddy/Caddyfile` (`bind tailscale/<name>`), join the new stack to the `stacks` network. The existing `auth_key` covers it automatically.
+- Off-tailnet, Edge (`platform/docs/edge.md`) exposes every site as `/proxy/<name>/*` → `https://<name>.<tailnet>.ts.net/*`. It knows no stack names, so a new site block needs no Edge change.
 - Deviation from the `stacks/<name>/.env` convention above: Caddy's `.env` currently lives at the repo root, and `stacks/caddy/docker-compose.yml`'s `env_file` points at it via `../../.env`. Move it to `stacks/caddy/.env` and drop the relative path whenever convenient — not urgent, since either location is equally untracked and equally readable by whoever runs the deploy.
 
 ## Naming
 
-Use **blackberry** (the hardware name) in Stacks docs and config, never **Sleeper** — Sleeper is the waker-service's role name for the same box and is out of the Stacks domain by design. This is a deliberate exception to the `CONTEXT.md` glossary's "avoid blackberry" rule, not an oversight.
+Use **blackberry** (the hardware name) in Stacks docs and config, never **Sleeper** — Sleeper is the platform's role name for the same box and is out of the Stacks domain by design. This is a deliberate exception to the `CONTEXT.md` glossary's "avoid blackberry" rule, not an oversight.

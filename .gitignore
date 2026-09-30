@@ -8,11 +8,6 @@ __pycache__/
 node_modules/
 dist/
 
-# Optional local dev override for the UI's one runtime value. In
-# production the Waker serves /config.js from its own env var, and
-# that route shadows this file even if a stray copy gets embedded.
-/waker-service/ui/config.js
-
 # pyinfra writes this on a failed run; can capture rendered env values
 /deploy/pyinfra-debug.log
 

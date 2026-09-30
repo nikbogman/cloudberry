@@ -6,10 +6,10 @@
 # each service folder, so a short name works wherever the file lives.
 #
 # Usage: ./deploy.sh --limit waker --dry     # no target -> deploy.py (everything)
-#        ./deploy.sh waker --limit waker     # -> waker-service/waker.py
-#        ./deploy.sh sleeper_api --dry       # -> waker-service/sleeper_api.py
+#        ./deploy.sh waker --limit waker     # -> platform/waker.py
+#        ./deploy.sh sleeper_api --dry       # -> platform/sleeper_api.py
 #        ./deploy.sh docker                  # -> deploy_docker.py
-#        ./deploy.sh waker-service/waker.py  # full path still works
+#        ./deploy.sh platform/waker.py  # full path still works
 #        ./deploy.sh --version               # flags pass through untouched
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
@@ -39,8 +39,8 @@ set -- "$resolved" "$@"
 set -a
 # shellcheck source=../.env
 source ../.env
-# shellcheck source=../waker-service/.env
-source ../waker-service/.env
+# shellcheck source=../platform/.env
+source ../platform/.env
 set +a
 
 exec uv run pyinfra inventory.py "$@"

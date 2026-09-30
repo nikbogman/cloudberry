@@ -15,5 +15,5 @@ from pyinfra import local
 
 # local.include("deploy_tailscale.py")
 local.include("deploy_docker.py")
-local.include("waker-service/sleeper_api.py")
-local.include("waker-service/waker.py")
+local.include("platform/sleeper_api.py")
+local.include("platform/waker.py")

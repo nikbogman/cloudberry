@@ -17,9 +17,8 @@ class InventorySettings(BaseSettings):
     sleeper_host: str = "main-server.tailnet"
     sleeper_ssh_user: str = "admin"
     # Real Tailscale MagicDNS names, separate from the SSH targets above
-    # (which may be bare LAN IPs). Used to derive the *other* Deploy
-    # file's CORS/build-time origin, since only the MagicDNS name gets a
-    # valid `tailscale serve` HTTPS cert.
+    # (which may be bare LAN IPs). Used to check each device's
+    # `tailscale serve` config, which is keyed by the MagicDNS name.
     waker_tailnet_host: str = "pi-zero.your-tailnet-name.ts.net"
     sleeper_tailnet_host: str = "main-server.your-tailnet-name.ts.net"
     waker_test_host: str = "localhost"
@@ -39,7 +38,7 @@ class TailscaleSettings(BaseSettings):
 
 
 class GrafanaLokiSecrets(BaseSettings):
-    # Shared by waker-service/waker.py and waker-service/sleeper_api.py --
+    # Shared by platform/waker.py and platform/sleeper_api.py --
     # both
     # binaries log to the same Grafana Cloud Loki endpoint.
     grafana_cloud_loki_url: str
