@@ -31,10 +31,13 @@ tailnet membership is the entire authorization boundary.
 
 ```
 ARCHITECTURE.md          design reference
-docs/                    one file per surface (waker, sleeper, ui)
-go.mod                   one Go module for both binaries
+docs/                    one file per surface (edge, waker, sleeper, ui)
+go.mod                   one Go module for all three binaries
+Dockerfile               Edge image, for Railway
+cmd/edge-api/            Edge entrypoint
 cmd/waker-api/           Waker API entrypoint
 cmd/sleeper-api/         Sleeper API entrypoint
+internal/edge/           Edge logic
 internal/waker/          Waker API logic
 internal/sleeper/        Sleeper API logic
 internal/tailnet/        shared: identity-header auth, bind-safety
@@ -43,7 +46,6 @@ internal/httpresponse/   shared: JSON response helpers
 internal/env/            shared: env-var lookup helpers
 ui/                      browser SPA (static HTML/JS/CSS, no build step);
                          ui.go is just its go:embed declaration
-dev-ui.sh                fast-iteration UI dev server (see docs/ui.md)
 .env.example             template -- copy to .env (gitignored)
 ```
 
@@ -53,11 +55,8 @@ every homelab service, and builds these binaries from here via `module_dir`.
 ## Development
 
 ```sh
-# Go, both binaries (from this folder)
+# Go, all binaries (from this folder)
 go vet ./... && go test ./...
-
-# UI -- static files served from disk; edits show on refresh
-./dev-ui.sh
 ```
 
 Run a binary locally with its environment, e.g.:
@@ -66,7 +65,6 @@ Run a binary locally with its environment, e.g.:
 SLEEPER_MAC_ADDRESS=AA:BB:CC:DD:EE:FF \
 GRAFANA_CLOUD_LOKI_URL=https://logs-prod-000.grafana.net/loki/api/v1/push \
 GRAFANA_CLOUD_LOKI_USER=123456 GRAFANA_CLOUD_LOKI_API_KEY=glc_xxx \
-SLEEPER_API_URL=https://main-server.tailnet \
 go run ./cmd/waker-api
 ```
 

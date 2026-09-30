@@ -1,5 +1,5 @@
 // Package sleeper runs on the sleeper host behind its own tailscale serve
-// instance, a distinct origin from the UI -- hence the CORS allow-list.
+// instance. Only Edge calls it, server-side, so it needs no CORS.
 package sleeper
 
 import (
@@ -32,56 +32,27 @@ func (t *reachabilityTracker) noteReachable(logger EventLogger) {
 }
 
 type Handler struct {
-	uiOrigin     string
 	suspender    Suspender
 	logger       EventLogger
 	reachability reachabilityTracker
-	serve        http.Handler
+	mux          *http.ServeMux
 }
 
 // NewHandler refuses to start if bindHost would expose the app off-tailnet.
-func NewHandler(uiOrigin string, suspender Suspender, logger EventLogger, bindHost string) (*Handler, error) {
+func NewHandler(suspender Suspender, logger EventLogger, bindHost string) (*Handler, error) {
 	if err := tailnet.AssertTailnetOnlyBind(bindHost); err != nil {
 		return nil, err
 	}
 
-	h := &Handler{uiOrigin: uiOrigin, suspender: suspender, logger: logger}
+	h := &Handler{suspender: suspender, logger: logger, mux: http.NewServeMux()}
 
-	mux := http.NewServeMux()
-	mux.Handle("GET /health", tailnet.RequireTailnetIdentity(http.HandlerFunc(h.handleHealth)))
-	mux.Handle("POST /suspend", tailnet.RequireTailnetIdentity(http.HandlerFunc(h.handleSuspend)))
-	h.serve = h.withCORS(mux)
+	h.mux.Handle("GET /health", tailnet.RequireTailnetIdentity(http.HandlerFunc(h.handleHealth)))
+	h.mux.Handle("POST /suspend", tailnet.RequireTailnetIdentity(http.HandlerFunc(h.handleSuspend)))
 	return h, nil
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	h.serve.ServeHTTP(w, r)
-}
-
-// withCORS allows only h.uiOrigin. A mismatched Origin gets no CORS
-// headers -- the browser blocks it, not the server. OPTIONS preflight is
-// answered directly since /suspend triggers it.
-func (h *Handler) withCORS(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		origin := r.Header.Get("Origin")
-		allowed := origin != "" && origin == h.uiOrigin
-		if allowed {
-			w.Header().Set("Access-Control-Allow-Origin", origin)
-		}
-
-		if r.Method == http.MethodOptions {
-			if allowed {
-				w.Header().Set("Access-Control-Allow-Methods", "GET, POST")
-				w.Header().Set("Access-Control-Allow-Headers", r.Header.Get("Access-Control-Request-Headers"))
-				w.WriteHeader(http.StatusNoContent)
-				return
-			}
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
+	h.mux.ServeHTTP(w, r)
 }
 
 func (h *Handler) handleHealth(w http.ResponseWriter, r *http.Request) {

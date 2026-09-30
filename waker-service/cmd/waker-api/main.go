@@ -7,12 +7,10 @@ import (
 
 	"github.com/nikbogman/homelab/waker-service/internal/eventlog"
 	"github.com/nikbogman/homelab/waker-service/internal/waker"
-	"github.com/nikbogman/homelab/waker-service/ui"
 )
 
 func main() {
 	cfg := waker.ConfigFromEnv()
-	cfg.UIAssets = ui.Assets
 
 	grafanaCfg := eventlog.MustGrafanaConfig()
 	logger := eventlog.NewGrafanaCloudLogger(grafanaCfg.LokiURL, grafanaCfg.LokiUser, grafanaCfg.LokiAPIKey, "waker")

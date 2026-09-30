@@ -9,13 +9,11 @@ const DEFAULT_POLL_INTERVAL_MS = 12_000
 const HEALTH_CHECK_TIMEOUT_MS = 5_000
 
 /**
- * Renders the UI into `container` and starts polling.
- *
- * `wakerApiBaseUrl` is same-origin as the UI by default, so '' (relative)
- * works. Returns a cleanup function that stops polling.
+ * Renders the UI into `container` and starts polling. Returns a cleanup
+ * function that stops polling.
  */
 export function mountUi(container, options) {
-  const { sleeperApiBaseUrl, wakerApiBaseUrl = '', intervalMs = DEFAULT_POLL_INTERVAL_MS } = options
+  const { sleeperApiBaseUrl, wakerApiBaseUrl, intervalMs = DEFAULT_POLL_INTERVAL_MS } = options
 
   container.innerHTML = `
     <h1>Homelab Control</h1>

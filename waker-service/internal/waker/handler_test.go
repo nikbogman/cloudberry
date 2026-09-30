@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/nikbogman/homelab/waker-service/internal/tailnet"
@@ -41,16 +40,7 @@ func (f *fakeLogger) SendEvent(eventType, outcome string, identity *string, extr
 
 func mustNewHandler(t *testing.T, sender Sender, logger EventLogger) http.Handler {
 	t.Helper()
-	return mustNewHandlerWithConfig(t, Config{
-		MACAddress: testMACAddress,
-		BindHost:   "127.0.0.1",
-		UIAssets:   os.DirFS(t.TempDir()),
-	}, sender, logger)
-}
-
-func mustNewHandlerWithConfig(t *testing.T, cfg Config, sender Sender, logger EventLogger) http.Handler {
-	t.Helper()
-	h, err := NewHandler(cfg, sender, logger)
+	h, err := NewHandler(Config{MACAddress: testMACAddress, BindHost: "127.0.0.1"}, sender, logger)
 	if err != nil {
 		t.Fatalf("NewHandler failed: %v", err)
 	}
@@ -195,7 +185,7 @@ func TestWakeDoesNotGuardAgainstRepeatedRequests(t *testing.T) {
 }
 
 func TestNewHandlerRefusesOffTailnetBindHost(t *testing.T) {
-	cfg := Config{MACAddress: testMACAddress, BindHost: "0.0.0.0", UIAssets: os.DirFS(t.TempDir())}
+	cfg := Config{MACAddress: testMACAddress, BindHost: "0.0.0.0"}
 	_, err := NewHandler(cfg, &fakeSender{}, &fakeLogger{})
 	var bindErr *tailnet.BindOffTailnetError
 	if !errors.As(err, &bindErr) {
@@ -204,88 +194,9 @@ func TestNewHandlerRefusesOffTailnetBindHost(t *testing.T) {
 }
 
 func TestNewHandlerRejectsAMalformedMacAddressAtStartup(t *testing.T) {
-	cfg := Config{MACAddress: "not-a-mac", BindHost: "127.0.0.1", UIAssets: os.DirFS(t.TempDir())}
+	cfg := Config{MACAddress: "not-a-mac", BindHost: "127.0.0.1"}
 	_, err := NewHandler(cfg, &fakeSender{}, &fakeLogger{})
 	if err == nil {
 		t.Fatal("NewHandler succeeded, want error")
-	}
-}
-
-func TestConfigJSExposesTheSleeperAPIURLToTheBrowser(t *testing.T) {
-	cfg := Config{
-		MACAddress:    testMACAddress,
-		BindHost:      "127.0.0.1",
-		UIAssets:      os.DirFS(t.TempDir()),
-		SleeperAPIURL: "https://sleeper.example.ts.net",
-	}
-	h := mustNewHandlerWithConfig(t, cfg, &fakeSender{}, &fakeLogger{})
-	rec := httptest.NewRecorder()
-
-	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/config.js", nil))
-
-	if rec.Code != http.StatusOK {
-		t.Fatalf("got status %d, want 200", rec.Code)
-	}
-	if got, want := rec.Header().Get("Content-Type"), "text/javascript; charset=utf-8"; got != want {
-		t.Errorf("got Content-Type %q, want %q", got, want)
-	}
-	want := `window.SLEEPER_API_URL = "https://sleeper.example.ts.net"` + "\n"
-	if got := rec.Body.String(); got != want {
-		t.Errorf("got body %q, want %q", got, want)
-	}
-}
-
-// An unset SLEEPER_API_URL must still yield valid JS, not a bare
-// `= ` -- the UI reads the global unconditionally.
-func TestConfigJSEmitsAnEmptyStringWhenNoSleeperAPIURLIsSet(t *testing.T) {
-	h := mustNewHandler(t, &fakeSender{}, &fakeLogger{})
-	rec := httptest.NewRecorder()
-
-	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/config.js", nil))
-
-	if want := "window.SLEEPER_API_URL = \"\"\n"; rec.Body.String() != want {
-		t.Errorf("got body %q, want %q", rec.Body.String(), want)
-	}
-}
-
-func TestStaticFilesAreServedFromUIAssets(t *testing.T) {
-	dir := t.TempDir()
-	writeFile(t, dir, "index.html", "<html>hi</html>")
-
-	h := mustNewHandlerWithConfig(t, Config{
-		MACAddress: testMACAddress, BindHost: "127.0.0.1", UIAssets: os.DirFS(dir),
-	}, &fakeSender{}, &fakeLogger{})
-
-	rec := httptest.NewRecorder()
-	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/", nil))
-
-	if rec.Code != http.StatusOK {
-		t.Fatalf("got status %d, want 200", rec.Code)
-	}
-	if rec.Body.String() != "<html>hi</html>" {
-		t.Fatalf("got body %q, want the file's contents", rec.Body.String())
-	}
-}
-
-func TestAnUnknownPathDoesNotFallBackToIndexHTML(t *testing.T) {
-	dir := t.TempDir()
-	writeFile(t, dir, "index.html", "<html>hi</html>")
-
-	h := mustNewHandlerWithConfig(t, Config{
-		MACAddress: testMACAddress, BindHost: "127.0.0.1", UIAssets: os.DirFS(dir),
-	}, &fakeSender{}, &fakeLogger{})
-
-	rec := httptest.NewRecorder()
-	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/some/spa/route", nil))
-
-	if rec.Code != http.StatusNotFound {
-		t.Fatalf("got status %d, want 404 -- no SPA/try_files fallback", rec.Code)
-	}
-}
-
-func writeFile(t *testing.T, dir, name, contents string) {
-	t.Helper()
-	if err := os.WriteFile(dir+"/"+name, []byte(contents), 0o644); err != nil {
-		t.Fatalf("failed to write %s: %v", name, err)
 	}
 }

@@ -1,6 +1,6 @@
 # UI
 
-The browser app served by the [Waker](waker.md): shows whether Sleeper is
+The browser app served by [Edge](edge.md) at `/ui/`: shows whether Sleeper is
 [Reachable](../../CONTEXT.md) and offers Wake/Suspend. The only user-facing surface
 in the system.
 
@@ -14,26 +14,19 @@ Code: [`ui/`](../ui).
 All of it lives in [`mountUi`](../ui/app.js), called by the inline module script
 in [`index.html`](../ui/index.html):
 
-- Polls the [Sleeper API](sleeper.md)'s `GET /health` every 12s (configurable),
-  renders `Checking…` / `Reachable` / `Unreachable`.
-- **Wake button** — enabled unless already reachable. `POST`s to the
-  [Waker API](waker.md)'s `/wake` (same-origin by default).
-- **Suspend button** — enabled unless already unreachable. `POST`s to the
-  Sleeper API's `/suspend` (a distinct origin).
+- Polls `/api/sleeper/health` every 12s (configurable), renders
+  `Checking…` / `Reachable` / `Unreachable`.
+- **Wake button** — enabled unless already reachable. `POST`s to
+  `/api/waker/wake`.
+- **Suspend button** — enabled unless already unreachable. `POST`s to
+  `/api/sleeper/suspend`.
 - Failures surface in an error line; successes don't.
 
 ## Configuration
 
-One value, `window.SLEEPER_API_URL` — the Sleeper API's origin. `index.html`
-loads it from `/config.js`, which the [Waker](waker.md#routes) *serves* (from
-its `SLEEPER_API_URL` env var) rather than the UI shipping. That keeps `ui/` a
-pure static tree with nothing generated into it at deploy time.
-
-Under a plain dev server `/config.js` 404s, the global stays undefined, and the
-UI falls back to `''` — a relative path. The 404 in the console is expected.
-
-The Waker API origin is always relative — the Waker serves both the UI and
-`/wake`, so they're same-origin.
+None. Everything is same-origin with Edge, so `index.html` passes the fixed
+`/api/sleeper` and `/api/waker` base paths to `mountUi`, and Edge forwards them
+to the [Sleeper API](sleeper.md) and [Waker API](waker.md).
 
 ## Layout
 
@@ -48,29 +41,17 @@ ui.go             the go:embed declaration -- six lines, no logic
 
 ## Development
 
-```sh
-./dev-ui.sh          # http://localhost:5173, or ./dev-ui.sh <port>
-```
+Run Edge locally (see [edge.md](edge.md#development)) and open
+`http://localhost:8080/ui/`. It serves the *embedded* UI, so edits need a
+restart.
 
-Serves `ui/` straight from disk, so edits show up on refresh with no rebuild.
-It writes `ui/config.js` (gitignored) from the repo root `.env`'s
-`SLEEPER_TAILNET_HOST`, the same value a Deploy uses — so the health poll hits
-the real Sleeper host and the status is live.
-
-Wake is a Waker route and 404s here. For it, run the real binary instead (see
-the README) — it serves the *embedded* UI, so edits need a restart.
-
-Absolute asset paths (`/app.js`, `/style.css`) mean the site must be served from
-its own root, either way. Opening `index.html` as a `file://` URL will not work
-— ES modules need an HTTP origin.
+Asset paths are relative so the app works under `/ui/`. Opening `index.html` as
+a `file://` URL will not work — ES modules need an HTTP origin.
 
 ## Deployment
 
-[`ui/ui.go`](../ui/ui.go) `//go:embed`s this directory straight into the Waker
+[`ui/ui.go`](../ui/ui.go) `//go:embed`s this directory straight into the Edge
 binary — no copy, no staging directory. The declaration sits *inside* `ui/`
 because `go:embed` patterns are relative to their own package directory and
-can't climb out of it: `cmd/waker-api` cannot reach `../../ui`, but a package
+can't climb out of it: `cmd/edge-api` cannot reach `../../ui`, but a package
 living here can embed its own contents. Its globs skip `ui.go` itself.
-
-[`waker-service/waker.py`](../../deploy/waker-service/waker.py) just
-cross-compiles and ships that one binary; nothing else reaches the Pi Zero.

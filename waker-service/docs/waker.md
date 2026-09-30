@@ -1,8 +1,9 @@
 # Waker
 
-The always-on device (a Pi Zero W) and the Waker API binary it runs. One
-process does two jobs: serves the UI's static files and sends Wake-on-LAN to
-Sleeper. Same-origin with the [UI](ui.md), so no CORS entry is needed.
+The always-on device (a Pi Zero W) and the Waker API binary it runs. Its one
+job: send Wake-on-LAN to Sleeper. [Edge](edge.md) forwards the UI's Wake to it
+over the tailnet; it stays on the Pi because the magic packet is a LAN
+broadcast.
 
 It is deliberately *not* in the workload traffic path — the Pi is on Wi-Fi,
 so proxying workload traffic through it costs a hop and a bottleneck for
@@ -18,8 +19,6 @@ entrypoint [`cmd/waker-api/`](../cmd/waker-api).
 | Route | Behavior |
 |---|---|
 | `POST /wake` | Requires the identity header or a `127.0.0.1` caller. Sends WoL to `SLEEPER_MAC_ADDRESS`, logs `wake_requested`/`_succeeded`/`_failed`, returns `{"wake": ...}`. |
-| `GET /config.js` | One line of JS setting `window.SLEEPER_API_URL` from the env var, so the UI learns Sleeper's origin without anything being generated into `ui/`. |
-| `/` (everything else) | Serves the UI's static files, `//go:embed`ded from `ui/` at build time. Unknown paths 404 (no SPA fallback). |
 
 Requires the Waker and Sleeper to share an L2 broadcast domain — WoL
 doesn't route across subnets.
@@ -43,9 +42,8 @@ required.
 
 [`deploy/waker-service/waker.py`](../../deploy/waker-service/waker.py)
 cross-compiles for the Pi Zero W (`GOARCH=arm GOARM=6` — ARM1176; a Pi Zero 2 W
-would need `GOARCH=arm64`) with the UI `//go:embed`ded, and ships only the binary plus a
-systemd unit. The device never runs a Go toolchain. Because the binary does
-both jobs, this is the only Deploy file for the device.
+would need `GOARCH=arm64`), and ships only the binary plus a systemd unit. The
+device never runs a Go toolchain.
 
 It then runs `tailscale serve --bg --https=443 localhost:$WAKER_PORT`, guarded
 by `common.TailscaleServeStatus` so a second run is a no-op. `tailscale serve`'s
@@ -64,13 +62,9 @@ required.
 |---|---|---|
 | `WAKER_PORT` | `5000` | Listen port; pinned explicitly (rather than relying on the binary's matching default) since `tailscale serve` has to point at the right port |
 | **`SLEEPER_MAC_ADDRESS`** | — | WoL target MAC |
-| `SLEEPER_API_URL` | `''` | Sleeper API origin the UI calls; served to the browser at `/config.js`. Empty means same-origin, which only suits a local dev run |
 | **`GRAFANA_CLOUD_LOKI_URL`** | — | Grafana Cloud's Loki push endpoint |
 | **`GRAFANA_CLOUD_LOKI_USER`** | — | Loki basic-auth username (numeric instance ID) |
 | **`GRAFANA_CLOUD_LOKI_API_KEY`** | — | Grafana Cloud Access Policy token, scoped to `logs:write` |
-
-`SLEEPER_API_URL` is derived from `InventorySettings.sleeper_tailnet_host`, not
-a separate secret.
 
 See [`deploy.md`](../../docs/deploy.md) for how to run a Deploy and how
 it's tested.

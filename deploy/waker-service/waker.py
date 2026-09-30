@@ -1,19 +1,11 @@
-"""Deploys the Waker to `waker`: builds the Waker binary with the
-UI embedded in it and ships that one binary. No Go toolchain ever runs on
-the Pi Zero W. Targetable in isolation:
+"""Deploys the Waker to `waker`: builds the Waker binary and ships it. No
+Go toolchain ever runs on the Pi Zero W. Targetable in isolation:
 
     pyinfra inventory.py waker-service/waker.py --limit waker
     pyinfra inventory.py waker-service/waker.py --limit waker --dry
 
-The UI has no build step and no staging copy: `waker-service/ui/ui.go`
-`//go:embed`s `waker-service/ui/`'s own contents straight into the binary.
-Its one runtime value reaches the browser as `SLEEPER_API_URL`, which the
-Waker serves at `/config.js`; it comes from
-`InventorySettings.sleeper_tailnet_host` -- the Sleeper API's real
-Tailscale MagicDNS name, not a separate secret.
-
-This binary also serves the UI's static files, so it's also the sole thing
-standing up `tailscale serve` for this device.
+The Waker API only sends Wake-on-LAN; the UI is hosted by Edge, which
+reaches `/wake` through this device's `tailscale serve`.
 
 Required env vars (only when targeting `waker`/its `test` stand-in):
 `SLEEPER_MAC_ADDRESS` and the `GRAFANA_CLOUD_LOKI_*` trio.
@@ -47,14 +39,10 @@ if has_device_role("waker"):
         binary_name="waker-api",
         remote_binary="/usr/local/bin/waker-api",
         unit_name="waker-api.service",
-        description="Waker -- serves the UI and sends Wake-on-LAN",
+        description="Waker -- sends Wake-on-LAN",
         environment={
             "SLEEPER_MAC_ADDRESS": secrets.sleeper_mac_address,
             "WAKER_PORT": str(waker_settings.waker_port),
-            # Reaches the browser via the Waker's /config.js. No
-            # equivalent for the Waker API's own origin: it serves both
-            # the UI and /wake, so the UI just uses a relative path.
-            "SLEEPER_API_URL": f"https://{inventory.sleeper_tailnet_host}",
             "GRAFANA_CLOUD_LOKI_URL": grafana.grafana_cloud_loki_url,
             "GRAFANA_CLOUD_LOKI_USER": grafana.grafana_cloud_loki_user,
             "GRAFANA_CLOUD_LOKI_API_KEY": grafana.grafana_cloud_loki_api_key,
@@ -70,6 +58,6 @@ if has_device_role("waker"):
     already_served = f"{inventory.waker_tailnet_host}:443" in serve_status and serve_target in serve_status
     if not already_served:
         server.shell(
-            name="Expose the UI/Waker on the tailnet via tailscale serve",
+            name="Expose the Waker API on the tailnet via tailscale serve",
             commands=[f"tailscale serve --bg --https=443 {serve_target}"],
         )

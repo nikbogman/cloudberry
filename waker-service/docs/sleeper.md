@@ -2,8 +2,8 @@
 
 The machine that sleeps and runs the workloads, and the Sleeper API binary it
 runs. Exposes a Reachable health check and the Suspend action. Fronted by its
-own `tailscale serve` instance — a distinct origin from the [UI](ui.md), hence
-the CORS allow-list.
+own `tailscale serve` instance; only [Edge](edge.md) calls it, server-side, so
+there's no CORS.
 
 Vocabulary (Sleeper, Reachable, Suspend) is in [`CONTEXT.md`](../../CONTEXT.md).
 
@@ -52,7 +52,6 @@ required.
 
 | Variable | Purpose |
 |---|---|
-| **`UI_ORIGIN`** | Origin allowed by the CORS policy. |
 | **`GRAFANA_CLOUD_LOKI_*`** | The same trio as the [Waker](waker.md#runtime-environment) — both binaries log to one endpoint. |
 | `SLEEPER_API_HOST` | Bind address (default `127.0.0.1`). Must be loopback or tailnet. |
 | `SLEEPER_API_PORT` | Listen port (default `5000`). |
@@ -79,8 +78,7 @@ applies. Bold variables are required.
 | `SLEEPER_API_PORT` | `5000` | Listen port; pinned explicitly for the same `tailscale serve` reason as the Waker's port |
 | **`GRAFANA_CLOUD_LOKI_*`** | — | The same trio as the [Waker](waker.md#deploy-time-variables) — both binaries log to one endpoint |
 
-`UI_ORIGIN` (the CORS allow-list entry) is derived from `InventorySettings`, not
-a separate secret. This file also runs `tailscale serve` for
+This file also runs `tailscale serve` for
 `$SLEEPER_API_PORT`, same mechanism and version caveat as the Waker.
 
 See [`deploy.md`](../../docs/deploy.md) for how to run a Deploy and how

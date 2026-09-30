@@ -1,13 +1,17 @@
 # Cloudberry
 
-Domain glossary for this monorepo. One service so far — [`waker-service/`](waker-service/), which lets the user wake, monitor, and suspend the Sleeper from anywhere on the tailnet — plus the root [`deploy/`](deploy/) that converges every device.
+Domain glossary for this monorepo. One service so far — [`waker-service/`](waker-service/), which lets the user wake, monitor, and suspend the Sleeper from anywhere — plus the root [`deploy/`](deploy/) that converges every device.
 
 ## Language
 
 ### System
 
+**Edge**:
+The public entry point, hosted on Railway: serves the UI and forwards to the Waker API, the Sleeper API and Caddy-fronted Stacks over the tailnet (as its own `tsnet` node). The browser's only origin. No authentication for now — deliberate and temporary.
+_Avoid_: proxy, gateway, railway service
+
 **Waker**:
-Always-on device (currently a Pi Zero) fronting the system: hosts the UI and sends Wake-on-LAN — both the Waker API's job. Not in the workload traffic path: it's on Wi-Fi, so the hop isn't worth it. Named for its role, not its hardware.
+Always-on device (currently a Pi Zero) that sends Wake-on-LAN — the Waker API's only job. On the LAN because the magic packet is a broadcast. Not in the workload traffic path: it's on Wi-Fi, so the hop isn't worth it. Named for its role, not its hardware.
 _Avoid_: Gateway (its name until 2026-09-12, when it stopped carrying workload traffic), Pi, Pi Zero, raspberry (its hardware name — see [README.md](README.md#name) — used as a role name)
 
 **Sleeper**:
@@ -15,15 +19,15 @@ The machine that sleeps/wakes and runs the actual workloads. Named for its role,
 _Avoid_: Compute (its name until 2026-09-12), server, main server, compute host, worker (implies it works for the Waker — backwards), blackberry (its hardware name — see [README.md](README.md#name) — used as a role name)
 
 **UI**:
-The browser app on the Waker showing Sleeper reachability and Wake/Suspend actions. The only user-facing surface.
+The browser app served by Edge showing Sleeper reachability and Wake/Suspend actions. The only user-facing surface.
 _Avoid_: Control UI, Panel, dashboard, frontend
 
 **Waker API**:
-The backend on the Waker: serves the UI's static files and sends WoL. Carries no workload traffic — browsers reach workload containers on Sleeper directly. Same-origin with the UI; not reachable off-tailnet.
+The backend on the Waker: sends WoL on `POST /wake`, nothing else. Carries no workload traffic. Not reachable off-tailnet; Edge forwards to it.
 _Avoid_: Gateway API, Pi API, wake service, WoL plugin
 
 **Sleeper API**:
-The backend on the Sleeper exposing Suspend and a reachability health check. Carries no workload traffic and knows nothing about Docker. A distinct origin from the UI, fronted by its own `tailscale serve` instance.
+The backend on the Sleeper exposing Suspend and a reachability health check. Carries no workload traffic and knows nothing about Docker. Fronted by its own `tailscale serve` instance; only Edge calls it.
 _Avoid_: Compute API (its name until 2026-09-12), Server API, suspend service
 
 **Reachable**:
@@ -38,7 +42,7 @@ Putting Sleeper into suspend-to-RAM — the only sleep state supported. Full shu
 _Avoid_: shutdown, sleep, power off
 
 **Identity header**:
-`Tailscale-User-Login`, injected by `tailscale serve` in front of both apps. The entire auth mechanism — tailnet membership is the entire authorization boundary, no separate allow-list. Exception: the Waker API's wake action also accepts a `127.0.0.1` caller in its place — originally for the in-process auto-wake trigger on the device's old proxy route; with that route gone it now only covers a shell on the Pi itself.
+`Tailscale-User-Login`, injected by `tailscale serve` in front of both apps. The entire auth mechanism behind Edge — tailnet membership is the authorization boundary, no separate allow-list. Edge's calls carry the login of the user who owns Edge's tailnet node. Exception: the Waker API's wake action also accepts a `127.0.0.1` caller in its place — originally for the in-process auto-wake trigger on the device's old proxy route; with that route gone it now only covers a shell on the Pi itself.
 _Avoid_: auth token, login header
 
 ### Provisioning

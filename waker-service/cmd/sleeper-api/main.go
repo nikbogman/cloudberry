@@ -5,8 +5,8 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/nikbogman/homelab/waker-service/internal/sleeper"
 	"github.com/nikbogman/homelab/waker-service/internal/eventlog"
+	"github.com/nikbogman/homelab/waker-service/internal/sleeper"
 )
 
 func main() {
@@ -20,7 +20,7 @@ func main() {
 
 	suspender := sleeper.NewSystemSuspender()
 
-	handler, err := sleeper.NewHandler(cfg.UIOrigin, suspender, logger, cfg.Host)
+	handler, err := sleeper.NewHandler(suspender, logger, cfg.Host)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -12,10 +12,6 @@ Assumes `sleeper` is already joined to the tailnet (`deploy_tailscale.py`,
 which `deploy.py` runs first) -- `tailscale serve` needs a joined
 `tailscaled`, and this file doesn't re-check that when run standalone.
 
-`UI_ORIGIN` (the CORS allow-list entry) is derived from
-`InventorySettings.waker_tailnet_host`, the Waker's real Tailscale
-MagicDNS name -- not a separate secret.
-
 Required env vars (only when targeting `sleeper`/its `test` stand-in):
 the `GRAFANA_CLOUD_LOKI_*` trio.
 
@@ -58,7 +54,6 @@ if has_device_role("sleeper"):
         unit_name="sleeper-api.service",
         description="Sleeper API -- exposes Suspend and the reachability health check",
         environment={
-            "UI_ORIGIN": f"https://{inventory.waker_tailnet_host}",
             "SLEEPER_API_PORT": str(api_settings.sleeper_api_port),
             "GRAFANA_CLOUD_LOKI_URL": grafana.grafana_cloud_loki_url,
             "GRAFANA_CLOUD_LOKI_USER": grafana.grafana_cloud_loki_user,

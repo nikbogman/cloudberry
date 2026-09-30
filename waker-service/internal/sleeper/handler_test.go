@@ -9,10 +9,7 @@ import (
 	"github.com/nikbogman/homelab/waker-service/internal/tailnet"
 )
 
-const (
-	testUIOrigin = "https://control.example.ts.net"
-	testIdentity = "nicola@example.com"
-)
+const testIdentity = "nicola@example.com"
 
 type loggedEvent struct {
 	eventType string
@@ -41,7 +38,7 @@ func (f *fakeSuspender) Suspend() error {
 
 func mustNewHandler(t *testing.T, suspender Suspender, logger EventLogger) *Handler {
 	t.Helper()
-	h, err := NewHandler(testUIOrigin, suspender, logger, "127.0.0.1")
+	h, err := NewHandler(suspender, logger, "127.0.0.1")
 	if err != nil {
 		t.Fatalf("NewHandler failed: %v", err)
 	}
@@ -122,34 +119,8 @@ func TestSubsequentHealthChecksDoNotRelogReachability(t *testing.T) {
 	}
 }
 
-func TestCorsAllowsUiOrigin(t *testing.T) {
-	h := mustNewHandler(t, &fakeSuspender{}, &fakeLogger{})
-	req := authedRequest(http.MethodGet, "/health")
-	req.Header.Set("Origin", testUIOrigin)
-	rec := httptest.NewRecorder()
-
-	h.ServeHTTP(rec, req)
-
-	if got := rec.Header().Get("Access-Control-Allow-Origin"); got != testUIOrigin {
-		t.Fatalf("got Access-Control-Allow-Origin %q, want %q", got, testUIOrigin)
-	}
-}
-
-func TestCorsRejectsOtherOrigins(t *testing.T) {
-	h := mustNewHandler(t, &fakeSuspender{}, &fakeLogger{})
-	req := authedRequest(http.MethodGet, "/health")
-	req.Header.Set("Origin", "https://evil.example.com")
-	rec := httptest.NewRecorder()
-
-	h.ServeHTTP(rec, req)
-
-	if got := rec.Header().Get("Access-Control-Allow-Origin"); got == "https://evil.example.com" {
-		t.Fatalf("got Access-Control-Allow-Origin %q, want anything else", got)
-	}
-}
-
 func TestNewHandlerRefusesOffTailnetBindHost(t *testing.T) {
-	_, err := NewHandler(testUIOrigin, &fakeSuspender{}, &fakeLogger{}, "0.0.0.0")
+	_, err := NewHandler(&fakeSuspender{}, &fakeLogger{}, "0.0.0.0")
 	var bindErr *tailnet.BindOffTailnetError
 	if !errors.As(err, &bindErr) {
 		t.Fatalf("got err %v, want *tailnet.BindOffTailnetError", err)

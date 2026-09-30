@@ -74,8 +74,8 @@ demands env vars an unrelated one needs.
 |---|---|---|
 | `WAKER_HOST`, `WAKER_SSH_USER` | `pi-zero.tailnet`, `pi` | Waker's SSH target |
 | `SLEEPER_HOST`, `SLEEPER_SSH_USER` | `main-server.tailnet`, `admin` | Sleeper's SSH target |
-| `WAKER_TAILNET_HOST` | `pi-zero.your-tailnet-name.ts.net` | Waker's Tailscale MagicDNS name; derives `UI_ORIGIN` |
-| `SLEEPER_TAILNET_HOST` | `main-server.your-tailnet-name.ts.net` | Sleeper's Tailscale MagicDNS name; derives the Waker's `SLEEPER_API_URL` |
+| `WAKER_TAILNET_HOST` | `pi-zero.your-tailnet-name.ts.net` | Waker's Tailscale MagicDNS name; checked against `tailscale serve` status |
+| `SLEEPER_TAILNET_HOST` | `main-server.your-tailnet-name.ts.net` | Sleeper's Tailscale MagicDNS name; checked against `tailscale serve` status |
 | `WAKER_TEST_HOST`, `WAKER_TEST_SSH_PORT`, `WAKER_TEST_SSH_USER` | `localhost`, `2201`, `root` | `test` group's waker stand-in |
 | `SLEEPER_TEST_HOST`, `SLEEPER_TEST_SSH_PORT`, `SLEEPER_TEST_SSH_USER` | `localhost`, `2202`, `root` | `test` group's sleeper stand-in |
 

@@ -1,10 +1,8 @@
-// Package waker serves the UI and sends Wake-on-LAN. It is path-routed
-// under the same tailscale serve app as the UI, so no CORS entry is needed.
+// Package waker sends Wake-on-LAN. Edge forwards the UI's Wake to it over
+// the tailnet; it's on the Waker because the magic packet is a LAN broadcast.
 package waker
 
 import (
-	"fmt"
-	"io/fs"
 	"net/http"
 
 	"github.com/nikbogman/homelab/waker-service/internal/httpresponse"
@@ -22,13 +20,6 @@ type EventLogger interface {
 type Config struct {
 	MACAddress string
 	BindHost   string
-	// Served at "/": the real binary passes an embed.FS via fs.Sub, tests
-	// pass os.DirFS.
-	UIAssets fs.FS
-	// Origin the UI sends its Sleeper API calls to, served at
-	// /config.js. "" means same-origin, which only suits local dev --
-	// in production Sleeper is a separate tailnet host.
-	SleeperAPIURL string
 }
 
 type Handler struct {
@@ -50,13 +41,6 @@ func NewHandler(cfg Config, sender Sender, logger EventLogger) (http.Handler, er
 
 	mux := http.NewServeMux()
 	mux.Handle("POST /wake", tailnet.RequireTailnetIdentityOrLoopback(http.HandlerFunc(h.handleWake)))
-	// Served rather than embedded so the UI stays a pure static tree with
-	// nothing generated into it at deploy time.
-	mux.HandleFunc("GET /config.js", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/javascript; charset=utf-8")
-		fmt.Fprintf(w, "window.SLEEPER_API_URL = %q\n", cfg.SleeperAPIURL)
-	})
-	mux.Handle("/", http.FileServer(http.FS(cfg.UIAssets)))
 	return mux, nil
 }
 
