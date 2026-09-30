@@ -57,6 +57,7 @@ are required.
 | **`TS_STATE_DIR`** | tsnet node state. The image defaults it to `/data/tsnet`. |
 | **`GRAFANA_CLOUD_LOKI_URL`**, **`_USER`**, **`_API_KEY`** | Grafana Cloud Loki push credentials, same as the Waker's. |
 | `TS_AUTHKEY` | Needed on first start (or after state is lost). |
+| `TS_DEBUG_MTU` | Tailnet MTU. The image sets `1200`: at tsnet's default 1280, replies from the homelab to Railway are lost and every tailnet request hangs. |
 | `PORT` | Listen port (default `8080`; Railway sets it). |
 
 ## Deployment

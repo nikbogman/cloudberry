@@ -11,4 +11,7 @@ RUN CGO_ENABLED=0 go build -o /edge-api ./cmd/edge-api
 FROM gcr.io/distroless/static
 COPY --from=build /edge-api /edge-api
 ENV TS_STATE_DIR=/data/tsnet
+# tsnet's default 1280 MTU black-holes replies from the homelab to Railway
+# (large packets are lost on that path); 1200 gets through.
+ENV TS_DEBUG_MTU=1200
 ENTRYPOINT ["/edge-api"]
