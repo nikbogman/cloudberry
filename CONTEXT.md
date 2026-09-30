@@ -54,3 +54,12 @@ _Avoid_: Concern, role, task, module
 **Host group**:
 A pyinfra inventory grouping of devices by responsibility — `waker` and `sleeper`. Determines which Deploy files apply to which device.
 _Avoid_: role (Ansible sense), pi, server (old group names)
+
+### Workloads
+
+**Stack**:
+A user-facing workload (an AI agent, etc.) at `stacks/<name>/`, deployed as plain Docker Compose directly to blackberry — outside pyinfra, outside this repo's own Deploy files, unknown to the Waker/Sleeper services. See [`docs/agents/stacks.md`](docs/agents/stacks.md).
+_Avoid_: service (this repo's term for the Waker/Sleeper API processes), workload (fine informally, but "stack" is the file/directory unit)
+
+**blackberry**:
+Sleeper's hardware name, used deliberately inside Stacks docs and config instead of "Sleeper" — Stacks is outside the Sleeper role's domain. A documented exception to the _Avoid_ note on **Sleeper** above, not an oversight.

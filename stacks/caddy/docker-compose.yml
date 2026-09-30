@@ -1,0 +1,16 @@
+services:
+  caddy:
+    image: ghcr.io/tailscale/caddy-tailscale:main
+    restart: unless-stopped
+    env_file:
+      - path: ../../.env
+        required: false
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - /srv/stacks/caddy/data:/data
+    networks:
+      - stacks
+
+networks:
+  stacks:
+    external: true

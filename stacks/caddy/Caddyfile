@@ -1,0 +1,10 @@
+{
+	tailscale {
+		# /data is /srv/stacks/caddy/data on blackberry -- see docker-compose.yml's volume mount
+		state_dir /data/tailscale
+		ephemeral false
+		auth_key {$TAILSCALE_AUTH_KEY}
+	}
+}
+
+# No fronted stacks yet -- see docs/agents/stacks.md's Routing section.
