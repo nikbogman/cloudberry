@@ -10,12 +10,16 @@ import (
 	"tailscale.com/tsnet"
 
 	"github.com/nikbogman/homelab/waker-service/internal/edge"
+	"github.com/nikbogman/homelab/waker-service/internal/eventlog"
 	"github.com/nikbogman/homelab/waker-service/ui"
 )
 
 func main() {
 	cfg := edge.ConfigFromEnv()
 	cfg.UIAssets = ui.Assets
+
+	grafanaCfg := eventlog.MustGrafanaConfig()
+	logger := eventlog.NewGrafanaCloudLogger(grafanaCfg.LokiURL, grafanaCfg.LokiUser, grafanaCfg.LokiAPIKey, "edge")
 
 	// Joins the tailnet as its own node, only to dial out. TS_AUTHKEY must
 	// be user-owned (untagged): `tailscale serve` only injects the identity
@@ -29,5 +33,5 @@ func main() {
 	// Public bind by design -- Edge is the one off-tailnet entry point.
 	addr := net.JoinHostPort("", cfg.Port)
 	log.Printf("edge listening on %s", addr)
-	log.Fatal(http.ListenAndServe(addr, edge.NewHandler(cfg.Config, ts.HTTPClient().Transport)))
+	log.Fatal(http.ListenAndServe(addr, edge.WithAccessLog(edge.NewHandler(cfg.Config, ts.HTTPClient().Transport), logger)))
 }

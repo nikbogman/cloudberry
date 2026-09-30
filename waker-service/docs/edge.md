@@ -37,6 +37,13 @@ on Railway's public port, not on the tailnet.
 without the Identity header, and `tailscale serve` only injects it for
 user-owned nodes. Every Edge request is logged under that user.
 
+## Logging
+
+Every request ships one event to Grafana Cloud Loki (labels `app="edge"`,
+`event_type="request"`, `outcome` = status class like `2xx`), with method, path,
+status, duration and client IP (`X-Forwarded-For`) in the line. Code:
+[`accesslog.go`](../internal/edge/accesslog.go).
+
 ## Runtime environment
 
 Read by [`internal/edge/config.go`](../internal/edge/config.go). Bold variables
@@ -48,6 +55,7 @@ are required.
 | **`SLEEPER_API_URL`** | Sleeper API origin. |
 | **`TAILNET_DOMAIN`** | e.g. `<tailnet>.ts.net`; stack hosts are `<stack>.$TAILNET_DOMAIN`. |
 | **`TS_STATE_DIR`** | tsnet node state. The image defaults it to `/data/tsnet`. |
+| **`GRAFANA_CLOUD_LOKI_URL`**, **`_USER`**, **`_API_KEY`** | Grafana Cloud Loki push credentials, same as the Waker's. |
 | `TS_AUTHKEY` | Needed on first start (or after state is lost). |
 | `PORT` | Listen port (default `8080`; Railway sets it). |
 
@@ -64,5 +72,6 @@ TS_AUTHKEY=tskey-auth-xxx TS_STATE_DIR=/tmp/edge \
 WAKER_API_URL=https://<waker>.<tailnet>.ts.net \
 SLEEPER_API_URL=https://<sleeper>.<tailnet>.ts.net \
 TAILNET_DOMAIN=<tailnet>.ts.net \
+GRAFANA_CLOUD_LOKI_URL=... GRAFANA_CLOUD_LOKI_USER=... GRAFANA_CLOUD_LOKI_API_KEY=... \
 go run ./cmd/edge-api
 ```
