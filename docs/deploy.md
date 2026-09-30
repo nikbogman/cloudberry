@@ -2,8 +2,7 @@
 
 Declarative provisioning with [pyinfra](https://pyinfra.com/). One run converges
 the Waker and the Sleeper to their declared state: Tailscale joined,
-Docker installed on `sleeper`, and both binaries (with the UI embedded in the Waker's)
-deployed as systemd services.
+Docker installed on `sleeper`, and both binaries deployed as systemd services.
 
 Per-service deploy details live with the service:
 [`waker.md`](../waker-service/docs/waker.md),
@@ -82,11 +81,6 @@ demands env vars an unrelated one needs.
 `WAKER_HOST`/`SLEEPER_HOST` are pure SSH targets, used even by
 `deploy_tailscale.py` itself — on a fresh device, use a plain LAN address, not a
 tailnet name.
-
-`WAKER_TAILNET_HOST`/`SLEEPER_TAILNET_HOST` are separate from the SSH targets:
-each service's Deploy file derives the *other* device's browser-facing origin
-from these, since only the real MagicDNS name gets a valid `tailscale serve`
-HTTPS cert.
 
 ### Tailscale (`TailscaleSettings`)
 

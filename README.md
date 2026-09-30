@@ -10,19 +10,21 @@ whole thing.
 
 ## Topology
 
-Two devices on one tailnet, no ports exposed to the internet:
+Two devices on one tailnet:
 
 - **raspberry** — always-on, Wi-Fi, low power. So far it only sends WoL to
   blackberry.
 - **blackberry** — the workhorse, Ethernet. Can be suspended, and wakes on
   raspberry's WoL packet (same L2 segment, which is why the packet lands).
 
-Tailscale is the only way in; access control is tailnet membership. One
-pyinfra run from a dev machine converges both.
+The one way in from outside the tailnet is Edge, on Railway — currently
+with no authentication. Behind it, access control is tailnet membership. One
+pyinfra run from a dev machine converges both devices.
 
 | Path | What |
 |---|---|
-| [waker-service/](waker-service/) | Wake and suspend the Sleeper from the tailnet — Waker API, Sleeper API, UI |
+| [waker-service/](waker-service/) | Wake and suspend the Sleeper — Edge, Waker API, Sleeper API, UI |
+| [stacks/](stacks/) | Workloads on blackberry, plain Docker Compose behind Caddy |
 | [deploy/](deploy/) | pyinfra: one run converges every device across every service |
 | [CONTEXT.md](CONTEXT.md) | Domain glossary — the vocabulary everything else uses |
 | [docs/deploy.md](docs/deploy.md) | Inventory, running a Deploy, the three test tiers |

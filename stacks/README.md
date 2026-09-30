@@ -1,8 +1,8 @@
 # Stacks
 
-User-facing workloads (media servers, an AI agent, etc.) running on blackberry as plain Docker Compose — outside pyinfra, outside the Waker/Sleeper services. Each one gets its own real tsnet hostname via the `caddy` stack, instead of a shared-hostname path prefix.
+User-facing workloads (media servers, an AI agent, etc.) running on blackberry as plain Docker Compose — outside pyinfra, outside the Waker/Sleeper services. Each one gets its own tsnet hostname via the `caddy` stack; off-tailnet, Edge exposes it at `/proxy/<name>/`.
 
-For the full rationale, see [`.scratch/workload-stacks/spec.md`](../.scratch/workload-stacks/spec.md). For the conventions an agent should follow when adding to this directory, see [`docs/agents/stacks.md`](../docs/agents/stacks.md). This page is the quick "how do I actually run this" guide.
+Rationale: [`.scratch/workload-stacks/spec.md`](../.scratch/workload-stacks/spec.md). Agent conventions: [`docs/agents/stacks.md`](../docs/agents/stacks.md).
 
 ## One-time setup (per dev machine, already done)
 

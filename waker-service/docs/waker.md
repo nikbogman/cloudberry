@@ -5,10 +5,6 @@ job: send Wake-on-LAN to Sleeper. [Edge](edge.md) forwards the UI's Wake to it
 over the tailnet; it stays on the Pi because the magic packet is a LAN
 broadcast.
 
-It is deliberately *not* in the workload traffic path — the Pi is on Wi-Fi,
-so proxying workload traffic through it costs a hop and a bottleneck for
-nothing. Browsers reach workload containers on Sleeper directly on the tailnet.
-
 Vocabulary (Waker, Wake, Identity header) is in [`CONTEXT.md`](../../CONTEXT.md).
 
 Code: [`internal/waker/`](../internal/waker),

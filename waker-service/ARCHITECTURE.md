@@ -151,4 +151,3 @@ sequenceDiagram
 - `reachabilityTracker` can only observe Sleeper *becoming* reachable, never unreachable, since the process is asleep whenever that transition happens.
 - The Grafana Cloud pipeline has no retry/buffering — a transient outage drops the event. Accepted for low-stakes audit events.
 - Bind-address enforcement is a runtime check per binary; pyinfra doesn't verify it at provisioning time.
-- No workload Compose stack (Immich, etc.) has been deployed yet — Docker is provisioned on Sleeper, but nothing runs on it.

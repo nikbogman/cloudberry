@@ -41,9 +41,6 @@ containers.
   "Suspend failed". Pair it with `CombinedOutput()` in `suspend.go` so the log
   can tell busy from broken.
 
-Workload containers publish their own ports and are reached directly, so this
-binary never talks to the Docker daemon.
-
 ## Runtime environment
 
 Read by the binary itself ([`internal/sleeper/config.go`](../internal/sleeper/config.go)),

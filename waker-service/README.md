@@ -1,29 +1,19 @@
 # Waker Service
 
-Wakes, monitors, and suspends the Sleeper — the box running the actual
-workloads (Docker services like Immich) — from anywhere on the tailnet,
-without leaving it running 24/7.
-
-Two devices on the same tailnet and LAN broadcast domain:
-
-- **Waker (Pi Zero W)** — always on, low-power. Serves the UI and sends
-  Wake-on-LAN. Not in the workload traffic path: it's on Wi-Fi, so routing
-  workload traffic through it isn't worth the hop.
-- **Sleeper** — runs the workloads, suspended to RAM most of the time.
-  Exposes Suspend and the health check the UI polls. Workload containers
-  publish their own ports; browsers reach them directly on the tailnet.
-
-Auth is the `Tailscale-User-Login` header injected by `tailscale serve` —
-tailnet membership is the entire authorization boundary.
+Wakes, monitors, and suspends the Sleeper — the box running the workloads —
+so it doesn't run 24/7. Edge (Railway) serves the UI and forwards to the Waker
+API (Pi Zero, sends WoL) and the Sleeper API. Components and design:
+[ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Docs
 
 | Document | Owns |
 |---|---|
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Design decisions, data flow, constraints, shared Go packages |
+| [docs/edge.md](docs/edge.md) | Edge: routes, tailnet access, environment, deployment |
 | [docs/waker.md](docs/waker.md) | Waker API: routes, environment, deployment |
 | [docs/sleeper.md](docs/sleeper.md) | Sleeper API: routes, environment, deployment |
-| [docs/ui.md](docs/ui.md) | Browser SPA: behavior, runtime config |
+| [docs/ui.md](docs/ui.md) | Browser SPA: behavior, development |
 | [../CONTEXT.md](../CONTEXT.md) | Domain glossary — the vocabulary everything else uses |
 | [../docs/deploy.md](../docs/deploy.md) | pyinfra: inventory, running a Deploy, the three test tiers |
 
@@ -79,14 +69,13 @@ From the repo root:
 ```
 
 This service's Deploy files are grouped in
-[`../deploy/waker-service/`](../deploy/waker-service/).
-
-Secrets split in two: this service's own vars in `waker-service/.env`
-(see `.env.example`), the device addresses in the repo root `.env`.
-`deploy/deploy.sh` sources both. See [../docs/deploy.md](../docs/deploy.md).
+[`../deploy/waker-service/`](../deploy/waker-service/); secrets setup is in
+[../docs/deploy.md](../docs/deploy.md#setup). Edge deploys separately, via
+Railway — see [docs/edge.md](docs/edge.md#deployment).
 
 ## Status
 
-Fully implemented; one command converges both devices. Outstanding gaps:
+Fully implemented; one command converges both devices, and Edge deploys via
+Railway. Outstanding gaps:
 [../docs/deploy.md](../docs/deploy.md#known-gaps) and
 [ARCHITECTURE.md](ARCHITECTURE.md#constraints).
