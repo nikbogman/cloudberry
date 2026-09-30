@@ -7,4 +7,19 @@
 	}
 }
 
-# No fronted stacks yet -- see docs/agents/stacks.md's Routing section.
+
+:443 {
+	bind tailscale/whoami-a
+	tls {
+		get_certificate tailscale
+	}
+	reverse_proxy whoami-a:80
+}
+
+:443 {
+	bind tailscale/whoami-b
+	tls {
+		get_certificate tailscale
+	}
+	reverse_proxy whoami-b:80
+}

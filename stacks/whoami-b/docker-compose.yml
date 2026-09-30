@@ -1,0 +1,12 @@
+services:
+  whoami-b:
+    image: traefik/whoami
+    restart: unless-stopped
+    environment:
+      WHOAMI_NAME: whoami-b
+    networks:
+      - stacks
+
+networks:
+  stacks:
+    external: true
