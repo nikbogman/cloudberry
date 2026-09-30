@@ -23,7 +23,7 @@ pyinfra run from a dev machine converges both devices.
 
 | Path | What |
 |---|---|
-| [waker-service/](waker-service/) | Wake and suspend the Sleeper — Edge, Waker API, Sleeper API, UI |
+| [platform/](platform/) | Wake and suspend the Sleeper — Edge, Waker API, Sleeper API, UI |
 | [stacks/](stacks/) | Workloads on blackberry, plain Docker Compose behind Caddy |
 | [deploy/](deploy/) | pyinfra: one run converges every device across every service |
 | [CONTEXT.md](CONTEXT.md) | Domain glossary — the vocabulary everything else uses |
@@ -48,4 +48,4 @@ See [docs/deploy.md](docs/deploy.md).
 A top-level folder with its own docs and `.env`. If it deploys anything, its
 Deploy files go in `deploy/<service>/`, get `local.include`d from
 `deploy/deploy.py`, and its `.env` gets sourced in `deploy/deploy.sh`. Follow
-[waker-service/](waker-service/README.md) as the worked example.
+[platform/](platform/README.md) as the worked example.

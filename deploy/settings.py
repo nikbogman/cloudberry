@@ -38,7 +38,7 @@ class TailscaleSettings(BaseSettings):
 
 
 class GrafanaLokiSecrets(BaseSettings):
-    # Shared by waker-service/waker.py and waker-service/sleeper_api.py --
+    # Shared by platform/waker.py and platform/sleeper_api.py --
     # both
     # binaries log to the same Grafana Cloud Loki endpoint.
     grafana_cloud_loki_url: str

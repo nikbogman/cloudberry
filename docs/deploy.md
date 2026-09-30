@@ -5,8 +5,8 @@ the Waker and the Sleeper to their declared state: Tailscale joined,
 Docker installed on `sleeper`, and both binaries deployed as systemd services.
 
 Per-service deploy details live with the service:
-[`waker.md`](../waker-service/docs/waker.md),
-[`sleeper.md`](../waker-service/docs/sleeper.md). Vocabulary (Deploy, Deploy
+[`waker.md`](../platform/docs/waker.md),
+[`sleeper.md`](../platform/docs/sleeper.md). Vocabulary (Deploy, Deploy
 file, Host group) is in [`CONTEXT.md`](../CONTEXT.md).
 
 ## Layout
@@ -23,7 +23,7 @@ deploy/
   go_build.py           shared off-device Go build+ship+systemd helper
   deploy_tailscale.py   ┐ homelab-wide infrastructure: one Deploy file per
   deploy_docker.py      ┘ piece, not owned by any single service
-  waker-service/        ┐ the Waker service's own Deploy files, one per app
+  platform/             ┐ the platform's own Deploy files, one per app
     waker.py            │
     sleeper_api.py      ┘
   deploy.py             entrypoint composing everything
@@ -52,7 +52,7 @@ uv sync
 
 Secrets and config split by ownership: homelab-wide device addresses and the
 Tailscale auth key in the repo root `.env`, each service's own variables in its
-folder (e.g. `waker-service/.env`). Copy every `.env.example` to `.env`
+folder (e.g. `platform/.env`). Copy every `.env.example` to `.env`
 beside it (all gitignored) and fill in the required variables. Run deploys via
 `./deploy.sh`, not `uv run pyinfra` directly — it sources all of them into its
 own subprocess, so secrets never touch your interactive shell.
@@ -88,9 +88,9 @@ tailnet name.
 |---|---|---|
 | **`TAILSCALE_AUTH_KEY`** | — | Tailnet auth key, never committed; only required on first join |
 
-Service-specific variables live in `waker-service/.env` and are documented in
-[`waker.md`](../waker-service/docs/waker.md#deploy-time-variables) and
-[`sleeper.md`](../waker-service/docs/sleeper.md#deploy-time-variables).
+Service-specific variables live in `platform/.env` and are documented in
+[`waker.md`](../platform/docs/waker.md#deploy-time-variables) and
+[`sleeper.md`](../platform/docs/sleeper.md#deploy-time-variables).
 
 ## Running a Deploy
 
@@ -104,10 +104,10 @@ invoke it:
 ```sh
 ./deploy.sh                            # everything, both groups
 ./deploy.sh --dry                      # preview: connects and diffs, mutates nothing
-./deploy.sh waker --limit waker        # -> waker-service/waker.py
+./deploy.sh waker --limit waker        # -> platform/waker.py
 ./deploy.sh sleeper_api --limit sleeper --dry
 ./deploy.sh docker                     # -> deploy_docker.py
-./deploy.sh waker-service/waker.py     # full path still works
+./deploy.sh platform/waker.py     # full path still works
 ```
 
 pyinfra 3.x has no `--check` flag — use `--dry`. `deploy.py` is never invoked
@@ -180,4 +180,4 @@ gate instead of eyeballing the table.
   scope.
 
 Bind-address enforcement and the system's other limitations are in
-[`ARCHITECTURE.md`](../waker-service/ARCHITECTURE.md#constraints).
+[`ARCHITECTURE.md`](../platform/ARCHITECTURE.md#constraints).

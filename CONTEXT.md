@@ -1,10 +1,14 @@
 # Cloudberry
 
-Domain glossary for this monorepo. One service so far — [`waker-service/`](waker-service/), which lets the user wake, monitor, and suspend the Sleeper from anywhere — plus the root [`deploy/`](deploy/) that converges every device.
+Domain glossary for this monorepo. One service so far — [`platform/`](platform/), which lets the user wake, monitor, and suspend the Sleeper from anywhere — plus the root [`deploy/`](deploy/) that converges every device.
 
 ## Language
 
 ### System
+
+**Platform**:
+The Go services and UI under `platform/`: Edge, the Waker API, the Sleeper API and the UI. Not the Deploy tooling (`deploy/`) or the Stacks.
+_Avoid_: waker-service (the old name)
 
 **Edge**:
 The public entry point, hosted on Railway: serves the UI and forwards to the Waker API, the Sleeper API and Caddy-fronted Stacks over the tailnet (as its own `tsnet` node). The browser's only origin. No authentication for now — deliberate and temporary.
