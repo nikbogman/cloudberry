@@ -1,183 +1,86 @@
 # Deploy
 
-Declarative provisioning with [pyinfra](https://pyinfra.com/). One run converges
-the Waker and the Sleeper to their declared state: Tailscale joined,
-Docker installed on `sleeper`, and both binaries deployed as systemd services.
+[Task](https://taskfile.dev/) over plain `ssh`, defined in the repo root
+[`Taskfile.yml`](../Taskfile.yml). One run converges the Waker and the Sleeper:
+Docker installed on the Sleeper, and both binaries deployed as systemd services
+served on the tailnet.
 
-Per-service deploy details live with the service:
-[`waker.md`](../platform/docs/waker.md),
-[`sleeper.md`](../platform/docs/sleeper.md). Vocabulary (Deploy, Deploy
-file, Host group) is in [`CONTEXT.md`](../CONTEXT.md).
-
-## Layout
-
-Shared machinery and homelab-wide infrastructure sit at the top level; each
-service's own Deploy files live in a folder named after it.
-
-```
-deploy/
-  inventory.py          waker / sleeper / test Host groups
-  common.py             shared helpers: linux_codename/linux_distro_id/
-                        has_device_role, DpkgArchitecture, TailscaleServeStatus
-  settings.py           pydantic-settings classes -- typed env var config
-  go_build.py           shared off-device Go build+ship+systemd helper
-  deploy_tailscale.py   ┐ homelab-wide infrastructure: one Deploy file per
-  deploy_docker.py      ┘ piece, not owned by any single service
-  platform/             ┐ the platform's own Deploy files, one per app
-    waker.py            │
-    sleeper_api.py      ┘
-  deploy.py             entrypoint composing everything
-  deploy.sh             wrapper: loads the root + per-service .env files,
-                        resolves short Deploy-file names
-  templates/
-    binary.service.j2   systemd unit template, both binaries
-```
-
-`../deploy.sh` is a repo-root forwarder to the same script. Every path — sibling
-imports, `local.include(...)`, `templates/*.j2`, `module_dir` — resolves against
-`deploy/`, not against the file doing the resolving: pyinfra sets `state.cwd` to
-the process cwd and puts it on `sys.path`, and `deploy.sh` always `cd`s into
-`deploy/` first. That's why a Deploy file works unchanged from a service folder.
+Per-service deploy details:
+[`waker.md`](waker.md),
+[`sleeper.md`](sleeper.md). Vocabulary is in
+[`CONTEXT.md`](../CONTEXT.md).
 
 ## Setup
 
-An independent [uv](https://docs.astral.sh/uv/) project, not an installable
-package — pyinfra's CLI executes these scripts directly. Also requires a Go
-toolchain on the dev machine.
+Needs `task` (`go install github.com/go-task/task/v3/cmd/task@latest`), a Go
+toolchain, and ssh access to both devices.
 
-```sh
-cd deploy
-uv sync
-```
-
-Secrets and config split by ownership: homelab-wide device addresses and the
-Tailscale auth key in the repo root `.env`, each service's own variables in its
-folder (e.g. `platform/.env`). Copy every `.env.example` to `.env`
-beside it (all gitignored) and fill in the required variables. Run deploys via
-`./deploy.sh`, not `uv run pyinfra` directly — it sources all of them into its
-own subprocess, so secrets never touch your interactive shell.
+Copy `.env.example` to `.env` (gitignored) and fill it in. Task loads it via
+`dotenv`, into its own process only.
 
 ## Configuration
 
-Real addresses, secrets, and deployment refs are read from the dev machine's
-environment at Deploy time via typed
-[`pydantic-settings`](https://docs.pydantic.dev/latest/concepts/pydantic_settings/)
-classes in `settings.py`. A class with a required field (no default) raises a
-`ValidationError` listing every missing var at once. Deploy files construct
-settings lazily inside `has_device_role(...)`, so running one in isolation never
-demands env vars an unrelated one needs.
-
-### Inventory (`InventorySettings`)
-
 | Variable | Default | Purpose |
 |---|---|---|
-| `WAKER_HOST`, `WAKER_SSH_USER` | `pi-zero.tailnet`, `pi` | Waker's SSH target |
-| `SLEEPER_HOST`, `SLEEPER_SSH_USER` | `main-server.tailnet`, `admin` | Sleeper's SSH target |
-| `WAKER_TAILNET_HOST` | `pi-zero.your-tailnet-name.ts.net` | Waker's Tailscale MagicDNS name; checked against `tailscale serve` status |
-| `SLEEPER_TAILNET_HOST` | `main-server.your-tailnet-name.ts.net` | Sleeper's Tailscale MagicDNS name; checked against `tailscale serve` status |
-| `WAKER_TEST_HOST`, `WAKER_TEST_SSH_PORT`, `WAKER_TEST_SSH_USER` | `localhost`, `2201`, `root` | `test` group's waker stand-in |
-| `SLEEPER_TEST_HOST`, `SLEEPER_TEST_SSH_PORT`, `SLEEPER_TEST_SSH_USER` | `localhost`, `2202`, `root` | `test` group's sleeper stand-in |
+| `WAKER_HOST`, `WAKER_SSH_USER` | `pi-zero.tailnet`, `pi` | Waker's ssh target |
+| `SLEEPER_HOST`, `SLEEPER_SSH_USER` | `main-server.tailnet`, `admin` | Sleeper's ssh target |
+| `WAKER_SUDO_PASSWORD`, `SLEEPER_SUDO_PASSWORD` | — | Fed to `sudo -S`; only needed where sudo asks for one (e.g. sudo-rs on the Sleeper) |
+| `TAILSCALE_AUTH_KEY` | — | Only needed for a device's first join |
 
-`WAKER_HOST`/`SLEEPER_HOST` are pure SSH targets, used even by
-`deploy_tailscale.py` itself — on a fresh device, use a plain LAN address, not a
-tailnet name.
+`WAKER_HOST`/`SLEEPER_HOST` are ssh targets — on a fresh device that hasn't
+joined the tailnet, use a LAN address. Any `~/.ssh/config` alias works too,
+including one with a non-default port.
 
-### Tailscale (`TailscaleSettings`)
-
-| Variable | Default | Purpose |
-|---|---|---|
-| **`TAILSCALE_AUTH_KEY`** | — | Tailnet auth key, never committed; only required on first join |
-
-Service-specific variables live in `platform/.env` and are documented in
-[`waker.md`](../platform/docs/waker.md#deploy-time-variables) and
-[`sleeper.md`](../platform/docs/sleeper.md#deploy-time-variables).
+Service-specific variables are documented in
+[`waker.md`](waker.md#deploy-time-variables) and
+[`sleeper.md`](sleeper.md#deploy-time-variables).
 
 ## Running a Deploy
 
-`./deploy.sh` loads every `.env` and execs pyinfra with `inventory.py` plus
-whatever args you pass. No target defaults to `deploy.py` (everything). A short
-name is resolved by trying it verbatim, then `deploy_<name>.py` at the top
-level, then `*/<name>.py` in the service folders — so the name works wherever
-the file lives, and moving a Deploy file between the two doesn't change how you
-invoke it:
-
 ```sh
-./deploy.sh                            # everything, both groups
-./deploy.sh --dry                      # preview: connects and diffs, mutates nothing
-./deploy.sh waker --limit waker        # -> platform/waker.py
-./deploy.sh sleeper_api --limit sleeper --dry
-./deploy.sh docker                     # -> deploy_docker.py
-./deploy.sh platform/waker.py     # full path still works
+task                # Docker + Waker API + Sleeper API
+task waker          # just the Waker API
+task sleeper        # just the Sleeper API
+task docker         # just Docker on the Sleeper
+task tailscale      # install + join the tailnet, both devices (not part of `task`)
+task --dry          # print the commands without running them
+task --list
 ```
 
-pyinfra 3.x has no `--check` flag — use `--dry`. `deploy.py` is never invoked
-automatically: no CI, cron, or git hook runs it.
+Every run re-ships both binaries and restarts both services — there is no
+change detection. A restart is a second of downtime, which nothing here cares
+about. Nothing runs a Deploy automatically.
+
+### Renaming a service
+
+A Deploy only knows the current binary names, so the old unit keeps running
+after a rename. Deploy the new name, then remove the old one:
+
+```sh
+task waker
+task cleanup DEVICE=WAKER OLD=old-binary-name
+```
+
+`cleanup` stops and disables `OLD`, deletes its unit and binary, and reloads
+systemd. If the old service listened on a different port, also drop its
+`tailscale serve` entry by hand.
 
 ## Testing
 
-No pytest/mypy seam applies to infrastructure code, so these checks run through
-pyinfra's own execution engine.
-
-### Tier 1 — `--dry`
-
-Connects for real and gathers facts, but executes nothing. Catches
-template/logic errors early; per pyinfra's own caveat it's a prepare-phase
-estimate, not a correctness proof.
-
-### Tier 2 — disposable containers (the `test` Host group)
-
-`inventory.py`'s `test` group points at long-lived, **systemd-capable**
-containers over plain `@ssh` — not pyinfra's `@docker` connector, since
-`@docker` image-mode containers run no init system and can't run
-`systemd.service` operations. `@ssh` exercises the same connector path
-`waker`/`sleeper` use.
+Run against systemd-capable throwaway containers by pointing the ssh targets at
+them:
 
 ```sh
 docker run -d --name waker-test --privileged --cgroupns=host \
-  -v /sys/fs/cgroup:/sys/fs/cgroup:rw -p 2201:22 \
-  jrei/systemd-debian:12
-docker run -d --name sleeper-test --privileged --cgroupns=host \
-  -v /sys/fs/cgroup:/sys/fs/cgroup:rw -p 2202:22 \
-  jrei/systemd-debian:12
+  -v /sys/fs/cgroup:/sys/fs/cgroup:rw -p 2201:22 jrei/systemd-debian:12
+# enable openssh-server, install sudo, seed authorized_keys via `docker exec`
 
-# Install your pyinfra dev machine's public key + an SSH server on each
-# (jrei/systemd-debian ships openssh-server disabled -- enable and seed
-# authorized_keys via `docker exec`, then `systemctl start ssh`).
-
-./deploy.sh --limit test
+# ~/.ssh/config: Host waker-test / HostName localhost / Port 2201 / User root
+WAKER_HOST=waker-test WAKER_SSH_USER=root task waker
 ```
 
-`device_role` host data makes `waker-test`/`sleeper-test` behave like
-`waker`/`sleeper` for gating, so every Deploy file runs against both.
-`deploy_tailscale.py` skips the actual `tailscale up` join for `test`, so a
-container never enrolls in the real tailnet.
-
-### Tier 3 — idempotency, the actual correctness check
-
-Run the same Deploy twice in a row against **both** `test` and the real
-`waker`/`sleeper`:
-
-```sh
-./deploy.sh --limit test
-./deploy.sh --limit test        # again, immediately
-
-./deploy.sh --limit waker
-./deploy.sh --limit waker     # again, immediately
-```
-
-**Pass condition**: the second run's `Grand total` row has an empty `Success`
-column, everything in `No Change`. Add `--json` to the second run for a scripted
-gate instead of eyeballing the table.
-
-## Known gaps
-
-- **The `tailscale serve` operations are still unverified** — tiers 2/3 passed
-  against the real `waker`/`sleeper` on 2026-09-12, but both devices were
-  already served, so the `TailscaleServeStatus` check short-circuited every
-  run. Re-check the CLI/JSON version caveat before trusting it on a device
-  that isn't serving yet.
-- Standing up a labeled workload container is a manual step, outside pyinfra's
-  scope.
+`tailscale serve` fails in a container that isn't on the tailnet; everything
+before it is exercised.
 
 Bind-address enforcement and the system's other limitations are in
-[`ARCHITECTURE.md`](../platform/ARCHITECTURE.md#constraints).
+[`ARCHITECTURE.md`](../ARCHITECTURE.md#constraints).

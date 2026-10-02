@@ -1,13 +1,13 @@
 # Cloudberry
 
-Domain glossary for this monorepo. One service so far — [`platform/`](platform/), which lets the user wake, monitor, and suspend the Sleeper from anywhere — plus the root [`deploy/`](deploy/) that converges every device.
+Domain glossary for this monorepo. One service so far — the Platform, which lets the user wake, monitor, and suspend the Sleeper from anywhere — plus the root [`Taskfile.yml`](Taskfile.yml) that converges every device.
 
 ## Language
 
 ### System
 
 **Platform**:
-The Go services and UI under `platform/`: Edge, the Waker API, the Sleeper API and the UI. Not the Deploy tooling (`deploy/`) or the Stacks.
+The Go module at the repo root (`cmd/`, `internal/`, `ui/`): Edge, the Waker API, the Sleeper API and the UI. Not the Deploy tooling (`Taskfile.yml`) or the Stacks.
 _Avoid_: waker-service (the old name)
 
 **Edge**:
@@ -52,21 +52,14 @@ _Avoid_: auth token, login header
 ### Provisioning
 
 **Deploy**:
-A single pyinfra run against the inventory that converges the Waker and Sleeper to their declared state. Manual only — never automatic or scheduled.
+A `task` run (repo root `Taskfile.yml`) that converges the Waker and Sleeper over ssh. Manual only — never automatic or scheduled.
 _Avoid_: playbook run, apply
 
-**Deploy file**:
-A single-responsibility pyinfra file scoped to one piece of infrastructure or app (e.g. Tailscale, the Waker API). The unit a Deploy can be targeted or dry-run against in isolation. Logic shared across Deploy files (e.g. `go_binary_systemd_service`, used by both the Waker API and Sleeper API) lives in a plain importable module like `go_build.py`.
-_Avoid_: Concern, role, task, module
-
-**Host group**:
-A pyinfra inventory grouping of devices by responsibility — `waker` and `sleeper`. Determines which Deploy files apply to which device.
-_Avoid_: role (Ansible sense), pi, server (old group names)
 
 ### Workloads
 
 **Stack**:
-A user-facing workload (an AI agent, etc.) at `stacks/<name>/`, deployed as plain Docker Compose directly to blackberry — outside pyinfra, outside this repo's own Deploy files, unknown to the Waker/Sleeper services. See [`docs/agents/stacks.md`](docs/agents/stacks.md).
+A user-facing workload (an AI agent, etc.) at `stacks/<name>/`, deployed as plain Docker Compose directly to blackberry — outside this repo's Deploy, unknown to the Waker/Sleeper services. See [`docs/agents/stacks.md`](docs/agents/stacks.md).
 _Avoid_: service (this repo's term for the Waker/Sleeper API processes), workload (fine informally, but "stack" is the file/directory unit)
 
 **blackberry**:

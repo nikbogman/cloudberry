@@ -19,33 +19,69 @@ Two devices on one tailnet:
 
 The one way in from outside the tailnet is Edge, on Railway — currently
 with no authentication. Behind it, access control is tailnet membership. One
-pyinfra run from a dev machine converges both devices.
+`task` run from a dev machine converges both devices.
 
 | Path | What |
 |---|---|
-| [platform/](platform/) | Wake and suspend the Sleeper — Edge, Waker API, Sleeper API, UI |
+| [cmd/](cmd/), [internal/](internal/), [ui/](ui/) | The Platform: wake and suspend the Sleeper — Edge, Waker API, Sleeper API, UI |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Platform design decisions, data flow, constraints |
 | [stacks/](stacks/) | Workloads on blackberry, plain Docker Compose behind Caddy |
-| [deploy/](deploy/) | pyinfra: one run converges every device across every service |
+| [Taskfile.yml](Taskfile.yml) | Deploy: one `task` run converges every device |
 | [CONTEXT.md](CONTEXT.md) | Domain glossary — the vocabulary everything else uses |
-| [docs/deploy.md](docs/deploy.md) | Inventory, running a Deploy, the three test tiers |
+| [docs/](docs/) | Per-surface docs (edge, waker, sleeper, ui) and [deploy.md](docs/deploy.md) |
 | [docs/agents/](docs/agents/) | Agent-tooling contract (issue tracker, triage labels, domain docs) |
 
-Each service owns its own code, docs, toolchain, and `.env`; the root `.env`
-holds the device addresses and the Tailscale auth key. `deploy/deploy.sh`
-sources both — see [docs/deploy.md](docs/deploy.md#setup).
+One `.env` (from `.env.example`) holds every secret and address; `task` loads it
+— see [docs/deploy.md](docs/deploy.md#setup).
+
+## Layout
+
+```
+cmd/edge-api/            Edge entrypoint (Railway, via Dockerfile)
+cmd/waker-api/           Waker API entrypoint
+cmd/sleeper-api/         Sleeper API entrypoint
+internal/edge/           Edge logic
+internal/waker/          Waker API logic
+internal/sleeper/        Sleeper API logic
+internal/tailnet/        shared: identity-header auth, bind-safety
+internal/eventlog/       shared: Grafana Cloud event logging
+internal/httpresponse/   shared: JSON response helpers
+internal/env/            shared: env-var lookup helpers
+ui/                      browser SPA (static HTML/JS/CSS, no build step);
+                         ui.go is just its go:embed declaration
+stacks/                  Compose workloads on blackberry
+docs/                    one file per surface, plus deploy.md
+Taskfile.yml             Deploy
+```
+
+## Development
+
+```sh
+go vet ./... && go test ./...
+```
+
+Run a binary locally with its environment, e.g.:
+
+```sh
+SLEEPER_MAC_ADDRESS=AA:BB:CC:DD:EE:FF \
+GRAFANA_CLOUD_LOKI_URL=https://logs-prod-000.grafana.net/loki/api/v1/push \
+GRAFANA_CLOUD_LOKI_USER=123456 GRAFANA_CLOUD_LOKI_API_KEY=glc_xxx \
+go run ./cmd/waker-api
+```
 
 ## Deploying
 
 ```sh
-./deploy.sh --dry    # preview every device
-./deploy.sh          # converge every device
+task --dry    # print what would run
+task          # converge every device
+task waker    # or: sleeper, docker, tailscale
 ```
 
-See [docs/deploy.md](docs/deploy.md).
+See [docs/deploy.md](docs/deploy.md). Edge deploys separately, via Railway —
+see [docs/edge.md](docs/edge.md#deployment).
 
 ## Adding a service
 
-A top-level folder with its own docs and `.env`. If it deploys anything, its
-Deploy files go in `deploy/<service>/`, get `local.include`d from
-`deploy/deploy.py`, and its `.env` gets sourced in `deploy/deploy.sh`. Follow
-[platform/](platform/README.md) as the worked example.
+A Go binary goes in `cmd/<name>/` + `internal/<name>/`, with a task in
+`Taskfile.yml` reusing `_service`. A Compose workload goes in `stacks/` — see
+[stacks/README.md](stacks/README.md).

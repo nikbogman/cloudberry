@@ -1,0 +1,130 @@
+# Converges raspberry (Waker) and blackberry (Sleeper) over plain ssh.
+# Every run re-ships both binaries and restarts both services -- no diffing.
+# See docs/deploy.md.
+version: '3'
+
+dotenv: ['.env']
+
+vars:
+  WAKER: ${WAKER_SSH_USER:-pi}@${WAKER_HOST:-pi-zero.tailnet}
+  SLEEPER: ${SLEEPER_SSH_USER:-admin}@${SLEEPER_HOST:-main-server.tailnet}
+
+tasks:
+  default:
+    desc: Converge both devices (Docker, Waker API, Sleeper API)
+    cmds:
+      - task: docker
+      - task: waker
+      - task: sleeper
+
+  tailscale:
+    desc: Install Tailscale and join the tailnet on both devices (needs TAILSCALE_AUTH_KEY on first join)
+    cmds:
+      - for: [WAKER, SLEEPER]
+        task: _root
+        vars:
+          DEVICE: '{{.ITEM}}'
+          CMD: >-
+            (command -v tailscale >/dev/null || curl -fsSL https://tailscale.com/install.sh | sh)
+            && systemctl enable --now tailscaled
+            && (tailscale status >/dev/null 2>&1 || tailscale up --ssh --authkey=${TAILSCALE_AUTH_KEY:-})
+
+  docker:
+    desc: Install and enable the Docker engine on the Sleeper
+    cmds:
+      - task: _root
+        vars:
+          DEVICE: SLEEPER
+          CMD: (command -v docker >/dev/null || curl -fsSL https://get.docker.com | sh) && systemctl enable --now docker
+
+  waker:
+    desc: Build and deploy the Waker API to the Waker
+    cmds:
+      - task: _service
+        vars:
+          DEVICE: WAKER
+          BIN: waker-api
+          # Pi Zero W is ARM1176 (armv6). A Pi Zero 2 W would need GOARCH=arm64.
+          GOENV: GOARCH=arm GOARM=6
+          DESC: Waker -- sends Wake-on-LAN
+          PORT: ${WAKER_PORT:-5000}
+          ENV: |
+            Environment=WAKER_PORT=${WAKER_PORT:-5000}
+            Environment=SLEEPER_MAC_ADDRESS=${SLEEPER_MAC_ADDRESS:?set SLEEPER_MAC_ADDRESS}
+
+  sleeper:
+    desc: Build and deploy the Sleeper API to the Sleeper
+    cmds:
+      - task: _service
+        vars:
+          DEVICE: SLEEPER
+          BIN: sleeper-api
+          # dpkg and Go agree on amd64/arm64; anything else fails in go build.
+          GOENV: GOARCH=$(ssh {{.SLEEPER}} dpkg --print-architecture)
+          DESC: Sleeper API -- exposes Suspend and the reachability health check
+          PORT: ${SLEEPER_API_PORT:-5000}
+          ENV: |
+            Environment=SLEEPER_API_PORT=${SLEEPER_API_PORT:-5000}
+
+  cleanup:
+    desc: 'Stop and remove a service left behind by a rename: task cleanup DEVICE=WAKER|SLEEPER OLD=<old-binary-name>'
+    requires:
+      vars:
+        - name: DEVICE
+          enum: [WAKER, SLEEPER]
+        - OLD
+    cmds:
+      - task: _root
+        vars:
+          DEVICE: '{{.DEVICE}}'
+          CMD: >-
+            systemctl disable --now {{.OLD}} ;
+            rm -f /etc/systemd/system/{{.OLD}}.service /usr/local/bin/{{.OLD}} /usr/local/bin/{{.OLD}}.new
+            && systemctl daemon-reload && systemctl reset-failed
+
+  # Cross-compiles on the dev machine (no Go toolchain on either device),
+  # ships the binary + unit, swaps the binary in with mv (overwriting a
+  # running binary in place hits ETXTBSY), restarts, and serves it on the
+  # tailnet.
+  _service:
+    internal: true
+    cmds:
+      - GOOS=linux {{.GOENV}} go build -o dist/{{.BIN}} ./cmd/{{.BIN}}
+      - |
+        cat > dist/{{.BIN}}.service <<EOF
+        [Unit]
+        Description={{.DESC}}
+        After=network-online.target
+        Wants=network-online.target
+
+        [Service]
+        Type=simple
+        {{.ENV}}Environment=GRAFANA_CLOUD_LOKI_URL=${GRAFANA_CLOUD_LOKI_URL:?set GRAFANA_CLOUD_LOKI_URL}
+        Environment=GRAFANA_CLOUD_LOKI_USER=${GRAFANA_CLOUD_LOKI_USER:?set GRAFANA_CLOUD_LOKI_USER}
+        Environment=GRAFANA_CLOUD_LOKI_API_KEY=${GRAFANA_CLOUD_LOKI_API_KEY:?set GRAFANA_CLOUD_LOKI_API_KEY}
+        ExecStart=/usr/local/bin/{{.BIN}}
+        Restart=on-failure
+        RestartSec=5
+        User=root
+
+        [Install]
+        WantedBy=multi-user.target
+        EOF
+      - scp dist/{{.BIN}} dist/{{.BIN}}.service {{get . .DEVICE}}:/tmp/
+      - task: _root
+        vars:
+          DEVICE: '{{.DEVICE}}'
+          CMD: >-
+            install -m755 /tmp/{{.BIN}} /usr/local/bin/{{.BIN}}.new
+            && mv -f /usr/local/bin/{{.BIN}}.new /usr/local/bin/{{.BIN}}
+            && install -m644 /tmp/{{.BIN}}.service /etc/systemd/system/{{.BIN}}.service
+            && rm -f /tmp/{{.BIN}} /tmp/{{.BIN}}.service
+            && systemctl daemon-reload && systemctl enable {{.BIN}} && systemctl restart {{.BIN}}
+            && tailscale serve --bg --https=443 localhost:{{.PORT}}
+
+  # Runs CMD as root on DEVICE. The device's <DEVICE>_SUDO_PASSWORD, if set,
+  # goes to sudo on stdin (sudo-rs on the Sleeper needs it); sudo ignores
+  # stdin when no password is required. CMD must not contain single quotes.
+  _root:
+    internal: true
+    cmd: printf '%s\n' "${{.DEVICE}}_SUDO_PASSWORD" | ssh {{get . .DEVICE}} "sudo -S -p '' sh -c '{{.CMD}}'"
