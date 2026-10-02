@@ -5,8 +5,8 @@ package waker
 import (
 	"net/http"
 
-	"github.com/nikbogman/homelab/internal/httpresponse"
-	"github.com/nikbogman/homelab/internal/tailnet"
+	"github.com/nikbogman/cloudberry/internal/httpresponse"
+	"github.com/nikbogman/cloudberry/internal/tailnet"
 )
 
 type Sender interface {

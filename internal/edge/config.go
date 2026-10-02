@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/url"
 
-	"github.com/nikbogman/homelab/internal/env"
+	"github.com/nikbogman/cloudberry/internal/env"
 )
 
 // EnvConfig is Config plus Edge's listen port and tsnet state dir, all

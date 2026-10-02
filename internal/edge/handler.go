@@ -13,7 +13,7 @@ import (
 	"net/url"
 	"regexp"
 
-	"github.com/nikbogman/homelab/internal/tailnet"
+	"github.com/nikbogman/cloudberry/internal/tailnet"
 )
 
 type Config struct {

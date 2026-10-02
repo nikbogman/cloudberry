@@ -1,7 +1,7 @@
 package hostd
 
 import (
-	"github.com/nikbogman/homelab/internal/env"
+	"github.com/nikbogman/cloudberry/internal/env"
 )
 
 // EnvConfig holds hostd runtime configuration read from the process

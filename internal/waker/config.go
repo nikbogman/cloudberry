@@ -1,6 +1,6 @@
 package waker
 
-import "github.com/nikbogman/homelab/internal/env"
+import "github.com/nikbogman/cloudberry/internal/env"
 
 // EnvConfig is Config plus the waker's own listen port, both read from
 // the process environment.

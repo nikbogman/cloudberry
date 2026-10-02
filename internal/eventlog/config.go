@@ -1,6 +1,6 @@
 package eventlog
 
-import "github.com/nikbogman/homelab/internal/env"
+import "github.com/nikbogman/cloudberry/internal/env"
 
 // GrafanaConfig holds the Grafana Cloud Loki credentials, read from the
 // process environment identically by every entrypoint that logs via

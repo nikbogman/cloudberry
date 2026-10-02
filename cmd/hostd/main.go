@@ -5,8 +5,8 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/nikbogman/homelab/internal/eventlog"
-	"github.com/nikbogman/homelab/internal/hostd"
+	"github.com/nikbogman/cloudberry/internal/eventlog"
+	"github.com/nikbogman/cloudberry/internal/hostd"
 )
 
 func main() {

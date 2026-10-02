@@ -11,7 +11,7 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/nikbogman/homelab/internal/tailnet"
+	"github.com/nikbogman/cloudberry/internal/tailnet"
 )
 
 const testTailnetDomain = "test.ts.net"

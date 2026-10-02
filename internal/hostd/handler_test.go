@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/nikbogman/homelab/internal/tailnet"
+	"github.com/nikbogman/cloudberry/internal/tailnet"
 )
 
 const testIdentity = "nicola@example.com"

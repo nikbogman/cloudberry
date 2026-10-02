@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/nikbogman/homelab/internal/httpresponse"
-	"github.com/nikbogman/homelab/internal/tailnet"
+	"github.com/nikbogman/cloudberry/internal/httpresponse"
+	"github.com/nikbogman/cloudberry/internal/tailnet"
 )
 
 type Suspender interface {

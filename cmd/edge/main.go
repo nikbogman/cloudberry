@@ -9,9 +9,9 @@ import (
 
 	"tailscale.com/tsnet"
 
-	"github.com/nikbogman/homelab/internal/edge"
-	"github.com/nikbogman/homelab/internal/eventlog"
-	"github.com/nikbogman/homelab/ui"
+	"github.com/nikbogman/cloudberry/internal/edge"
+	"github.com/nikbogman/cloudberry/internal/eventlog"
+	"github.com/nikbogman/cloudberry/ui"
 )
 
 func main() {

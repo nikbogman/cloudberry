@@ -1,4 +1,4 @@
-module github.com/nikbogman/homelab
+module github.com/nikbogman/cloudberry
 
 go 1.26.6
 
