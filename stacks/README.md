@@ -2,7 +2,7 @@
 
 User-facing workloads (media servers, an AI agent, etc.) running on blackberry as plain Docker Compose — outside the Deploy, outside the Waker/Sleeper services. Each one gets its own tsnet hostname via the `caddy` stack; off-tailnet, Edge exposes it at `/proxy/<name>/`.
 
-Rationale: [`.scratch/workload-stacks/spec.md`](../.scratch/workload-stacks/spec.md). Agent conventions: [`docs/agents/stacks.md`](../docs/agents/stacks.md).
+Rationale: [`.scratch/workload-stacks/spec.md`](../.scratch/workload-stacks/spec.md). Agent conventions: [`docs/stacks.md`](../docs/stacks.md).
 
 ## One-time setup (per dev machine, already done)
 

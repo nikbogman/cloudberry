@@ -24,12 +24,11 @@ with no authentication. Behind it, access control is tailnet membership. One
 | Path | What |
 |---|---|
 | [cmd/](cmd/), [internal/](internal/), [ui/](ui/) | The Platform: wake and suspend the Sleeper — Edge, Waker API, Sleeper API, UI |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Platform design decisions, data flow, constraints |
+| [docs/architecture.md](docs/architecture.md) | Platform design decisions, data flow, constraints |
 | [stacks/](stacks/) | Workloads on blackberry, plain Docker Compose behind Caddy |
 | [Taskfile.yml](Taskfile.yml) | Deploy: one `task` run converges every device |
 | [CONTEXT.md](CONTEXT.md) | Domain glossary — the vocabulary everything else uses |
 | [docs/](docs/) | Per-surface docs (edge, waker, sleeper, ui) and [deploy.md](docs/deploy.md) |
-| [docs/agents/](docs/agents/) | Agent-tooling contract (issue tracker, triage labels, domain docs) |
 
 One `.env` (from `.env.example`) holds every secret and address; `task` loads it
 — see [docs/deploy.md](docs/deploy.md#setup).

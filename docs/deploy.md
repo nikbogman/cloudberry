@@ -83,4 +83,4 @@ WAKER_HOST=waker-test WAKER_SSH_USER=root task waker
 before it is exercised.
 
 Bind-address enforcement and the system's other limitations are in
-[`ARCHITECTURE.md`](../ARCHITECTURE.md#constraints).
+[`architecture.md`](architecture.md#constraints).

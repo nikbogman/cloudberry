@@ -59,7 +59,7 @@ _Avoid_: playbook run, apply
 ### Workloads
 
 **Stack**:
-A user-facing workload (an AI agent, etc.) at `stacks/<name>/`, deployed as plain Docker Compose directly to blackberry — outside this repo's Deploy, unknown to the Waker/Sleeper services. See [`docs/agents/stacks.md`](docs/agents/stacks.md).
+A user-facing workload (an AI agent, etc.) at `stacks/<name>/`, deployed as plain Docker Compose directly to blackberry — outside this repo's Deploy, unknown to the Waker/Sleeper services. See [`docs/stacks.md`](docs/stacks.md).
 _Avoid_: service (this repo's term for the Waker/Sleeper API processes), workload (fine informally, but "stack" is the file/directory unit)
 
 **blackberry**:

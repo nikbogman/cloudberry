@@ -1,6 +1,6 @@
 # Architecture
 
-Primary architecture reference for the homelab: current architecture, key decisions, and constraints. Domain vocabulary: [`CONTEXT.md`](CONTEXT.md). Documents the system as it exists today, not superseded designs.
+Primary architecture reference for the homelab: current architecture, key decisions, and constraints. Domain vocabulary: [`CONTEXT.md`](../CONTEXT.md). Documents the system as it exists today, not superseded designs.
 
 ## System Overview
 
@@ -8,7 +8,7 @@ Primary architecture reference for the homelab: current architecture, key decisi
 
 Two physical devices on the same tailnet and LAN broadcast domain, plus Edge on Railway as the one public entry point.
 
-<p align="center"><img src="docs/architecture.png" alt="High-level architecture"></p>
+<p align="center"><img src="architecture.png" alt="High-level architecture"></p>
 
 | Component | Responsibility |
 |---|---|
@@ -20,10 +20,10 @@ Two physical devices on the same tailnet and LAN broadcast domain, plus Edge on 
 
 ## Architecture
 
-Folder layout is in the [README](README.md#layout). Per-surface
+Folder layout is in the [README](../README.md#layout). Per-surface
 detail — routes, environment, deployment — is in
-[`docs/edge.md`](docs/edge.md), [`docs/waker.md`](docs/waker.md), [`docs/sleeper.md`](docs/sleeper.md),
-[`docs/ui.md`](docs/ui.md) and [`docs/deploy.md`](docs/deploy.md).
+[`docs/edge.md`](edge.md), [`docs/waker.md`](waker.md), [`docs/sleeper.md`](sleeper.md),
+[`docs/ui.md`](ui.md) and [`docs/deploy.md`](deploy.md).
 
 ### Shared Go packages
 
@@ -49,7 +49,7 @@ Four `internal/` packages the binaries share, none a standalone service:
 
 ## Domain Model
 
-See [`CONTEXT.md`](CONTEXT.md).
+See [`CONTEXT.md`](../CONTEXT.md).
 
 ### Key entities (code level)
 
@@ -122,7 +122,7 @@ sequenceDiagram
 ## Extension Points
 
 - **New control-plane action**: add a route in the relevant `NewHandler`, define a small interface for external effects, fake it in tests. Follow `handleWake`/`handleSuspend`'s shape: log `_requested`, perform the effect, log `_succeeded`/`_failed`, write JSON.
-- **New workload service**: add a stack plus its Caddy site block (see `docs/agents/stacks.md`) — no Edge, Waker or Sleeper API change. Reachable at `/proxy/<stack>/` on Edge.
+- **New workload service**: add a stack plus its Caddy site block (see [`stacks.md`](stacks.md)) — no Edge, Waker or Sleeper API change. Reachable at `/proxy/<stack>/` on Edge.
 - **New deployed component**: add a task to `Taskfile.yml` (reuse `_service` for a Go binary) and call it from `default`.
 - **New event type**: call `logger.SendEvent(eventType, outcome, identity, extra)` — no schema migration; labels are fixed, everything else rides in the log line.
 
