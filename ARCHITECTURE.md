@@ -101,7 +101,7 @@ sequenceDiagram
 | Integration | Purpose | Notes |
 |---|---|---|
 | **Tailscale** (`tailscale serve`, `tsnet`) | TLS termination + identity injection on each device; `tsnet` puts Edge on the tailnet. WoL is a raw UDP broadcast, not over Tailscale. | Edge's node must be user-owned so `tailscale serve` injects an identity for it. |
-| **Railway** | Hosts Edge from `Dockerfile`. | Needs a volume at `/data` for tsnet state. |
+| **Railway** | Hosts Edge from `deployments/edge-api/Dockerfile`. | Needs a volume at `/data` for tsnet state. |
 | **Grafana Cloud Loki push API** | Structured event log (wake/suspend/reachability). | No local collector. Failures are logged and swallowed. |
 
 ## Key Design Decisions

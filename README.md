@@ -37,7 +37,7 @@ One `.env` (from `.env.example`) holds every secret and address; `task` loads it
 ## Layout
 
 ```
-cmd/edge-api/            Edge entrypoint (Railway, via Dockerfile)
+cmd/edge-api/            Edge entrypoint (Railway)
 cmd/waker-api/           Waker API entrypoint
 cmd/sleeper-api/         Sleeper API entrypoint
 internal/edge/           Edge logic
@@ -51,6 +51,7 @@ ui/                      browser SPA (static HTML/JS/CSS, no build step);
                          ui.go is just its go:embed declaration
 stacks/                  Compose workloads on blackberry
 docs/                    one file per surface, plus deploy.md
+deployments/edge-api/    Edge Dockerfile (Railway)
 Taskfile.yml             Deploy
 ```
 

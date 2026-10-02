@@ -1,5 +1,6 @@
-# Edge, for Railway (service root dir: repo root). Mount a volume at
-# /data so tsnet's node state survives redeploys.
+# Edge, for Railway. Build context is the repo root:
+#   docker build -f deployments/edge-api/Dockerfile .
+# Mount a volume at /data so tsnet's node state survives redeploys.
 FROM golang:1.26 AS build
 WORKDIR /src
 COPY go.mod go.sum ./

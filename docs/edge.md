@@ -62,8 +62,9 @@ are required.
 
 ## Deployment
 
-Railway builds [`Dockerfile`](../Dockerfile) from the repo root. Mount a volume at `/data` — without it tsnet state is
-lost on every deploy and the node re-registers under a new name.
+Railway builds [`deployments/edge-api/Dockerfile`](../deployments/edge-api/Dockerfile)
+with the repo root as build context (`RAILWAY_DOCKERFILE_PATH`). Mount a
+volume at `/data` — without it tsnet state is lost on every deploy and the node re-registers under a new name.
 
 ## Development
 
