@@ -8,8 +8,5 @@ __pycache__/
 node_modules/
 dist/
 
-# pyinfra writes this on a failed run; can capture rendered env values
-/deploy/pyinfra-debug.log
-
 # Generated knowledge graph -- rebuilt locally by `graphify update .`
 /graphify-out/
