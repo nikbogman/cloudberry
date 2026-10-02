@@ -28,7 +28,7 @@ func TestSendEventPostsALokiPushPayloadWithBasicAuth(t *testing.T) {
 	}))
 	defer server.Close()
 
-	logger := NewGrafanaCloudLogger(server.URL, testLokiUser, testLokiAPIKey, "waker-api")
+	logger := NewGrafanaCloudLogger(server.URL, testLokiUser, testLokiAPIKey, "waker")
 	identity := "nicola@example.com"
 	logger.SendEvent("wake_requested", "success", &identity, nil)
 
@@ -47,8 +47,8 @@ func TestSendEventPostsALokiPushPayloadWithBasicAuth(t *testing.T) {
 		t.Fatalf("got %d streams, want 1", len(payload.Streams))
 	}
 	stream := payload.Streams[0]
-	if stream.Stream != (lokiStreamLabels{EventType: "wake_requested", Outcome: "success", App: "waker-api"}) {
-		t.Fatalf("got stream labels %+v, want event_type=wake_requested outcome=success app=waker-api", stream.Stream)
+	if stream.Stream != (lokiStreamLabels{EventType: "wake_requested", Outcome: "success", App: "waker"}) {
+		t.Fatalf("got stream labels %+v, want event_type=wake_requested outcome=success app=waker", stream.Stream)
 	}
 	if len(stream.Values) != 1 {
 		t.Fatalf("got %d values, want 1", len(stream.Values))
@@ -77,7 +77,7 @@ func TestSendEventIncludesExtraFieldsInTheLine(t *testing.T) {
 	}))
 	defer server.Close()
 
-	logger := NewGrafanaCloudLogger(server.URL, testLokiUser, testLokiAPIKey, "waker-api")
+	logger := NewGrafanaCloudLogger(server.URL, testLokiUser, testLokiAPIKey, "waker")
 	logger.SendEvent("reachability_changed", "reachable", nil, map[string]any{"previous_state": "unreachable"})
 
 	var payload lokiPayload
@@ -110,7 +110,7 @@ func TestSendEventLogsUnexpectedStatusCode(t *testing.T) {
 	log.SetOutput(&logs)
 	defer log.SetOutput(os.Stderr)
 
-	logger := NewGrafanaCloudLogger(server.URL, testLokiUser, testLokiAPIKey, "waker-api")
+	logger := NewGrafanaCloudLogger(server.URL, testLokiUser, testLokiAPIKey, "waker")
 	logger.SendEvent("wake_requested", "success", nil, nil)
 
 	got := logs.String()
@@ -121,7 +121,7 @@ func TestSendEventLogsUnexpectedStatusCode(t *testing.T) {
 
 func TestSendEventDoesNotPanicWhenGrafanaCloudIsUnreachable(t *testing.T) {
 	// A logging failure must never take down the caller's request path.
-	logger := NewGrafanaCloudLogger("http://127.0.0.1:1", testLokiUser, testLokiAPIKey, "waker-api")
+	logger := NewGrafanaCloudLogger("http://127.0.0.1:1", testLokiUser, testLokiAPIKey, "waker")
 	identity := "nicola@example.com"
 	logger.SendEvent("wake_requested", "success", &identity, nil)
 }

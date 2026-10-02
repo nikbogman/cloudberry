@@ -1,5 +1,5 @@
 // Package waker sends Wake-on-LAN. Edge forwards the UI's Wake to it over
-// the tailnet; it's on the Waker because the magic packet is a LAN broadcast.
+// the tailnet; it's on raspberry because the magic packet is a LAN broadcast.
 package waker
 
 import (

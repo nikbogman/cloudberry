@@ -13,7 +13,7 @@ const HEALTH_CHECK_TIMEOUT_MS = 5_000
  * function that stops polling.
  */
 export function mountUi(container, options) {
-  const { sleeperApiBaseUrl, wakerApiBaseUrl, intervalMs = DEFAULT_POLL_INTERVAL_MS } = options
+  const { hostdBaseUrl, wakerBaseUrl, intervalMs = DEFAULT_POLL_INTERVAL_MS } = options
 
   container.innerHTML = `
     <h1>Homelab Control</h1>
@@ -66,7 +66,7 @@ export function mountUi(container, options) {
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), HEALTH_CHECK_TIMEOUT_MS)
     try {
-      const response = await fetch(`${sleeperApiBaseUrl}/health`, { signal: controller.signal })
+      const response = await fetch(`${hostdBaseUrl}/health`, { signal: controller.signal })
       setState(response.ok ? 'reachable' : 'unreachable')
     } catch {
       setState('unreachable')
@@ -97,13 +97,13 @@ export function mountUi(container, options) {
   }
 
   wakeButton.addEventListener('click', () => {
-    void runAction(wakeButton, 'Wake', 'Waking…', () => fetch(`${wakerApiBaseUrl}/wake`, { method: 'POST' }))
+    void runAction(wakeButton, 'Wake', 'Waking…', () => fetch(`${wakerBaseUrl}/wake`, { method: 'POST' }))
   })
 
   suspendButton.addEventListener('click', () => {
-    // Suspend lives on the Sleeper API (not the Waker API) -- unlike Wake.
+    // Suspend lives on hostd (not waker) -- unlike Wake.
     void runAction(suspendButton, 'Suspend', 'Suspending…', () =>
-      fetch(`${sleeperApiBaseUrl}/suspend`, { method: 'POST' }),
+      fetch(`${hostdBaseUrl}/suspend`, { method: 'POST' }),
     )
   })
 

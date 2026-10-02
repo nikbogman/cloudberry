@@ -1,4 +1,4 @@
-# Converges raspberry (Waker) and blackberry (Sleeper) over plain ssh.
+# Converges raspberry (waker) and blackberry (hostd, Docker) over plain ssh.
 # Every run re-ships both binaries and restarts both services -- no diffing.
 # See docs/deploy.md.
 version: '3'
@@ -6,21 +6,21 @@ version: '3'
 dotenv: ['.env']
 
 vars:
-  WAKER: ${WAKER_SSH_USER:-pi}@${WAKER_HOST:-pi-zero.tailnet}
-  SLEEPER: ${SLEEPER_SSH_USER:-admin}@${SLEEPER_HOST:-main-server.tailnet}
+  RASPBERRY: ${RASPBERRY_SSH_USER:-pi}@${RASPBERRY_HOST:-raspberry}
+  BLACKBERRY: ${BLACKBERRY_SSH_USER:-admin}@${BLACKBERRY_HOST:-blackberry}
 
 tasks:
   default:
-    desc: Converge both devices (Docker, Waker API, Sleeper API)
+    desc: Converge both devices (Docker, waker, hostd)
     cmds:
       - task: docker
       - task: waker
-      - task: sleeper
+      - task: hostd
 
   tailscale:
     desc: Install Tailscale and join the tailnet on both devices (needs TAILSCALE_AUTH_KEY on first join)
     cmds:
-      - for: [WAKER, SLEEPER]
+      - for: [RASPBERRY, BLACKBERRY]
         task: _root
         vars:
           DEVICE: '{{.ITEM}}'
@@ -30,48 +30,48 @@ tasks:
             && (tailscale status >/dev/null 2>&1 || tailscale up --ssh --authkey=${TAILSCALE_AUTH_KEY:-})
 
   docker:
-    desc: Install and enable the Docker engine on the Sleeper
+    desc: Install and enable the Docker engine on blackberry
     cmds:
       - task: _root
         vars:
-          DEVICE: SLEEPER
+          DEVICE: BLACKBERRY
           CMD: (command -v docker >/dev/null || curl -fsSL https://get.docker.com | sh) && systemctl enable --now docker
 
   waker:
-    desc: Build and deploy the Waker API to the Waker
+    desc: Build and deploy waker to raspberry
     cmds:
       - task: _service
         vars:
-          DEVICE: WAKER
-          BIN: waker-api
+          DEVICE: RASPBERRY
+          BIN: waker
           # Pi Zero W is ARM1176 (armv6). A Pi Zero 2 W would need GOARCH=arm64.
           GOENV: GOARCH=arm GOARM=6
-          DESC: Waker -- sends Wake-on-LAN
+          DESC: waker -- sends Wake-on-LAN to blackberry
           PORT: ${WAKER_PORT:-5000}
           ENV: |
             Environment=WAKER_PORT=${WAKER_PORT:-5000}
-            Environment=SLEEPER_MAC_ADDRESS=${SLEEPER_MAC_ADDRESS:?set SLEEPER_MAC_ADDRESS}
+            Environment=BLACKBERRY_MAC_ADDRESS=${BLACKBERRY_MAC_ADDRESS:?set BLACKBERRY_MAC_ADDRESS}
 
-  sleeper:
-    desc: Build and deploy the Sleeper API to the Sleeper
+  hostd:
+    desc: Build and deploy hostd to blackberry
     cmds:
       - task: _service
         vars:
-          DEVICE: SLEEPER
-          BIN: sleeper-api
+          DEVICE: BLACKBERRY
+          BIN: hostd
           # dpkg and Go agree on amd64/arm64; anything else fails in go build.
-          GOENV: GOARCH=$(ssh {{.SLEEPER}} dpkg --print-architecture)
-          DESC: Sleeper API -- exposes Suspend and the reachability health check
-          PORT: ${SLEEPER_API_PORT:-5000}
+          GOENV: GOARCH=$(ssh {{.BLACKBERRY}} dpkg --print-architecture)
+          DESC: hostd -- blackberry's own daemon (suspend, reachability health check)
+          PORT: ${HOSTD_PORT:-5000}
           ENV: |
-            Environment=SLEEPER_API_PORT=${SLEEPER_API_PORT:-5000}
+            Environment=HOSTD_PORT=${HOSTD_PORT:-5000}
 
   cleanup:
-    desc: 'Stop and remove a service left behind by a rename: task cleanup DEVICE=WAKER|SLEEPER OLD=<old-binary-name>'
+    desc: 'Stop and remove a service left behind by a rename: task cleanup DEVICE=RASPBERRY|BLACKBERRY OLD=<old-binary-name>'
     requires:
       vars:
         - name: DEVICE
-          enum: [WAKER, SLEEPER]
+          enum: [RASPBERRY, BLACKBERRY]
         - OLD
     cmds:
       - task: _root
@@ -123,7 +123,7 @@ tasks:
             && tailscale serve --bg --https=443 localhost:{{.PORT}}
 
   # Runs CMD as root on DEVICE. The device's <DEVICE>_SUDO_PASSWORD, if set,
-  # goes to sudo on stdin (sudo-rs on the Sleeper needs it); sudo ignores
+  # goes to sudo on stdin (sudo-rs on blackberry needs it); sudo ignores
   # stdin when no password is required. CMD must not contain single quotes.
   _root:
     internal: true

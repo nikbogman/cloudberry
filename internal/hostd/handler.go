@@ -1,6 +1,6 @@
-// Package sleeper runs on the sleeper host behind its own tailscale serve
+// Package hostd runs on blackberry behind its own tailscale serve
 // instance. Only Edge calls it, server-side, so it needs no CORS.
-package sleeper
+package hostd
 
 import (
 	"net/http"
@@ -19,7 +19,7 @@ type EventLogger interface {
 }
 
 // sync.Once, not a bool: net/http serves concurrently. Also the only
-// reachability edge this app can observe -- it's asleep whenever Sleeper
+// reachability edge this app can observe -- it's asleep whenever blackberry
 // goes unreachable, so it can never log that transition.
 type reachabilityTracker struct {
 	once sync.Once

@@ -1,6 +1,6 @@
 # Stacks
 
-Agent-facing reference for `stacks/<name>/` — user-facing workloads running on blackberry, outside the Deploy and outside the Waker/Sleeper services. Read this before touching anything under `stacks/`.
+Agent-facing reference for `stacks/<name>/` — user-facing workloads running on blackberry, outside the Deploy and outside the waker and hostd services. Read this before touching anything under `stacks/`.
 
 Full rationale: `.scratch/workload-stacks/spec.md`. This doc is the short-form convention reference; the spec is the "why".
 
@@ -39,4 +39,4 @@ Caddy fronts every other stack using the `caddy-tailscale` plugin (`ghcr.io/tail
 
 ## Naming
 
-Use **blackberry** (the hardware name) in Stacks docs and config, never **Sleeper** — Sleeper is the platform's role name for the same box and is out of the Stacks domain by design. This is a deliberate exception to the `CONTEXT.md` glossary's "avoid blackberry" rule, not an oversight.
+Call the box **blackberry**, as everywhere else in the repo (see `CONTEXT.md`).

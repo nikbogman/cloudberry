@@ -1,21 +1,21 @@
-# Sleeper
+# hostd
 
-The machine that sleeps and runs the workloads, and the Sleeper API binary it
-runs. Exposes a Reachable health check and the Suspend action. Fronted by its
+blackberry's own daemon. Exposes a Reachable health check and the Suspend
+action. Fronted by its
 own `tailscale serve` instance; only [Edge](edge.md) calls it, server-side, so
 there's no CORS.
 
-Vocabulary (Sleeper, Reachable, Suspend) is in [`CONTEXT.md`](../CONTEXT.md).
+Vocabulary (blackberry, Reachable, Suspend) is in [`CONTEXT.md`](../CONTEXT.md).
 
-Code: [`internal/sleeper/`](../internal/sleeper),
-entrypoint [`cmd/sleeper-api/`](../cmd/sleeper-api).
+Code: [`internal/hostd/`](../internal/hostd),
+entrypoint [`cmd/hostd/`](../cmd/hostd).
 
 ## Routes
 
 | Route | Behavior |
 |---|---|
-| `GET /health` | Requires the identity header. Returns `{"reachable": true}`. First time reachable, logs `reachability_changed` (see `reachabilityTracker` in [`handler.go`](../internal/sleeper/handler.go) — it can never observe going unreachable, since the process is asleep whenever that's true). |
-| `POST /suspend` | Requires the identity header. Runs the configured suspend command (`systemctl suspend` by default, see [`suspend.go`](../internal/sleeper/suspend.go)), logs `suspend_requested`/`_succeeded`/`_failed`, returns `{"suspend": ...}`. |
+| `GET /health` | Requires the identity header. Returns `{"reachable": true}`. First time reachable, logs `reachability_changed` (see `reachabilityTracker` in [`handler.go`](../internal/hostd/handler.go) — it can never observe going unreachable, since the process is asleep whenever that's true). |
+| `POST /suspend` | Requires the identity header. Runs the configured suspend command (`systemctl suspend` by default, see [`suspend.go`](../internal/hostd/suspend.go)), logs `suspend_requested`/`_succeeded`/`_failed`, returns `{"suspend": ...}`. |
 
 Suspend-to-RAM only — the suspend command isn't configurable via env var, so
 misconfiguration can't reintroduce a full shutdown.
@@ -43,22 +43,21 @@ containers.
 
 ## Runtime environment
 
-Read by the binary itself ([`internal/sleeper/config.go`](../internal/sleeper/config.go)),
+Read by the binary itself ([`internal/hostd/config.go`](../internal/hostd/config.go)),
 which is the source of truth for these names and defaults. Bold variables are
 required.
 
 | Variable | Purpose |
 |---|---|
-| **`GRAFANA_CLOUD_LOKI_*`** | The same trio as the [Waker](waker.md#runtime-environment) — both binaries log to one endpoint. |
-| `SLEEPER_API_HOST` | Bind address (default `127.0.0.1`). Must be loopback or tailnet. |
-| `SLEEPER_API_PORT` | Listen port (default `5000`). |
+| **`GRAFANA_CLOUD_LOKI_*`** | The same trio as [waker](waker.md#runtime-environment) — both binaries log to one endpoint. |
+| `HOSTD_HOST` | Bind address (default `127.0.0.1`). Must be loopback or tailnet. |
+| `HOSTD_PORT` | Listen port (default `5000`). |
 
 ## Deployment
 
-`task sleeper` ([`Taskfile.yml`](../Taskfile.yml))
-cross-compiles and ships only the binary, same as the Waker. `GOARCH` is read
-from the device's real architecture (`dpkg --print-architecture` over ssh), since `sleeper` isn't a
-fixed known device.
+`task hostd` ([`Taskfile.yml`](../Taskfile.yml))
+cross-compiles and ships only the binary, same as waker. `GOARCH` is read
+from blackberry's real architecture (`dpkg --print-architecture` over ssh).
 
 It runs as a systemd unit rather than a container, so it stays controllable
 while Docker itself redeploys. Docker is provisioned separately by
@@ -67,15 +66,15 @@ while Docker itself redeploys. Docker is provisioned separately by
 ### Deploy-time variables
 
 Set on the dev machine, in `.env` (see `.env.example`).
-`SLEEPER_API_HOST` is never set here — the binary's own loopback default
+`HOSTD_HOST` is never set here — the binary's own loopback default
 applies. Bold variables are required.
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `SLEEPER_API_PORT` | `5000` | Listen port; pinned explicitly for the same `tailscale serve` reason as the Waker's port |
-| **`GRAFANA_CLOUD_LOKI_*`** | — | The same trio as the [Waker](waker.md#deploy-time-variables) — both binaries log to one endpoint |
+| `HOSTD_PORT` | `5000` | Listen port; pinned explicitly for the same `tailscale serve` reason as waker's port |
+| **`GRAFANA_CLOUD_LOKI_*`** | — | The same trio as [waker](waker.md#deploy-time-variables) — both binaries log to one endpoint |
 
-It also runs `tailscale serve` for `$SLEEPER_API_PORT`, same as the Waker.
+It also runs `tailscale serve` for `$HOSTD_PORT`, same as waker.
 
 See [`deploy.md`](deploy.md) for how to run a Deploy and how
 it's tested.

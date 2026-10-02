@@ -1,13 +1,13 @@
 # Deploy
 
 [Task](https://taskfile.dev/) over plain `ssh`, defined in the repo root
-[`Taskfile.yml`](../Taskfile.yml). One run converges the Waker and the Sleeper:
-Docker installed on the Sleeper, and both binaries deployed as systemd services
+[`Taskfile.yml`](../Taskfile.yml). One run converges raspberry and blackberry:
+Docker installed on blackberry, and waker and hostd deployed as systemd services
 served on the tailnet.
 
 Per-service deploy details:
 [`waker.md`](waker.md),
-[`sleeper.md`](sleeper.md). Vocabulary is in
+[`hostd.md`](hostd.md). Vocabulary is in
 [`CONTEXT.md`](../CONTEXT.md).
 
 ## Setup
@@ -22,26 +22,26 @@ Copy `.env.example` to `.env` (gitignored) and fill it in. Task loads it via
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `WAKER_HOST`, `WAKER_SSH_USER` | `pi-zero.tailnet`, `pi` | Waker's ssh target |
-| `SLEEPER_HOST`, `SLEEPER_SSH_USER` | `main-server.tailnet`, `admin` | Sleeper's ssh target |
-| `WAKER_SUDO_PASSWORD`, `SLEEPER_SUDO_PASSWORD` | — | Fed to `sudo -S`; only needed where sudo asks for one (e.g. sudo-rs on the Sleeper) |
+| `RASPBERRY_HOST`, `RASPBERRY_SSH_USER` | `raspberry`, `pi` | raspberry's ssh target |
+| `BLACKBERRY_HOST`, `BLACKBERRY_SSH_USER` | `blackberry`, `admin` | blackberry's ssh target |
+| `RASPBERRY_SUDO_PASSWORD`, `BLACKBERRY_SUDO_PASSWORD` | — | Fed to `sudo -S`; only needed where sudo asks for one (e.g. sudo-rs on blackberry) |
 | `TAILSCALE_AUTH_KEY` | — | Only needed for a device's first join |
 
-`WAKER_HOST`/`SLEEPER_HOST` are ssh targets — on a fresh device that hasn't
+`RASPBERRY_HOST`/`BLACKBERRY_HOST` are ssh targets — on a fresh device that hasn't
 joined the tailnet, use a LAN address. Any `~/.ssh/config` alias works too,
 including one with a non-default port.
 
 Service-specific variables are documented in
 [`waker.md`](waker.md#deploy-time-variables) and
-[`sleeper.md`](sleeper.md#deploy-time-variables).
+[`hostd.md`](hostd.md#deploy-time-variables).
 
 ## Running a Deploy
 
 ```sh
-task                # Docker + Waker API + Sleeper API
-task waker          # just the Waker API
-task sleeper        # just the Sleeper API
-task docker         # just Docker on the Sleeper
+task                # Docker + waker + hostd
+task waker          # just waker, on raspberry
+task hostd          # just hostd, on blackberry
+task docker         # just Docker on blackberry
 task tailscale      # install + join the tailnet, both devices (not part of `task`)
 task --dry          # print the commands without running them
 task --list
@@ -54,11 +54,12 @@ about. Nothing runs a Deploy automatically.
 ### Renaming a service
 
 A Deploy only knows the current binary names, so the old unit keeps running
-after a rename. Deploy the new name, then remove the old one:
+after a rename. Remove the old one first — it still holds the port — then
+deploy the new name:
 
 ```sh
+task cleanup DEVICE=RASPBERRY OLD=old-binary-name
 task waker
-task cleanup DEVICE=WAKER OLD=old-binary-name
 ```
 
 `cleanup` stops and disables `OLD`, deletes its unit and binary, and reloads
@@ -76,7 +77,7 @@ docker run -d --name waker-test --privileged --cgroupns=host \
 # enable openssh-server, install sudo, seed authorized_keys via `docker exec`
 
 # ~/.ssh/config: Host waker-test / HostName localhost / Port 2201 / User root
-WAKER_HOST=waker-test WAKER_SSH_USER=root task waker
+RASPBERRY_HOST=waker-test RASPBERRY_SSH_USER=root task waker
 ```
 
 `tailscale serve` fails in a container that isn't on the tailnet; everything

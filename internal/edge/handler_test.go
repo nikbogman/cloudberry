@@ -36,13 +36,13 @@ func mustParse(t *testing.T, raw string) *url.URL {
 	return u
 }
 
-// newTestHandler points the Waker/Sleeper APIs at local echo backends and
+// newTestHandler points waker and hostd at local echo backends and
 // routes every *.test.ts.net stack host to one local TLS backend, standing
 // in for Caddy.
 func newTestHandler(t *testing.T) http.Handler {
 	t.Helper()
 	waker := echoBackend(t, "waker")
-	sleeper := echoBackend(t, "sleeper")
+	hostd := echoBackend(t, "hostd")
 	caddy := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, "caddy "+r.Host+" "+r.URL.Path)
 	}))
@@ -60,8 +60,8 @@ func newTestHandler(t *testing.T) http.Handler {
 	}
 
 	return NewHandler(Config{
-		WakerAPIURL:   mustParse(t, waker.URL),
-		SleeperAPIURL: mustParse(t, sleeper.URL),
+		WakerURL:      mustParse(t, waker.URL),
+		HostdURL:      mustParse(t, hostd.URL),
 		TailnetDomain: testTailnetDomain,
 		UIAssets:      fstest.MapFS{"index.html": {Data: []byte("<html>ui</html>")}},
 	}, transport)
@@ -79,8 +79,8 @@ func TestAPIRoutesForwardWithThePrefixStrippedAndNoCallerIdentity(t *testing.T) 
 	h := newTestHandler(t)
 	cases := []struct{ method, path, want string }{
 		{http.MethodPost, "/api/waker/wake", "waker POST /wake identity="},
-		{http.MethodGet, "/api/sleeper/health", "sleeper GET /health identity="},
-		{http.MethodPost, "/api/sleeper/suspend", "sleeper POST /suspend identity="},
+		{http.MethodGet, "/api/hostd/health", "hostd GET /health identity="},
+		{http.MethodPost, "/api/hostd/suspend", "hostd POST /suspend identity="},
 	}
 	for _, c := range cases {
 		rec := serve(h, c.method, c.path)
@@ -92,13 +92,13 @@ func TestAPIRoutesForwardWithThePrefixStrippedAndNoCallerIdentity(t *testing.T) 
 
 func TestOnlyTheKnownAPIRoutesAreForwarded(t *testing.T) {
 	h := newTestHandler(t)
-	for _, path := range []string{"/api/waker/other", "/api/sleeper/other"} {
+	for _, path := range []string{"/api/waker/other", "/api/hostd/other"} {
 		if rec := serve(h, http.MethodPost, path); rec.Code != http.StatusNotFound {
 			t.Errorf("POST %s: got %d, want 404", path, rec.Code)
 		}
 	}
-	if rec := serve(h, http.MethodGet, "/api/sleeper/suspend"); rec.Code != http.StatusMethodNotAllowed {
-		t.Errorf("GET /api/sleeper/suspend: got %d, want 405", rec.Code)
+	if rec := serve(h, http.MethodGet, "/api/hostd/suspend"); rec.Code != http.StatusMethodNotAllowed {
+		t.Errorf("GET /api/hostd/suspend: got %d, want 405", rec.Code)
 	}
 }
 

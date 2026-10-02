@@ -23,12 +23,12 @@ with no authentication. Behind it, access control is tailnet membership. One
 
 | Path | What |
 |---|---|
-| [cmd/](cmd/), [internal/](internal/), [ui/](ui/) | The Platform: wake and suspend the Sleeper — Edge, Waker API, Sleeper API, UI |
+| [cmd/](cmd/), [internal/](internal/), [ui/](ui/) | The Platform: wake and suspend blackberry — edge, waker, hostd, UI |
 | [docs/architecture.md](docs/architecture.md) | Platform design decisions, data flow, constraints |
 | [stacks/](stacks/) | Workloads on blackberry, plain Docker Compose behind Caddy |
 | [Taskfile.yml](Taskfile.yml) | Deploy: one `task` run converges every device |
 | [CONTEXT.md](CONTEXT.md) | Domain glossary — the vocabulary everything else uses |
-| [docs/](docs/) | Per-surface docs (edge, waker, sleeper, ui) and [deploy.md](docs/deploy.md) |
+| [docs/](docs/) | Per-surface docs (edge, waker, hostd, ui) and [deploy.md](docs/deploy.md) |
 
 One `.env` (from `.env.example`) holds every secret and address; `task` loads it
 — see [docs/deploy.md](docs/deploy.md#setup).
@@ -36,12 +36,12 @@ One `.env` (from `.env.example`) holds every secret and address; `task` loads it
 ## Layout
 
 ```
-cmd/edge-api/            Edge entrypoint (Railway)
-cmd/waker-api/           Waker API entrypoint
-cmd/sleeper-api/         Sleeper API entrypoint
+cmd/edge/            Edge entrypoint (Railway)
+cmd/waker/           waker entrypoint
+cmd/hostd/         hostd entrypoint
 internal/edge/           Edge logic
-internal/waker/          Waker API logic
-internal/sleeper/        Sleeper API logic
+internal/waker/          waker logic
+internal/hostd/        hostd logic
 internal/tailnet/        shared: identity-header auth, bind-safety
 internal/eventlog/       shared: Grafana Cloud event logging
 internal/httpresponse/   shared: JSON response helpers
@@ -50,7 +50,7 @@ ui/                      browser SPA (static HTML/JS/CSS, no build step);
                          ui.go is just its go:embed declaration
 stacks/                  Compose workloads on blackberry
 docs/                    one file per surface, plus deploy.md
-deployments/edge-api/    Edge Dockerfile (Railway)
+deployments/edge/    Edge Dockerfile (Railway)
 Taskfile.yml             Deploy
 ```
 
@@ -63,10 +63,10 @@ go vet ./... && go test ./...
 Run a binary locally with its environment, e.g.:
 
 ```sh
-SLEEPER_MAC_ADDRESS=AA:BB:CC:DD:EE:FF \
+BLACKBERRY_MAC_ADDRESS=AA:BB:CC:DD:EE:FF \
 GRAFANA_CLOUD_LOKI_URL=https://logs-prod-000.grafana.net/loki/api/v1/push \
 GRAFANA_CLOUD_LOKI_USER=123456 GRAFANA_CLOUD_LOKI_API_KEY=glc_xxx \
-go run ./cmd/waker-api
+go run ./cmd/waker
 ```
 
 ## Deploying
@@ -74,7 +74,7 @@ go run ./cmd/waker-api
 ```sh
 task --dry    # print what would run
 task          # converge every device
-task waker    # or: sleeper, docker, tailscale
+task waker    # or: hostd, docker, tailscale
 ```
 
 See [docs/deploy.md](docs/deploy.md). Edge deploys separately, via Railway —

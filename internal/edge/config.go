@@ -22,8 +22,8 @@ type EnvConfig struct {
 func ConfigFromEnv() EnvConfig {
 	return EnvConfig{
 		Config: Config{
-			WakerAPIURL:   mustURL("WAKER_API_URL"),
-			SleeperAPIURL: mustURL("SLEEPER_API_URL"),
+			WakerURL:      mustURL("WAKER_URL"),
+			HostdURL:      mustURL("HOSTD_URL"),
 			TailnetDomain: env.MustEnv("TAILNET_DOMAIN"),
 		},
 		Port:       env.EnvOr("PORT", "8080"),

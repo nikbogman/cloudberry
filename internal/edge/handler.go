@@ -1,5 +1,5 @@
 // Package edge is the public entry point: it hosts the UI and forwards
-// to the Waker API, the Sleeper API and Caddy-fronted workloads over the
+// to waker, hostd and Caddy-fronted workloads over the
 // tailnet, so the browser only ever talks to one origin.
 //
 // NO AUTHENTICATION: anyone with the URL can wake, suspend and reach every
@@ -17,8 +17,8 @@ import (
 )
 
 type Config struct {
-	WakerAPIURL   *url.URL
-	SleeperAPIURL *url.URL
+	WakerURL *url.URL
+	HostdURL *url.URL
 	// Caddy serves each stack as <stack>.<TailnetDomain>.
 	TailnetDomain string
 	UIAssets      fs.FS
@@ -56,10 +56,10 @@ func NewHandler(cfg Config, transport http.RoundTripper) http.Handler {
 	}
 
 	mux := http.NewServeMux()
-	mux.Handle("POST /api/waker/wake", http.StripPrefix("/api/waker", proxyTo(cfg.WakerAPIURL)))
-	sleeper := http.StripPrefix("/api/sleeper", proxyTo(cfg.SleeperAPIURL))
-	mux.Handle("GET /api/sleeper/health", sleeper)
-	mux.Handle("POST /api/sleeper/suspend", sleeper)
+	mux.Handle("POST /api/waker/wake", http.StripPrefix("/api/waker", proxyTo(cfg.WakerURL)))
+	hostd := http.StripPrefix("/api/hostd", proxyTo(cfg.HostdURL))
+	mux.Handle("GET /api/hostd/health", hostd)
+	mux.Handle("POST /api/hostd/suspend", hostd)
 	mux.HandleFunc("/proxy/{stack}/{rest...}", func(w http.ResponseWriter, r *http.Request) {
 		if !stackName.MatchString(r.PathValue("stack")) {
 			http.Error(w, "invalid stack name", http.StatusBadRequest)

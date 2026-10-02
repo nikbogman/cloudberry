@@ -1,22 +1,22 @@
-# Waker
+# waker
 
-The always-on device (a Pi Zero W) and the Waker API binary it runs. Its one
-job: send Wake-on-LAN to Sleeper. [Edge](edge.md) forwards the UI's Wake to it
+Runs on raspberry, the always-on Pi Zero W. Its one job: send Wake-on-LAN to
+blackberry. [Edge](edge.md) forwards the UI's Wake to it
 over the tailnet; it stays on the Pi because the magic packet is a LAN
 broadcast.
 
-Vocabulary (Waker, Wake, Identity header) is in [`CONTEXT.md`](../CONTEXT.md).
+Vocabulary (raspberry, Wake, Identity header) is in [`CONTEXT.md`](../CONTEXT.md).
 
 Code: [`internal/waker/`](../internal/waker),
-entrypoint [`cmd/waker-api/`](../cmd/waker-api).
+entrypoint [`cmd/waker/`](../cmd/waker).
 
 ## Routes
 
 | Route | Behavior |
 |---|---|
-| `POST /wake` | Requires the identity header or a `127.0.0.1` caller. Sends WoL to `SLEEPER_MAC_ADDRESS`, logs `wake_requested`/`_succeeded`/`_failed`, returns `{"wake": ...}`. |
+| `POST /wake` | Requires the identity header or a `127.0.0.1` caller. Sends WoL to `BLACKBERRY_MAC_ADDRESS`, logs `wake_requested`/`_succeeded`/`_failed`, returns `{"wake": ...}`. |
 
-Requires the Waker and Sleeper to share an L2 broadcast domain — WoL
+Requires raspberry and blackberry to share an L2 broadcast domain — WoL
 doesn't route across subnets.
 
 ## Runtime environment
@@ -27,7 +27,7 @@ required.
 
 | Variable | Purpose |
 |---|---|
-| **`SLEEPER_MAC_ADDRESS`** | MAC address the magic packet targets. Validated at startup. |
+| **`BLACKBERRY_MAC_ADDRESS`** | MAC address the magic packet targets. Validated at startup. |
 | **`GRAFANA_CLOUD_LOKI_URL`** | Grafana Cloud's Loki push endpoint. |
 | **`GRAFANA_CLOUD_LOKI_USER`** | Grafana Cloud Loki basic-auth username (numeric instance ID). |
 | **`GRAFANA_CLOUD_LOKI_API_KEY`** | Grafana Cloud Access Policy token, scoped to `logs:write`. |
@@ -54,7 +54,7 @@ required.
 | Variable | Default | Purpose |
 |---|---|---|
 | `WAKER_PORT` | `5000` | Listen port; pinned explicitly (rather than relying on the binary's matching default) since `tailscale serve` has to point at the right port |
-| **`SLEEPER_MAC_ADDRESS`** | — | WoL target MAC |
+| **`BLACKBERRY_MAC_ADDRESS`** | — | WoL target MAC |
 | **`GRAFANA_CLOUD_LOKI_URL`** | — | Grafana Cloud's Loki push endpoint |
 | **`GRAFANA_CLOUD_LOKI_USER`** | — | Loki basic-auth username (numeric instance ID) |
 | **`GRAFANA_CLOUD_LOKI_API_KEY`** | — | Grafana Cloud Access Policy token, scoped to `logs:write` |

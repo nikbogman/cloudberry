@@ -23,7 +23,7 @@ func main() {
 
 	// Joins the tailnet as its own node, only to dial out. TS_AUTHKEY must
 	// be user-owned (untagged): `tailscale serve` only injects the identity
-	// header the Waker/Sleeper APIs require for user-owned nodes.
+	// header waker and hostd require for user-owned nodes.
 	ts := &tsnet.Server{Hostname: "edge", Dir: cfg.TSStateDir, AuthKey: os.Getenv("TS_AUTHKEY")}
 	defer ts.Close()
 	if _, err := ts.Up(context.Background()); err != nil {

@@ -1,4 +1,4 @@
-package sleeper
+package hostd
 
 import (
 	"errors"
