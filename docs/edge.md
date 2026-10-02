@@ -63,7 +63,8 @@ are required.
 ## Deployment
 
 Railway builds [`deployments/edge/Dockerfile`](../deployments/edge/Dockerfile)
-with the repo root as build context (`RAILWAY_DOCKERFILE_PATH`). Mount a
+with the repo root as build context (service settings: Root Directory `/`,
+Dockerfile Path `deployments/edge/Dockerfile`). Mount a
 volume at `/data` — without it tsnet state is lost on every deploy and the node re-registers under a new name.
 
 ## Development
