@@ -1,14 +1,14 @@
 # Deploy
 
 [Task](https://taskfile.dev/) over plain `ssh`, defined in the repo root
-[`Taskfile.yml`](../Taskfile.yml). One run converges raspberry and blackberry:
+[`Taskfile.yml`](Taskfile.yml). One run converges raspberry and blackberry:
 Docker installed on blackberry, and waker and hostd deployed as systemd services
 served on the tailnet.
 
 Per-service deploy details:
-[`waker.md`](waker.md),
-[`hostd.md`](hostd.md). Vocabulary is in
-[`CONTEXT.md`](../CONTEXT.md).
+[waker](cmd/waker/README.md),
+[hostd](cmd/hostd/README.md). Vocabulary is in
+[`CONTEXT.md`](CONTEXT.md).
 
 ## Setup
 
@@ -32,8 +32,8 @@ joined the tailnet, use a LAN address. Any `~/.ssh/config` alias works too,
 including one with a non-default port.
 
 Service-specific variables are documented in
-[`waker.md`](waker.md#deploy-time-variables) and
-[`hostd.md`](hostd.md#deploy-time-variables).
+[waker](cmd/waker/README.md#environment) and
+[hostd](cmd/hostd/README.md#environment).
 
 ## Running a Deploy
 
@@ -47,8 +47,8 @@ task --dry          # print the commands without running them
 task --list
 ```
 
-Every run re-ships both binaries and restarts both services — there is no
-change detection. A restart is a second of downtime, which nothing here cares
+Every run re-ships and restarts each service it targets: there is no change
+detection. A restart is a second of downtime, which nothing here cares
 about. Nothing runs a Deploy automatically.
 
 ### Renaming a service
@@ -84,4 +84,4 @@ RASPBERRY_HOST=waker-test RASPBERRY_SSH_USER=root task waker
 before it is exercised.
 
 Bind-address enforcement and the system's other limitations are in
-[`architecture.md`](architecture.md#constraints).
+[`DESIGN.md`](DESIGN.md#known-limitations).

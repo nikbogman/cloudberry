@@ -1,6 +1,6 @@
 # Converges raspberry (waker) and blackberry (hostd, Docker) over plain ssh.
 # Every run re-ships both binaries and restarts both services -- no diffing.
-# See docs/deploy.md.
+# See DEPLOY.md.
 version: '3'
 
 dotenv: ['.env']

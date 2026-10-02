@@ -1,87 +1,64 @@
 # Cloudberry
 
-Monorepo for my homelab setup.
+The setup that lets me run my home server only when I need it, and reach its
+apps from anywhere.
 
-## Name
+This repo isn't meant for outside contributors. It's written for me and the
+AI agents I work with; agent instructions are in [CLAUDE.md](CLAUDE.md).
 
-Every device is a berry: `raspberry` (Raspberry Pi Zero, Raspbian Lite) and
-`blackberry` (Ryzen 3 3250U, 8GB RAM, Ubuntu Server). `cloudberry` is the
-whole thing.
+## How it works
 
-## Topology
+```mermaid
+flowchart LR
+  browser([Browser]) -->|HTTPS| edge
 
-Two devices on one tailnet:
+  subgraph railway[Railway]
+    edge["edge<br/>serves the UI"]
+  end
 
-- **raspberry** — always-on, Wi-Fi, low power. So far it only sends WoL to
-  blackberry.
-- **blackberry** — the workhorse, Ethernet. Can be suspended, and wakes on
-  raspberry's WoL packet (same L2 segment, which is why the packet lands).
+  subgraph lan[Home LAN]
+    subgraph rb[raspberry · always on]
+      waker
+    end
+    subgraph bb[blackberry · suspended until needed]
+      hostd
+      caddy[Caddy] --> stacks[stacks]
+    end
+  end
 
-The one way in from outside the tailnet is Edge, on Railway — currently
-with no authentication. Behind it, access control is tailnet membership. One
-`task` run from a dev machine converges both devices.
-
-| Path | What |
-|---|---|
-| [cmd/](cmd/), [internal/](internal/), [ui/](ui/) | The Platform: wake and suspend blackberry — edge, waker, hostd, UI |
-| [docs/architecture.md](docs/architecture.md) | Platform design decisions, data flow, constraints |
-| [stacks/](stacks/) | Workloads on blackberry, plain Docker Compose behind Caddy |
-| [Taskfile.yml](Taskfile.yml) | Deploy: one `task` run converges every device |
-| [CONTEXT.md](CONTEXT.md) | Domain glossary — the vocabulary everything else uses |
-| [docs/](docs/) | Per-surface docs (edge, waker, hostd, ui) and [deploy.md](docs/deploy.md) |
-
-One `.env` (from `.env.example`) holds every secret and address; `task` loads it
-— see [docs/deploy.md](docs/deploy.md#setup).
-
-## Layout
-
-```
-cmd/edge/            Edge entrypoint (Railway)
-cmd/waker/           waker entrypoint
-cmd/hostd/         hostd entrypoint
-internal/edge/           Edge logic
-internal/waker/          waker logic
-internal/hostd/        hostd logic
-internal/tailnet/        shared: identity-header auth, bind-safety
-internal/eventlog/       shared: Grafana Cloud event logging
-internal/httpresponse/   shared: JSON response helpers
-internal/env/            shared: env-var lookup helpers
-ui/                      browser SPA (static HTML/JS/CSS, no build step);
-                         ui.go is just its go:embed declaration
-stacks/                  Compose workloads on blackberry
-docs/                    one file per surface, plus deploy.md
-deployments/edge/    Edge Dockerfile (Railway)
-Taskfile.yml             Deploy
+  edge -->|wake| waker
+  edge -->|suspend, health| hostd
+  edge -->|app traffic| caddy
+  waker -.->|Wake-on-LAN| bb
 ```
 
-## Development
+Machines are named for their hardware (both are berries; `cloudberry` is the
+whole thing), services for what they do:
 
-```sh
-go vet ./... && go test ./...
-```
+| Machine | Hardware | Role |
+|---|---|---|
+| **blackberry** | Ryzen 3 3250U, 8GB RAM, Ubuntu Server, Ethernet | The home server. Suspended until needed. |
+| **raspberry** | Raspberry Pi Zero, Raspbian Lite, Wi-Fi | Always on, low power. On the same LAN as blackberry, so its Wake-on-LAN broadcast lands. |
 
-Run a binary locally with its environment, e.g.:
+The repo is a monorepo holding everything in the diagram:
 
-```sh
-BLACKBERRY_MAC_ADDRESS=AA:BB:CC:DD:EE:FF \
-GRAFANA_CLOUD_LOKI_URL=https://logs-prod-000.grafana.net/loki/api/v1/push \
-GRAFANA_CLOUD_LOKI_USER=123456 GRAFANA_CLOUD_LOKI_API_KEY=glc_xxx \
-go run ./cmd/waker
-```
+| Part | Code | Runs on | Shipped as |
+|---|---|---|---|
+| **edge**: public entry point, serves the UI | [cmd/edge](cmd/edge/), [ui/](ui/) (embedded) | Railway | Docker image from [deployments/edge/Dockerfile](deployments/edge/Dockerfile), built by Railway |
+| **waker**: sends Wake-on-LAN | [cmd/waker](cmd/waker/) | raspberry | Go binary cross-compiled for armv6, run by systemd |
+| **hostd**: suspend, health check | [cmd/hostd](cmd/hostd/) | blackberry | Go binary, run by systemd |
+| **stacks**: the apps, behind Caddy | [stacks/](stacks/) | blackberry | Docker Compose, started with `docker compose` (not `task`) |
 
-## Deploying
+The three services are one Go module: each has its entrypoint in `cmd/<name>/`
+and its logic in `internal/<name>/`, and the rest of `internal/` is shared
+code. The stacks don't use it.
 
-```sh
-task --dry    # print what would run
-task          # converge every device
-task waker    # or: hostd, docker, tailscale
-```
+edge reaches everything over a Tailscale network. It has no authentication
+yet; behind it, access control is tailnet membership.
 
-See [docs/deploy.md](docs/deploy.md). Edge deploys separately, via Railway —
-see [docs/edge.md](docs/edge.md#deployment).
+## Docs
 
-## Adding a service
-
-A Go binary goes in `cmd/<name>/` + `internal/<name>/`, with a task in
-`Taskfile.yml` reusing `_service`. A Compose workload goes in `stacks/` — see
-[stacks/README.md](stacks/README.md).
+- [CONTEXT.md](CONTEXT.md): domain glossary, the vocabulary everything else uses
+- [DESIGN.md](DESIGN.md): design decisions, request paths, security, limitations
+- [DEPLOY.md](DEPLOY.md): deploying both machines with `task`
+- A README next to each component's code: [edge](cmd/edge/README.md), [waker](cmd/waker/README.md), [hostd](cmd/hostd/README.md), [ui](ui/README.md), [stacks](stacks/README.md)

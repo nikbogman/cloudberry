@@ -1,39 +1,39 @@
 # Stacks
 
-User-facing workloads (media servers, an AI agent, etc.) running on blackberry as plain Docker Compose — outside the Deploy, outside the waker and hostd services. Each one gets its own tsnet hostname via the `caddy` stack; off-tailnet, Edge exposes it at `/proxy/<name>/`.
+User-facing workloads running on blackberry as plain Docker Compose: outside
+the Deploy, unknown to waker and hostd. Each one gets its own tsnet hostname via
+the `caddy` stack; off-tailnet, edge exposes it at `/proxy/<name>/`.
 
-Rationale: [`.scratch/workload-stacks/spec.md`](../.scratch/workload-stacks/spec.md). Agent conventions: [`docs/stacks.md`](../docs/stacks.md).
+Rationale: [`.scratch/workload-stacks/spec.md`](../.scratch/workload-stacks/spec.md).
 
 ## One-time setup (per dev machine, already done)
 
 - `docker context create blackberry --docker "host=ssh://<user>@blackberry"`
-- On blackberry: `/srv/stacks/` exists, the external `stacks` Docker network exists (`docker network create stacks`), and your SSH user is in the `docker` group.
+- On blackberry: `/srv/stacks/` exists, the external `stacks` Docker network
+  exists (`docker network create stacks`), and your SSH user is in the
+  `docker` group.
 
 ## Deploying a stack
 
 From this repo, on a machine with the `blackberry` context:
 
-```
+```sh
+docker compose -f stacks/<name>/docker-compose.yml config                 # validate, touches nothing
 docker compose --context blackberry -f stacks/<name>/docker-compose.yml up -d
-```
-
-Check what's running:
-
-```
 docker --context blackberry ps
 ```
 
-Validate a compose file before deploying (catches syntax errors without touching blackberry):
-
-```
-docker compose -f stacks/<name>/docker-compose.yml config
-```
+No Taskfile task, script or CI knows a stack exists.
 
 ## Adding a new stack
 
-1. `stacks/<name>/docker-compose.yml` — plain Compose, `restart: unless-stopped`, persistent data under `/srv/stacks/<name>/`, joins the external `stacks` network.
-2. Secrets, if any, go in `stacks/<name>/.env` — never committed, and it must exist on whichever machine actually runs the `docker compose` command above (env vars are resolved locally, not on blackberry).
-3. To make it reachable over the tailnet, add a site block to [`stacks/caddy/Caddyfile`](caddy/Caddyfile):
+1. `stacks/<name>/docker-compose.yml`: plain Compose, `restart: unless-stopped`
+   on every service, persistent data under `/srv/stacks/<name>/` (create it by
+   hand), and join the external `stacks` network (`external: true`).
+2. Secrets go in `stacks/<name>/.env`, gitignored. It must exist on the machine
+   that runs `docker compose`, not on blackberry: `env_file` is resolved
+   locally before the environment is sent over the ssh context.
+3. To make it reachable, add a site block to [`caddy/Caddyfile`](caddy/Caddyfile):
    ```caddyfile
    :443 {
        bind tailscale/<name>
@@ -43,15 +43,22 @@ docker compose -f stacks/<name>/docker-compose.yml config
        reverse_proxy <name>:<port>
    }
    ```
-   The existing `TAILSCALE_AUTH_KEY` in Caddy's `.env` covers every site — no new key needed unless a stack needs a different tailnet identity.
-4. Redeploy Caddy so it picks up the new site: `docker compose --context blackberry -f stacks/caddy/docker-compose.yml up -d`.
+   No edge change is needed: edge knows no stack names.
+4. Redeploy Caddy: `docker compose --context blackberry -f stacks/caddy/docker-compose.yml up -d`.
 
-## Where things live
+## Caddy
 
-| What | Where |
-| --- | --- |
-| Compose files | `stacks/<name>/` in this repo |
-| Persistent data | `/srv/stacks/<name>/` on blackberry |
-| Secrets (`.env`) | `stacks/<name>/`, box-only, gitignored |
-| Shared network | external Docker network `stacks`, created once on blackberry |
-| Ingress | `stacks/caddy`, one site block per fronted stack |
+Uses the `caddy-tailscale` plugin (`ghcr.io/tailscale/caddy-tailscale`), so
+each stack is its own tailnet node rather than a path on a shared hostname.
+
+- Site addresses are `bind tailscale/<name>` with `get_certificate tailscale`,
+  not a plain hostname: there's no public ACME path.
+- `ephemeral false` is set explicitly. `true` would drop each node, and its
+  hostname, on every container restart.
+- `state_dir` is under `/srv/stacks/caddy/` (mounted), so tsnet state survives
+  a container recreate.
+- One global `auth_key {$TAILSCALE_AUTH_KEY}` covers every site. A site that
+  needs a different tailnet identity or tags gets its own key in a per-node
+  block; the plugin's `TS_AUTHKEY_<NODE>` fallback is deprecated.
+- Caddy's `.env` is at the repo root (`env_file: ../../.env`), not
+  `stacks/caddy/.env`. Move it when convenient.
