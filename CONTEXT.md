@@ -20,7 +20,7 @@ The machine that sleeps/wakes and runs hostd and the Stacks.
 Everything in this repo, taken together: both machines, the services, the UI, the Stacks and the Taskfile that deploys to both machines.
 
 **edge**:
-The public entry point, hosted on Railway: serves the UI and forwards to waker, hostd and Caddy-fronted Stacks over the tailnet (as its own `tsnet` node). The browser's only origin. No authentication for now — deliberate and temporary.
+The public entry point, hosted on Railway: serves the UI and forwards to waker and hostd over the tailnet (as its own `tsnet` node). The browser's only origin. No authentication for now — deliberate and temporary.
 _Avoid_: edge-api, proxy, gateway, railway service
 
 **waker**:

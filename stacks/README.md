@@ -2,9 +2,8 @@
 
 User-facing workloads running on blackberry as plain Docker Compose: outside
 the Deploy, unknown to waker and hostd. Each one gets its own tsnet hostname via
-the `caddy` stack; off-tailnet, edge exposes it at `/proxy/<name>/`.
-
-Rationale: [`.scratch/workload-stacks/spec.md`](../.scratch/workload-stacks/spec.md).
+the `caddy` stack, reachable on the tailnet only. Rationale:
+[DESIGN.md](../DESIGN.md#design-decisions).
 
 ## One-time setup (per dev machine, already done)
 
@@ -43,7 +42,6 @@ No Taskfile task, script or CI knows a stack exists.
        reverse_proxy <name>:<port>
    }
    ```
-   No edge change is needed: edge knows no stack names.
 4. Redeploy Caddy: `docker compose --context blackberry -f stacks/caddy/docker-compose.yml up -d`.
 
 ## Caddy

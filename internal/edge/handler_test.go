@@ -1,20 +1,15 @@
 package edge
 
 import (
-	"context"
 	"io"
-	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"strings"
 	"testing"
 	"testing/fstest"
 
 	"github.com/nikbogman/cloudberry/internal/tailnet"
 )
-
-const testTailnetDomain = "test.ts.net"
 
 // echoBackend replies with its name, the request line and the identity
 // header it received.
@@ -36,35 +31,16 @@ func mustParse(t *testing.T, raw string) *url.URL {
 	return u
 }
 
-// newTestHandler points waker and hostd at local echo backends and
-// routes every *.test.ts.net stack host to one local TLS backend, standing
-// in for Caddy.
+// newTestHandler points waker and hostd at local echo backends.
 func newTestHandler(t *testing.T) http.Handler {
 	t.Helper()
 	waker := echoBackend(t, "waker")
 	hostd := echoBackend(t, "hostd")
-	caddy := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		io.WriteString(w, "caddy "+r.Host+" "+r.URL.Path)
-	}))
-	t.Cleanup(caddy.Close)
-
-	transport := caddy.Client().Transport.(*http.Transport).Clone()
-	// httptest's cert is for example.com; the Host header still carries the stack host.
-	transport.TLSClientConfig.ServerName = "example.com"
-	var dialer net.Dialer
-	transport.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
-		if strings.HasSuffix(addr, "."+testTailnetDomain+":443") {
-			addr = caddy.Listener.Addr().String()
-		}
-		return dialer.DialContext(ctx, network, addr)
-	}
-
 	return NewHandler(Config{
-		WakerURL:      mustParse(t, waker.URL),
-		HostdURL:      mustParse(t, hostd.URL),
-		TailnetDomain: testTailnetDomain,
-		UIAssets:      fstest.MapFS{"index.html": {Data: []byte("<html>ui</html>")}},
-	}, transport)
+		WakerURL: mustParse(t, waker.URL),
+		HostdURL: mustParse(t, hostd.URL),
+		UIAssets: fstest.MapFS{"index.html": {Data: []byte("<html>ui</html>")}},
+	}, http.DefaultTransport)
 }
 
 func serve(h http.Handler, method, path string) *httptest.ResponseRecorder {
@@ -99,29 +75,6 @@ func TestOnlyTheKnownAPIRoutesAreForwarded(t *testing.T) {
 	}
 	if rec := serve(h, http.MethodGet, "/api/hostd/suspend"); rec.Code != http.StatusMethodNotAllowed {
 		t.Errorf("GET /api/hostd/suspend: got %d, want 405", rec.Code)
-	}
-}
-
-func TestProxyRoutesToTheStacksTailnetHostWithThePrefixStripped(t *testing.T) {
-	h := newTestHandler(t)
-	cases := []struct{ path, want string }{
-		{"/proxy/whoami-a/", "caddy whoami-a.test.ts.net /"},
-		{"/proxy/whoami-a/some/page", "caddy whoami-a.test.ts.net /some/page"},
-	}
-	for _, c := range cases {
-		rec := serve(h, http.MethodGet, c.path)
-		if rec.Code != http.StatusOK || rec.Body.String() != c.want {
-			t.Errorf("GET %s: got %d %q, want 200 %q", c.path, rec.Code, rec.Body.String(), c.want)
-		}
-	}
-}
-
-func TestProxyRejectsAStackNameThatIsNotASingleDNSLabel(t *testing.T) {
-	h := newTestHandler(t)
-	for _, path := range []string{"/proxy/evil.com/", "/proxy/Whoami/", "/proxy/a:8080/"} {
-		if rec := serve(h, http.MethodGet, path); rec.Code != http.StatusBadRequest {
-			t.Errorf("GET %s: got %d, want 400", path, rec.Code)
-		}
 	}
 }
 

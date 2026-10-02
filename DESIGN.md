@@ -30,7 +30,7 @@ sequenceDiagram
     H-->>B: 200/500 {suspend: ...}
 ```
 
-Workload traffic never touches waker or hostd: off-tailnet it goes edge → `/proxy/<stack>/*` → Caddy (one tailnet hostname per stack) → container. On the tailnet, browsers can hit each Caddy hostname directly.
+Stacks are reachable only on the tailnet: browsers hit each stack's Caddy hostname directly. Workload traffic never touches edge, waker or hostd.
 
 Every wake, suspend and reachability change is logged as an event to Grafana Cloud. The services are stateless, so that's the only history.
 
@@ -46,7 +46,7 @@ Every wake, suspend and reachability change is logged as an event to Grafana Clo
 
 - **One public origin, relaying server-side.** The browser talks only to edge, so no backend needs CORS. Backends never trust a forwarded identity: edge drops any incoming `Tailscale-User-Login`, and `tailscale serve` sets it from edge's own node.
 - **edge has no authentication, for now.** Deliberate and temporary. Behind edge, tailnet membership is the whole authorization boundary; no allow-list.
-- **Workload routing is two layers.** Caddy on blackberry maps hostnames to containers; edge only knows `/proxy/<stack>/` and no stack names, so adding a stack never touches the Go code. Routing skips raspberry (a Pi Zero on Wi-Fi). Cost: no auto-wake on request.
+- **One tailnet hostname per stack, not path prefixes.** Caddy (`caddy-tailscale`) gives each stack its own tsnet node, because per-app prefix support is inconsistent: Jellyfin wants the prefix kept, Immich refuses subpaths outright. The same reason ruled out an edge `/proxy/<stack>/` route, so stacks aren't reachable off-tailnet. Cost: no auto-wake on request.
 - **Suspend-to-RAM only.** WoL after full shutdown (ACPI S5) is unreliable across BIOS/NIC configs. The suspend command isn't configurable.
 - **No workload drain before suspend.** Suspend-to-RAM freezes every process and resumes it in place, so nothing is torn down. In-flight requests stall, though, and can run twice on retry; see [hostd](cmd/hostd/README.md#suspend-never-waits-for-in-flight-work).
 - **WoL needs one L2 broadcast domain.** Accepted rather than building a cross-subnet relay.
@@ -58,15 +58,13 @@ Every wake, suspend and reachability change is logged as an event to Grafana Clo
 
 ## Security
 
-- **edge is public and unauthenticated:** anyone with its URL can wake, suspend and reach every stack.
+- **edge is public and unauthenticated:** anyone with its URL can wake and suspend blackberry.
 - waker and hostd refuse to start unless bound to loopback or a tailnet address. edge binds publicly by design.
-- edge's `/proxy/<stack>/` accepts only a single DNS label as `<stack>`, so public input can't point it at an arbitrary host.
 - `/wake` also accepts a loopback caller with no identity (see Identity header in [`CONTEXT.md`](CONTEXT.md)).
 
 ## Known limitations
 
 - Wake is manual only: a request to a sleeping blackberry just fails.
-- Apps that assume they live at `/` may break under the `/proxy/<stack>/` prefix.
 - If raspberry and blackberry end up on different broadcast domains, WoL silently stops working.
 - hostd can log blackberry becoming reachable, never unreachable: it's asleep whenever that happens.
 - The bind-address check runs at startup only; `task` doesn't verify it.

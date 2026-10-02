@@ -1,9 +1,9 @@
 // Package edge is the public entry point: it hosts the UI and forwards
-// to waker, hostd and Caddy-fronted workloads over the
-// tailnet, so the browser only ever talks to one origin.
+// to waker and hostd over the tailnet, so the browser only ever talks to
+// one origin.
 //
-// NO AUTHENTICATION: anyone with the URL can wake, suspend and reach every
-// workload. Deliberate and temporary -- auth will be added later.
+// NO AUTHENTICATION: anyone with the URL can wake and suspend blackberry.
+// Deliberate and temporary -- auth will be added later.
 package edge
 
 import (
@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"regexp"
 
 	"github.com/nikbogman/cloudberry/internal/tailnet"
 )
@@ -19,14 +18,8 @@ import (
 type Config struct {
 	WakerURL *url.URL
 	HostdURL *url.URL
-	// Caddy serves each stack as <stack>.<TailnetDomain>.
-	TailnetDomain string
-	UIAssets      fs.FS
+	UIAssets fs.FS
 }
-
-// A stack name picks a tailnet host from public input, so it's held to a
-// single DNS label.
-var stackName = regexp.MustCompile(`^[a-z0-9-]+$`)
 
 // NewHandler proxies through transport, which in production dials over the
 // tailnet.
@@ -44,29 +37,11 @@ func NewHandler(cfg Config, transport http.RoundTripper) http.Handler {
 		}
 	}
 
-	stackProxy := &httputil.ReverseProxy{
-		Transport: transport,
-		Rewrite: func(pr *httputil.ProxyRequest) {
-			pr.SetURL(&url.URL{Scheme: "https", Host: pr.In.PathValue("stack") + "." + cfg.TailnetDomain})
-			pr.Out.URL.Path = "/" + pr.In.PathValue("rest")
-			pr.Out.URL.RawPath = ""
-			pr.SetXForwarded()
-			pr.Out.Header.Del(tailnet.IdentityHeader)
-		},
-	}
-
 	mux := http.NewServeMux()
 	mux.Handle("POST /api/waker/wake", http.StripPrefix("/api/waker", proxyTo(cfg.WakerURL)))
 	hostd := http.StripPrefix("/api/hostd", proxyTo(cfg.HostdURL))
 	mux.Handle("GET /api/hostd/health", hostd)
 	mux.Handle("POST /api/hostd/suspend", hostd)
-	mux.HandleFunc("/proxy/{stack}/{rest...}", func(w http.ResponseWriter, r *http.Request) {
-		if !stackName.MatchString(r.PathValue("stack")) {
-			http.Error(w, "invalid stack name", http.StatusBadRequest)
-			return
-		}
-		stackProxy.ServeHTTP(w, r)
-	})
 	mux.Handle("/ui/", http.StripPrefix("/ui", http.FileServer(http.FS(cfg.UIAssets))))
 	mux.Handle("GET /{$}", http.RedirectHandler("/ui/", http.StatusFound))
 	return mux

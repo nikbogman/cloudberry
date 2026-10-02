@@ -4,22 +4,18 @@ Status: ready-for-human
 
 ## Problem
 
-Nothing in this spec is proven until Jellyfin + Caddy are actually deployed to blackberry and reachable at a real tsnet hostname. This is the live check the spec's Testing Decisions call for.
+The stacks convention isn't proven until Caddy and a fronted stack are deployed to blackberry and reachable at a real tsnet hostname. The fronted stacks are the `whoami-a` and `whoami-b` test stacks.
 
 ## Acceptance Criteria
 
-- [ ] `docker compose --context blackberry -f stacks/jellyfin/docker-compose.yml up -d` succeeds
+- [ ] `docker compose --context blackberry -f stacks/whoami-a/docker-compose.yml up -d` succeeds (same for `whoami-b`)
 - [ ] `docker compose --context blackberry -f stacks/caddy/docker-compose.yml up -d` succeeds
-- [ ] Jellyfin answers at its tsnet hostname (e.g. `jellyfin.<tailnet>.ts.net`) through Caddy
-- [ ] Restart survives a reboot/suspend-wake of blackberry (spec User Story 6) — reboot and re-check
-- [ ] Any deviation found from `docs/agents/stacks.md` or `docs/adr/DECISIONS.md` gets fed back into those docs
+- [ ] From a tailnet device, `https://whoami-a.<tailnet>.ts.net` and `https://whoami-b.<tailnet>.ts.net` each answer with their own `WHOAMI_NAME`
+- [ ] Both still answer after a suspend/wake and after a reboot of blackberry (`restart: unless-stopped`)
+- [ ] Any deviation from `stacks/README.md` gets fed back into it
 
 ## Notes
 
-Human-only: requires SSH/Tailscale access to blackberry that isn't available to an AFK agent.
+Human-only: requires SSH/Tailscale access to blackberry.
 
-Environment setup (Docker context, `/srv/stacks/`, shared network) and the Caddy stack are both done against the real box. Jellyfin was implemented as the first proof of the `stacks/<name>/` convention, then dropped by user request before ever being deployed — Caddy currently has no site blocks and fronts nothing.
-
-## Comments
-
-2026-09-13: Acceptance criteria above still reference Jellyfin as the fronted stack; re-target them at whatever stack actually gets deployed once one exists (issue 05's AI agent workload, once scoped, or another).
+Environment setup (Docker context, `/srv/stacks/`, the `stacks` network) is done against the real box. Stacks are tailnet-only: edge has no route to them.

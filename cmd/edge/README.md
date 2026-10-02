@@ -1,11 +1,10 @@
 # Edge
 
 The public entry point, hosted on Railway. Serves the [UI](../../ui/README.md) and forwards
-to [waker](../waker/README.md), [hostd](../hostd/README.md) and Caddy-fronted
-workloads over the tailnet, so the browser only ever talks to one origin.
+to [waker](../waker/README.md) and [hostd](../hostd/README.md) over the
+tailnet, so the browser only ever talks to one origin.
 
-**No authentication.** Anyone with the URL can wake, suspend and reach every
-workload. Deliberate and temporary — auth will be added later.
+**No authentication.** Anyone with the URL can wake and suspend blackberry. Deliberate and temporary — auth will be added later.
 
 Code: [`internal/edge/`](../../internal/edge),
 entrypoint [`cmd/edge/`](.).
@@ -17,15 +16,11 @@ entrypoint [`cmd/edge/`](.).
 | `POST /api/waker/wake` | waker `POST /wake` |
 | `GET /api/hostd/health` | hostd `GET /health` |
 | `POST /api/hostd/suspend` | hostd `POST /suspend` |
-| `/proxy/<stack>/*` | `https://<stack>.$TAILNET_DOMAIN/*` — the stack's Caddy site. `<stack>` must match `^[a-z0-9-]+$`, else 400. |
 | `/ui/*` | The UI's static files, `//go:embed`ded from `ui/`. |
 | `GET /` | Redirects to `/ui/`. |
 
 Prefixes are stripped before forwarding. Any incoming `Tailscale-User-Login`
 is dropped; `tailscale serve` on the far side sets it from Edge's own node.
-
-Known limitation: apps that assume they live at `/` may break under the
-`/proxy/<stack>/` prefix.
 
 ## Tailnet access
 
@@ -53,7 +48,6 @@ are required.
 |---|---|
 | **`WAKER_URL`** | waker origin, e.g. `https://<waker>.<tailnet>.ts.net`. |
 | **`HOSTD_URL`** | hostd origin. |
-| **`TAILNET_DOMAIN`** | e.g. `<tailnet>.ts.net`; stack hosts are `<stack>.$TAILNET_DOMAIN`. |
 | **`TS_STATE_DIR`** | tsnet node state. The image defaults it to `/data/tsnet`. |
 | **`GRAFANA_CLOUD_LOKI_URL`**, **`_USER`**, **`_API_KEY`** | Same trio as [waker](../waker/README.md#environment). |
 | `TS_AUTHKEY` | Needed on first start (or after state is lost). |

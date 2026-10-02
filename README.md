@@ -28,7 +28,6 @@ flowchart LR
 
   edge -->|wake| waker
   edge -->|suspend, health| hostd
-  edge -->|app traffic| caddy
   waker -.->|Wake-on-LAN| bb
 ```
 
