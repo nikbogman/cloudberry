@@ -10,3 +10,6 @@ dist/
 
 # Generated knowledge graph -- rebuilt locally by `graphify update .`
 /graphify-out/
+
+# Personal Claude Code permission overrides, e.g. SSH/Docker-context access
+/.claude/settings.local.json
