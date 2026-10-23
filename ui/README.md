@@ -43,8 +43,9 @@ with `npx wrangler pages deploy` to the production branch of the Pages project
 machine; the first run asks you to log in to Cloudflare and, if the project
 doesn't exist, to create it.
 
-Then set `UI_ORIGIN` to the production origin (e.g.
-`https://cloudberry.pages.dev`) and redeploy gateway and hostd so CORS allows
+Then set `UI_ORIGIN` to the production origin and redeploy gateway and hostd
+so CORS allows it. Pages subdomains are global, so the origin may carry a
+suffix (`cloudberry-bpf.pages.dev`); `npx wrangler pages project list` shows
 it. Preview deployments have other origins and can't call the backends.
 
 ## Development
