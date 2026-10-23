@@ -90,17 +90,24 @@ pgvector. Start it before any stack that uses it.
 Data is under `/srv/stacks/db/` on the SSD. Rationale:
 [DESIGN.md](../DESIGN.md#design-decisions).
 
-Giving a stack its own database:
+Giving a stack its own database (blackberry awake):
 
 ```sh
-docker --context blackberry exec -it db-postgres-1 psql -U postgres
-```
-```sql
-CREATE ROLE <name> LOGIN PASSWORD '<password>';
-CREATE DATABASE <name> OWNER <name>;
+stacks/db/new-database.sh <name>
 ```
 
-Put the password in `stacks/<name>/.env`. Only Immich's role is a superuser,
+It creates role and database `<name>` with a generated password, and appends
+`DB_PASSWORD`, `DATABASE_URL` (host `postgres`, for containers on the `db`
+network) and `LOCAL_DATABASE_URL` (`127.0.0.1`, through the tunnel below) to
+`stacks/<name>/.env`. The password is never printed.
+
+From the dev machine, for occasional scripts, tunnel to the container (WSL
+forwards it to Windows' `127.0.0.1` too):
+
+```sh
+IP=$(docker --context blackberry inspect -f '{{(index .NetworkSettings.Networks "db").IPAddress}}' db-postgres-1)
+ssh -N -L 5432:$IP:5432 blackberry
+``` Only Immich's role is a superuser,
 because Immich requires it.
 
 Valkey has no users here: each stack gets its own DB index instead. Taken:
