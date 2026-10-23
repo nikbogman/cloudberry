@@ -1,8 +1,8 @@
 # hostd
 
 blackberry's own daemon. Exposes a Reachable health check and the Suspend
-action. Fronted by its own `tailscale serve` instance; only [edge](../edge/README.md)
-calls it.
+action. Fronted by its own `tailscale serve` instance; called by the [UI](../../ui/README.md),
+straight from the browser, and by gateway's auto-suspend.
 
 Vocabulary (blackberry, Reachable, Suspend) is in [`CONTEXT.md`](../../CONTEXT.md).
 
@@ -35,6 +35,7 @@ machine; `task hostd` passes them to the unit. Bold variables are required.
 
 | Variable | Purpose |
 |---|---|
+| **`UI_ORIGIN`** | The UI's Cloudflare Pages origin, allowed by CORS. Unset disables CORS (required by the deploy). |
 | **`GRAFANA_CLOUD_LOKI_URL`** | Grafana Cloud's Loki push endpoint. |
 | **`GRAFANA_CLOUD_LOKI_USER`** | Loki basic-auth username (numeric instance ID). |
 | **`GRAFANA_CLOUD_LOKI_API_KEY`** | Grafana Cloud Access Policy token, scoped to `logs:write`. |

@@ -5,6 +5,7 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/nikbogman/cloudberry/internal/cors"
 	"github.com/nikbogman/cloudberry/internal/eventlog"
 	"github.com/nikbogman/cloudberry/internal/hostd"
 )
@@ -27,5 +28,5 @@ func main() {
 
 	addr := net.JoinHostPort(cfg.Host, cfg.Port)
 	log.Printf("hostd listening on %s", addr)
-	log.Fatal(http.ListenAndServe(addr, handler))
+	log.Fatal(http.ListenAndServe(addr, cors.Allow(cfg.UIOrigin, handler)))
 }

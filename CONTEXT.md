@@ -19,19 +19,15 @@ The machine that sleeps/wakes and runs hostd and the Stacks.
 **cloudberry**:
 Everything in this repo, taken together: both machines, the services, the UI, the Stacks and the Taskfile that deploys to both machines.
 
-**edge**:
-The public entry point, hosted on Railway: serves the UI and forwards to gateway and hostd over the tailnet (as its own `tsnet` node). The browser's only origin. No authentication for now — deliberate and temporary.
-_Avoid_: edge-api, proxy, railway service. Not "gateway": that's the raspberry service.
-
 **gateway**:
-The service on raspberry. Sends Wake on `POST /wake` (the UI's Wake button, forwarded by edge), and fronts the Stacks in its routes file: reverse-proxies each route on its own port, wakes blackberry on request for routes flagged `wake` (holding the request until blackberry is Reachable), and suspends it again after `idle_minutes` without traffic, if gateway did the waking. Routes are `public` (Funnel) or tailnet-only. Before 2026-10-23 this was two services, waker (`/wake`) and gate (the routes); before 2026-09-12 it was also called gateway.
+The service on raspberry. Sends Wake on `POST /wake` (the UI's Wake button, called from the browser), and fronts the Stacks in its routes file: reverse-proxies each route on its own port, wakes blackberry on request for routes flagged `wake` (holding the request until blackberry is Reachable), and suspends it again after `idle_minutes` without traffic, if gateway did the waking. Routes are `public` (Funnel) or tailnet-only. Before 2026-10-23 this was two services, waker (`/wake`) and gate (the routes); before 2026-09-12 it was also called gateway.
 _Avoid_: waker, gate, proxy, reverse proxy, wake service, WoL plugin
 
 **hostd**:
-blackberry's own daemon: exposes Suspend and a reachability health check. Carries no workload traffic and knows nothing about Docker (yet). Fronted by its own `tailscale serve` instance; only edge calls it.
+blackberry's own daemon: exposes Suspend and a reachability health check. Carries no workload traffic and knows nothing about Docker (yet). Fronted by its own `tailscale serve` instance; called by the UI and by gateway's auto-suspend.
 
 **UI**:
-The browser app served by edge showing blackberry's reachability and Wake/Suspend actions. The only user-facing surface.
+Static browser app on Cloudflare Pages showing blackberry's reachability and Wake/Suspend actions. The only user-facing surface. Works only from a tailnet device: the browser calls gateway and hostd directly. Before 2026-10-23 it was served by edge, a relay on Railway, now removed.
 
 **Reachable**:
 Whether blackberry currently responds to hostd's health check. The UI polls this to decide which of Wake/Suspend is actionable.
@@ -44,7 +40,7 @@ Putting blackberry into suspend-to-RAM — the only sleep state supported. Full 
 _Avoid_: shutdown, sleep, power off
 
 **Identity header**:
-`Tailscale-User-Login`, injected by `tailscale serve` in front of gateway and hostd. The entire auth mechanism behind edge — tailnet membership is the authorization boundary, no separate allow-list. edge's calls carry the login of the user who owns edge's tailnet node. Exception: gateway's `/wake` also accepts a `127.0.0.1` caller in its place, for a shell on raspberry itself. Auto-wake doesn't use it: it sends WoL in-process.
+`Tailscale-User-Login`, injected by `tailscale serve` in front of gateway and hostd. The entire auth mechanism — tailnet membership is the authorization boundary, no separate allow-list. The UI's calls carry the login of the user on the browser's device. Exception: gateway's `/wake` also accepts a `127.0.0.1` caller in its place, for a shell on raspberry itself. Auto-wake doesn't use it: it sends WoL in-process.
 _Avoid_: auth token, login header
 
 ### Provisioning
@@ -57,4 +53,4 @@ _Avoid_: playbook run, apply
 
 **Stack**:
 A user-facing workload at `stacks/<name>/`, deployed as plain Docker Compose directly to blackberry — outside this repo's Deploy, unknown to hostd; gateway knows only those in its routes file. See [`stacks/README.md`](stacks/README.md).
-_Avoid_: service (this repo's term for edge/gateway/hostd; Platform and waker-service are old names for the set), workload (fine informally, but "stack" is the file/directory unit)
+_Avoid_: service (this repo's term for gateway/hostd; Platform and waker-service are old names for the set), workload (fine informally, but "stack" is the file/directory unit)

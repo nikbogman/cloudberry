@@ -1,32 +1,29 @@
 # Design
 
-Why the system is shaped the way it is, and what it can't do. Overview: [README](README.md#how-it-works). Vocabulary: [`CONTEXT.md`](CONTEXT.md). Routes, environment and deployment per surface: [edge](cmd/edge/README.md), [gateway](cmd/gateway/README.md), [hostd](cmd/hostd/README.md), [ui](ui/README.md), [deploy](DEPLOY.md), [stacks](stacks/README.md).
+Why the system is shaped the way it is, and what it can't do. Overview: [README](README.md#how-it-works). Vocabulary: [`CONTEXT.md`](CONTEXT.md). Routes, environment and deployment per surface: [gateway](cmd/gateway/README.md), [hostd](cmd/hostd/README.md), [ui](ui/README.md), [deploy](DEPLOY.md), [stacks](stacks/README.md).
 
 ## Request paths
 
 ```mermaid
 sequenceDiagram
-    participant B as Browser
-    participant E as edge (Railway)
+    participant B as Browser (on the tailnet)
+    participant P as Cloudflare Pages
     participant W as gateway
     participant H as hostd
 
-    B->>E: GET /ui/
-    E-->>B: UI static files (go:embed)
+    B->>P: GET /
+    P-->>B: UI static files + config.js (tailnet URLs)
 
     loop poll
-        B->>E: GET /api/hostd/health
-        E->>H: GET /health (tailnet, Identity header from tailscale serve)
+        B->>H: GET /health (CORS, Identity header from tailscale serve)
         H-->>B: 200 {reachable: true}
     end
 
-    B->>E: POST /api/gateway/wake
-    E->>W: POST /wake (tailnet, Identity header)
+    B->>W: POST /wake (CORS, Identity header)
     W->>H: WoL magic packet (UDP broadcast)
     W-->>B: 200/500 {wake: ...}
 
-    B->>E: POST /api/hostd/suspend
-    E->>H: POST /suspend (tailnet, Identity header)
+    B->>H: POST /suspend (CORS, Identity header)
     H-->>B: 200/500 {suspend: ...}
 ```
 
@@ -52,7 +49,7 @@ sequenceDiagram
     Note over G,H: no route traffic for idle_minutes, and gateway did the waking: POST /suspend
 ```
 
-Workload traffic never touches edge or hostd. On raspberry it goes only through gateway's stack routes, never its `/wake`.
+Workload traffic never touches hostd. On raspberry it goes only through gateway's stack routes, never its `/wake`.
 
 Every wake, suspend and reachability change is logged as an event to Grafana Cloud. The services are stateless, so that's the only history.
 
@@ -60,17 +57,17 @@ Every wake, suspend and reachability change is logged as an event to Grafana Clo
 
 | Integration | Purpose | Gotcha |
 |---|---|---|
-| **Tailscale** (`tailscale serve`, `tsnet`) | TLS and identity injection in front of gateway and hostd; `tsnet` puts edge on the tailnet. WoL is a raw LAN broadcast, not over Tailscale. | edge's node must be user-owned, or `tailscale serve` injects no identity for it. |
+| **Tailscale** (`tailscale serve`) | TLS and identity injection in front of gateway and hostd. WoL is a raw LAN broadcast, not over Tailscale. | The browser's device must be on the tailnet as a user-owned node, or `tailscale serve` injects no identity. |
 | **Tailscale Funnel** | Public HTTPS for gateway's `public` routes, from raspberry's one hostname. | Only ports 443, 8443 and 10000, and 443 is taken by gateway's own `/wake`, so at most two public routes. Needs Funnel enabled in the tailnet policy. |
-| **Railway** | Hosts edge from `deployments/edge/Dockerfile`. | Needs a volume at `/data` for tsnet state. |
+| **Cloudflare Pages** | Hosts the UI's static files (`task ui`, via `npx wrangler`). | Only the production origin (`UI_ORIGIN`) is allowed by CORS; preview deployments get other origins and can't call the backends. |
 | **Grafana Cloud Loki** | Event log. | No local collector, no retry: a transient outage drops the event. |
 
 ## Design decisions
 
-- **One public origin, relaying server-side.** The browser talks only to edge, so no backend needs CORS. Backends never trust a forwarded identity: edge drops any incoming `Tailscale-User-Login`, and `tailscale serve` sets it from edge's own node.
-- **edge has no authentication, for now.** Deliberate and temporary. Behind edge, tailnet membership is the whole authorization boundary; no allow-list.
-- **One port per gated stack, not path prefixes.** Per-app prefix support is inconsistent: Jellyfin wants the prefix kept, Immich refuses subpaths outright. That also ruled out an edge `/proxy/<stack>/` route. gateway gives each route its own HTTPS port on raspberry's single hostname. Stacks not in gateway's routes file keep their own tsnet node via Caddy (`caddy-tailscale`), tailnet-only and with no auto-wake.
-- **One service on raspberry, gateway, for both kinds of Wake.** The UI's Wake and wake-on-request both end in the same WoL packet from the same device, so they share one binary, one unit and one config. Auto-wake lives there, not in edge, because raspberry is the always-on device. Wake is still never implicit: only routes flagged `wake` in [`cmd/gateway/routes.json`](cmd/gateway/routes.json) trigger it, and the flag is the opt-in.
+- **The browser calls gateway and hostd directly; no server relays.** The UI is static files on Cloudflare Pages and the browser, on a tailnet device, calls the backends at their `*.ts.net` URLs. gateway and hostd allow the UI's origin via CORS ([`internal/cors`](internal/cors/cors.go)). Every request carries the real user's identity header, set by `tailscale serve`, so nothing ever forwards an identity. This replaced edge, a Go relay on Railway with its own `tsnet` node: it had no authentication, and needed a Railway volume and an MTU workaround. Cost: no Wake or Suspend from a device that isn't on the tailnet.
+- **Tailnet membership is the whole authorization boundary.** No allow-list, and the public UI page itself grants nothing.
+- **One port per gated stack, not path prefixes.** Per-app prefix support is inconsistent: Jellyfin wants the prefix kept, Immich refuses subpaths outright. That also ruled out a `/proxy/<stack>/` route. gateway gives each route its own HTTPS port on raspberry's single hostname. Stacks not in gateway's routes file keep their own tsnet node via Caddy (`caddy-tailscale`), tailnet-only and with no auto-wake.
+- **One service on raspberry, gateway, for both kinds of Wake.** The UI's Wake and wake-on-request both end in the same WoL packet from the same device, so they share one binary, one unit and one config. Auto-wake lives there because raspberry is the always-on device. Wake is still never implicit: only routes flagged `wake` in [`cmd/gateway/routes.json`](cmd/gateway/routes.json) trigger it, and the flag is the opt-in.
 - **gateway holds the request instead of answering 503.** The Immich mobile app doesn't render a "waking" page and doesn't reliably retry background uploads, so the request waits up to 90s for blackberry. Only on timeout does it return 503 with `Retry-After`.
 - **blackberry keeps its DHCP address through suspend.** Without `ignore-carrier` in [its netplan config](deployments/blackberry/netplan.yaml), systemd-networkd dropped the address when the link went down at suspend and re-ran DHCP on every wake: ~4.7s of a ~9s cold wake. The lease now renews in the background.
 - **gateway checks the stack's own port on the LAN, not hostd over the tailnet.** A TCP dial to the upstream takes ~15ms; a fresh TLS call to hostd from the Pi Zero takes ~0.7s, and after resume also waits for tailscaled to reconnect. It also proves the stack itself is up, not just blackberry. 300ms per check, every 250ms. Cold wake went from ~17s to ~8–9s. hostd is still used for `/suspend`.
@@ -84,21 +81,23 @@ Every wake, suspend and reachability change is logged as an event to Grafana Clo
 - **The HDD spins down via `hd-idle`, not the drive's own timer.** The WD10EZEX ignores `hdparm -S` (tested), so `hd-idle` sends ATA standby after 30 min without I/O ([`deployments/blackberry/hd-idle`](deployments/blackberry/hd-idle)), and a system-sleep hook restarts it on resume, when the drive powers up spinning. `/mnt/hdd` is mounted `noatime` so reads don't cause writes. 30 min, not less: each spin-up wears the drive too.
 - **WoL needs one L2 broadcast domain.** Accepted rather than building a cross-subnet relay.
 - **Events go straight to Grafana Cloud.** A self-hosted collector isn't worth it for low-volume audit events.
-- **Go binaries under systemd for gateway and hostd.** No runtime to install on a Pi Zero, and hostd must stay controllable while Docker itself redeploys. edge is a Docker image because Railway runs images.
-- **The UI has no build step and no runtime config.** Static files embedded verbatim in edge; same-origin with every API, so its paths are fixed. No Node toolchain anywhere.
+- **Go binaries under systemd for gateway and hostd.** No runtime to install on a Pi Zero, and hostd must stay controllable while Docker itself redeploys.
+- **The UI has no build step.** Static files uploaded verbatim; the only generated file is `config.js`, the backends' tailnet URLs, written by `task ui` from `.env` so the tailnet name stays out of the repo. Node is needed only on the dev machine, for `npx wrangler`.
 - **Deploys are manual only.** No CI, cron or hooks: unattended deploys aren't worth the risk on two devices.
 - **Secrets are plain dev-machine env vars.** One operator; an encrypted-secrets workflow isn't needed.
 
 ## Security
 
-- **edge is public and unauthenticated:** anyone with its URL can wake and suspend blackberry.
+- **The UI page is public, but grants nothing:** its `config.js` reveals the tailnet's hostnames, and only tailnet members can reach them.
 - **A public gateway route with `wake` is a public wake trigger:** anyone who finds the Funnel URL can wake blackberry, which then stays up for `idle_minutes`. Flag `wake` only on routes that need it, and make the rest tailnet-only.
-- gateway and hostd refuse to start unless bound to loopback or a tailnet address. edge binds publicly by design.
+- gateway and hostd refuse to start unless bound to loopback or a tailnet address.
 - **Gated stacks are reachable on the LAN only from raspberry.** They publish plain HTTP on blackberry's LAN IP, so [`stack-firewall`](deployments/blackberry/stack-firewall.service) (`task firewall`) drops connections to their ports from any other source. The rule is in Docker's `DOCKER-USER` chain, because published ports bypass ufw and `INPUT`, and matches the pre-DNAT port with conntrack, Docker's documented pattern. The unit is `PartOf=docker.service`, so the rule is re-added whenever Docker restarts. blackberry itself can still reach them (its traffic doesn't go through `FORWARD`). Adding a gated stack means adding its port to `PORTS` in the unit.
+- CORS is an allow-list of one origin, `UI_ORIGIN`. It's not auth: requests from other origins still reach the handler, which requires the identity header, and the browser just hides the response.
 - `/wake` also accepts a loopback caller with no identity (see Identity header in [`CONTEXT.md`](CONTEXT.md)).
 
 ## Known limitations
 
+- Wake and Suspend from the UI work only on a tailnet device. Browsers that restrict public pages calling private addresses (Chrome's local network access) may prompt or block, since `*.ts.net` resolves to 100.x addresses.
 - Wake is manual, except on gateway routes flagged `wake`. Any other request to a sleeping blackberry just fails.
 - gateway sends one WoL packet per wake. If it's lost, requests wait out the 90s timeout and get a 503.
 - A cold wake takes ~6.5s: ~1.1s TLS in `tailscale serve` on the Pi Zero (once per new connection), ~2.7s firmware resume, ~2.2s for the gigabit link to train, ~0.5s until the stack answers. None of it is software on blackberry any more.

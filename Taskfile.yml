@@ -1,4 +1,5 @@
 # Converges raspberry (gateway) and blackberry (hostd, Docker, HDD spindown, network, stack firewall) over plain ssh.
+# `task ui` deploys the UI to Cloudflare Pages; it isn't part of `task`.
 # Every run re-ships both binaries and restarts both services -- no diffing.
 # See DEPLOY.md.
 version: '3'
@@ -102,6 +103,7 @@ tasks:
             Environment=GATEWAY_PORT=${GATEWAY_PORT:-5000}
             Environment=BLACKBERRY_MAC_ADDRESS=${BLACKBERRY_MAC_ADDRESS:?set BLACKBERRY_MAC_ADDRESS}
             Environment=HOSTD_URL=${HOSTD_URL:?set HOSTD_URL}
+            Environment=UI_ORIGIN=${UI_ORIGIN:?set UI_ORIGIN}
 
   hostd:
     desc: Build and deploy hostd to blackberry
@@ -116,6 +118,17 @@ tasks:
           PORT: ${HOSTD_PORT:-5000}
           ENV: |
             Environment=HOSTD_PORT=${HOSTD_PORT:-5000}
+            Environment=UI_ORIGIN=${UI_ORIGIN:?set UI_ORIGIN}
+
+  ui:
+    desc: Deploy the UI to Cloudflare Pages (needs Node for npx wrangler; first run asks you to log in)
+    cmds:
+      - rm -rf dist/ui && mkdir -p dist/ui
+      - cp -r ui/index.html ui/app.js ui/style.css ui/site.webmanifest ui/icons dist/ui/
+      - >-
+        printf 'export default { gatewayBaseUrl: "%s", hostdBaseUrl: "%s" }\n'
+        "${GATEWAY_URL:?set GATEWAY_URL}" "${HOSTD_URL:?set HOSTD_URL}" > dist/ui/config.js
+      - npx wrangler pages deploy dist/ui --project-name=${CLOUDFLARE_PAGES_PROJECT:-cloudberry} --branch=main
 
   cleanup:
     desc: 'Stop and remove a service left behind by a rename: task cleanup DEVICE=RASPBERRY|BLACKBERRY OLD=<old-binary-name>'

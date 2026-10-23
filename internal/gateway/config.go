@@ -9,6 +9,7 @@ type EnvConfig struct {
 	Port       string
 	HostdURL   string
 	RoutesFile string
+	UIOrigin   string
 }
 
 // ConfigFromEnv reads the gateway's runtime configuration. BLACKBERRY_MAC_ADDRESS
@@ -22,5 +23,6 @@ func ConfigFromEnv() EnvConfig {
 		Port:       env.EnvOr("GATEWAY_PORT", "5000"),
 		HostdURL:   env.MustEnv("HOSTD_URL"),
 		RoutesFile: env.EnvOr("GATEWAY_ROUTES", "/etc/gateway/routes.json"),
+		UIOrigin:   env.EnvOr("UI_ORIGIN", ""),
 	}
 }

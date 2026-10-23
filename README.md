@@ -10,11 +10,10 @@ AI agents I work with; agent instructions are in [CLAUDE.md](CLAUDE.md).
 
 ```mermaid
 flowchart LR
-  browser([Browser]) -->|HTTPS| edge
-
-  subgraph railway[Railway]
-    edge["edge<br/>serves the UI"]
+  subgraph cf[Cloudflare Pages]
+    ui["UI<br/>static files"]
   end
+  browser([Browser on the tailnet]) -->|loads| ui
 
   subgraph lan[Home LAN]
     subgraph rb[raspberry · always on]
@@ -26,8 +25,8 @@ flowchart LR
     end
   end
 
-  edge -->|wake| gateway
-  edge -->|suspend, health| hostd
+  browser -->|wake| gateway
+  browser -->|suspend, health| hostd
   gateway -.->|Wake-on-LAN| bb
 ```
 
@@ -43,21 +42,22 @@ The repo is a monorepo holding everything in the diagram:
 
 | Part | Code | Runs on | Shipped as |
 |---|---|---|---|
-| **edge**: public entry point, serves the UI | [cmd/edge](cmd/edge/), [ui/](ui/) (embedded) | Railway | Docker image from [deployments/edge/Dockerfile](deployments/edge/Dockerfile), built by Railway |
+| **UI**: Wake/Suspend page | [ui/](ui/) | Cloudflare Pages | Static files, uploaded by `task ui` |
 | **gateway**: sends Wake-on-LAN; wakes blackberry on request and proxies stacks | [cmd/gateway](cmd/gateway/) | raspberry | Go binary cross-compiled for armv6, run by systemd |
 | **hostd**: suspend, health check | [cmd/hostd](cmd/hostd/) | blackberry | Go binary, run by systemd |
 | **stacks**: the apps, behind Caddy | [stacks/](stacks/) | blackberry | Docker Compose, started with `docker compose` (not `task`) |
 
-The three services are one Go module: each has its entrypoint in `cmd/<name>/`
+The two services are one Go module: each has its entrypoint in `cmd/<name>/`
 and its logic in `internal/<name>/`, and the rest of `internal/` is shared
 code. The stacks don't use it.
 
-edge reaches everything over a Tailscale network. It has no authentication
-yet; behind it, access control is tailnet membership.
+The UI is public static files; it works only from a device on the Tailscale
+network, because the browser calls gateway and hostd at their tailnet URLs.
+Access control is tailnet membership.
 
 ## Docs
 
 - [CONTEXT.md](CONTEXT.md): domain glossary, the vocabulary everything else uses
 - [DESIGN.md](DESIGN.md): design decisions, request paths, security, limitations
-- [DEPLOY.md](DEPLOY.md): deploying both machines with `task`
-- A README next to each component's code: [edge](cmd/edge/README.md), [gateway](cmd/gateway/README.md), [hostd](cmd/hostd/README.md), [ui](ui/README.md), [stacks](stacks/README.md)
+- [DEPLOY.md](DEPLOY.md): deploying both machines and the UI with `task`
+- A README next to each component's code: [gateway](cmd/gateway/README.md), [hostd](cmd/hostd/README.md), [ui](ui/README.md), [stacks](stacks/README.md)

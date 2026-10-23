@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/nikbogman/cloudberry/internal/cors"
 	"github.com/nikbogman/cloudberry/internal/eventlog"
 	"github.com/nikbogman/cloudberry/internal/gateway"
 )
@@ -29,7 +30,7 @@ func main() {
 	}
 	addr := net.JoinHostPort(cfg.BindHost, cfg.Port)
 	log.Printf("gateway listening on %s", addr)
-	go func() { log.Fatal(http.ListenAndServe(addr, handler)) }()
+	go func() { log.Fatal(http.ListenAndServe(addr, cors.Allow(cfg.UIOrigin, handler))) }()
 
 	router := gateway.NewRouter(cfg.HostdURL, cfg.MACAddress, sender, logger)
 	for _, r := range routes.Routes {

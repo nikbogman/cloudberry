@@ -3,11 +3,12 @@
 [Task](https://taskfile.dev/) over plain `ssh`, defined in the repo root
 [`Taskfile.yml`](Taskfile.yml). One run converges raspberry and blackberry:
 Docker installed on blackberry, and gateway and hostd deployed as systemd services
-served on the tailnet.
+served on the tailnet. `task ui` uploads the UI to Cloudflare Pages separately.
 
 Per-service deploy details:
 [gateway](cmd/gateway/README.md),
-[hostd](cmd/hostd/README.md). Vocabulary is in
+[hostd](cmd/hostd/README.md),
+[ui](ui/README.md#deployment). Vocabulary is in
 [`CONTEXT.md`](CONTEXT.md).
 
 ## Setup
@@ -44,6 +45,7 @@ task firewall       # just the gated-stack firewall, on blackberry
 task network        # just blackberry's netplan config; auto-rolls back after 2 min if blackberry drops off
 task hdd            # just hd-idle (HDD spindown), on blackberry
 task hostd          # just hostd, on blackberry
+task ui             # the UI, to Cloudflare Pages (not part of `task`)
 task docker         # just Docker on blackberry
 task tailscale      # install + join the tailnet, both devices (not part of `task`)
 task --dry          # print the commands without running them

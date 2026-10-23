@@ -13,3 +13,5 @@ dist/
 
 # Personal Claude Code permission overrides, e.g. SSH/Docker-context access
 /.claude/settings.local.json
+
+.wrangler/

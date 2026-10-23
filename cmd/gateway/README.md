@@ -3,7 +3,7 @@
 Runs on raspberry, the always-on Pi Zero W. It sends Wake-on-LAN to
 blackberry in two cases:
 
-- **The UI's Wake.** [edge](../edge/README.md) forwards it to `POST /wake` over the tailnet.
+- **The UI's Wake.** The browser calls `POST /wake` directly, over the tailnet.
 - **A request to a stack route flagged `wake`** in [`routes.json`](routes.json).
   gateway holds the request until the route's upstream accepts a TCP connection
   on the LAN, then reverse-proxies it. After `idle_minutes` with no route traffic it calls
@@ -46,6 +46,7 @@ machine; `task gateway` passes them to the unit. Bold variables are required.
 |---|---|
 | **`BLACKBERRY_MAC_ADDRESS`** | MAC address the magic packet targets. Validated at startup. |
 | **`HOSTD_URL`** | hostd's tailnet URL, as raspberry reaches it. |
+| **`UI_ORIGIN`** | The UI's Cloudflare Pages origin, allowed by CORS on `/wake`. Unset disables CORS (required by the deploy). |
 | **`GRAFANA_CLOUD_LOKI_URL`** | Grafana Cloud's Loki push endpoint. |
 | **`GRAFANA_CLOUD_LOKI_USER`** | Loki basic-auth username (numeric instance ID). |
 | **`GRAFANA_CLOUD_LOKI_API_KEY`** | Grafana Cloud Access Policy token, scoped to `logs:write`. |

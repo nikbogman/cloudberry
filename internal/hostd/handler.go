@@ -1,5 +1,5 @@
 // Package hostd runs on blackberry behind its own tailscale serve
-// instance. Only Edge calls it, server-side, so it needs no CORS.
+// instance. The UI calls it straight from the browser; main wraps it in CORS.
 package hostd
 
 import (

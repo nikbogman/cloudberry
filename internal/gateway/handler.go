@@ -1,5 +1,5 @@
 // Package gateway is raspberry's one service. It sends Wake-on-LAN, either for
-// the UI's Wake (edge forwards POST /wake over the tailnet) or on a request to
+// the UI's Wake (POST /wake, straight from the browser) or on a request to
 // a stack route that asks for it, and reverse-proxies those routes. It's on
 // raspberry because the magic packet is a LAN broadcast.
 package gateway
