@@ -5,8 +5,8 @@ blackberry in two cases:
 
 - **The UI's Wake.** [edge](../edge/README.md) forwards it to `POST /wake` over the tailnet.
 - **A request to a stack route flagged `wake`** in [`routes.json`](routes.json).
-  gateway holds the request until blackberry answers hostd's health check,
-  then reverse-proxies it. After `idle_minutes` with no route traffic it calls
+  gateway holds the request until the route's upstream accepts a TCP connection
+  on the LAN, then reverse-proxies it. After `idle_minutes` with no route traffic it calls
   hostd `/suspend`, but only if it auto-woke blackberry.
 
 It lives on raspberry because the magic packet is a LAN broadcast, which needs

@@ -1,4 +1,4 @@
-# Converges raspberry (gateway) and blackberry (hostd, Docker, HDD spindown) over plain ssh.
+# Converges raspberry (gateway) and blackberry (hostd, Docker, HDD spindown, stack firewall) over plain ssh.
 # Every run re-ships both binaries and restarts both services -- no diffing.
 # See DEPLOY.md.
 version: '3'
@@ -11,10 +11,11 @@ vars:
 
 tasks:
   default:
-    desc: Converge both devices (Docker, HDD spindown, gateway, hostd)
+    desc: Converge both devices (Docker, HDD spindown, firewall, gateway, hostd)
     cmds:
       - task: docker
       - task: hdd
+      - task: firewall
       - task: gateway
       - task: hostd
 
@@ -37,6 +38,18 @@ tasks:
         vars:
           DEVICE: BLACKBERRY
           CMD: (command -v docker >/dev/null || curl -fsSL https://get.docker.com | sh) && systemctl enable --now docker
+
+  firewall:
+    desc: Allow gated stack ports on blackberry only from raspberry (deployments/blackberry/stack-firewall.service)
+    cmds:
+      - scp deployments/blackberry/stack-firewall.service {{.BLACKBERRY}}:/tmp/
+      - task: _root
+        vars:
+          DEVICE: BLACKBERRY
+          CMD: >-
+            install -m644 /tmp/stack-firewall.service /etc/systemd/system/stack-firewall.service
+            && rm -f /tmp/stack-firewall.service
+            && systemctl daemon-reload && systemctl enable stack-firewall && systemctl restart stack-firewall
 
   hdd:
     desc: Spin blackberry's HDD down when idle (hd-idle, settings in deployments/blackberry/hd-idle)

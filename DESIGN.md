@@ -40,11 +40,11 @@ sequenceDiagram
     participant S as stack
 
     C->>G: request (Funnel, or tailnet-only)
-    G->>H: GET /health
+    G->>S: TCP dial on the LAN (300ms)
     alt blackberry asleep
         G->>G: WoL (one packet, shared by concurrent requests)
-        loop until reachable or 90s
-            G->>H: GET /health
+        loop every 250ms until it connects, or 90s
+            G->>S: TCP dial on the LAN
         end
     end
     G->>S: proxied request
@@ -72,7 +72,9 @@ Every wake, suspend and reachability change is logged as an event to Grafana Clo
 - **One port per gated stack, not path prefixes.** Per-app prefix support is inconsistent: Jellyfin wants the prefix kept, Immich refuses subpaths outright. That also ruled out an edge `/proxy/<stack>/` route. gateway gives each route its own HTTPS port on raspberry's single hostname. Stacks not in gateway's routes file keep their own tsnet node via Caddy (`caddy-tailscale`), tailnet-only and with no auto-wake.
 - **One service on raspberry, gateway, for both kinds of Wake.** The UI's Wake and wake-on-request both end in the same WoL packet from the same device, so they share one binary, one unit and one config. Auto-wake lives there, not in edge, because raspberry is the always-on device. Wake is still never implicit: only routes flagged `wake` in [`cmd/gateway/routes.json`](cmd/gateway/routes.json) trigger it, and the flag is the opt-in.
 - **gateway holds the request instead of answering 503.** The Immich mobile app doesn't render a "waking" page and doesn't reliably retry background uploads, so the request waits up to 90s for blackberry. Only on timeout does it return 503 with `Retry-After`.
-- **No shared state between raspberry and blackberry.** Awake is derived by probing hostd's health check, not stored. The route table is a file shipped by `task gateway`. A single gateway process makes one WoL per burst with an in-memory lock, so there's no Redis or other store.
+- **gateway checks the stack's own port on the LAN, not hostd over the tailnet.** A TCP dial to the upstream takes ~15ms; a fresh TLS call to hostd from the Pi Zero takes ~0.7s, and after resume also waits for tailscaled to reconnect. It also proves the stack itself is up, not just blackberry. 300ms per check, every 250ms. Cold wake went from ~17s to ~8–9s. hostd is still used for `/suspend`.
+- **Wake-path events ship after the packet, or in the background.** `SendEvent` is a synchronous HTTPS call to Grafana; on the Pi Zero it delayed both the WoL and the release of held requests.
+- **No shared state between raspberry and blackberry.** Awake is derived by probing the stack, not stored. The route table is a file shipped by `task gateway`. A single gateway process makes one WoL per burst with an in-memory lock, so there's no Redis or other store.
 - **gateway auto-suspends only what it auto-woke.** After `idle_minutes` with no request in flight and none finished, gateway calls hostd `/suspend`, but only if its own auto-wake brought blackberry up. A manual Wake from the UI is never undone behind your back.
 - **Public vs tailnet-only is per route, by port.** `public` routes are published with `tailscale funnel`, the rest with `tailscale serve` only. A tailnet-only route is never on Funnel, so the identity header is always injected by Tailscale and gateway rejects any request without it.
 - **Suspend-to-RAM only.** WoL after full shutdown (ACPI S5) is unreliable across BIOS/NIC configs. The suspend command isn't configurable.
@@ -90,12 +92,14 @@ Every wake, suspend and reachability change is logged as an event to Grafana Clo
 - **edge is public and unauthenticated:** anyone with its URL can wake and suspend blackberry.
 - **A public gateway route with `wake` is a public wake trigger:** anyone who finds the Funnel URL can wake blackberry, which then stays up for `idle_minutes`. Flag `wake` only on routes that need it, and make the rest tailnet-only.
 - gateway and hostd refuse to start unless bound to loopback or a tailnet address. edge binds publicly by design.
+- **Gated stacks are reachable on the LAN only from raspberry.** They publish plain HTTP on blackberry's LAN IP, so [`stack-firewall`](deployments/blackberry/stack-firewall.service) (`task firewall`) drops connections to their ports from any other source. The rule is in Docker's `DOCKER-USER` chain, because published ports bypass ufw and `INPUT`, and matches the pre-DNAT port with conntrack, Docker's documented pattern. The unit is `PartOf=docker.service`, so the rule is re-added whenever Docker restarts. blackberry itself can still reach them (its traffic doesn't go through `FORWARD`). Adding a gated stack means adding its port to `PORTS` in the unit.
 - `/wake` also accepts a loopback caller with no identity (see Identity header in [`CONTEXT.md`](CONTEXT.md)).
 
 ## Known limitations
 
 - Wake is manual, except on gateway routes flagged `wake`. Any other request to a sleeping blackberry just fails.
 - gateway sends one WoL packet per wake. If it's lost, requests wait out the 90s timeout and get a 503.
+- A cold wake still takes ~8–9s: ~1.2s TLS in `tailscale serve` on the Pi Zero, 0.5–3s firmware resume, ~0.7s until blackberry's link is up, then 3–6s until its port accepts connections from raspberry. That last gap is unexplained (a static ARP entry didn't help); the link negotiating 100Mbps, not 1Gbps, suggests a cable or switch-port problem worth fixing first.
 - gateway's idle timer sees only its routes' traffic: Immich's background jobs, or a stack used directly on the tailnet, don't keep blackberry awake, and suspend stalls them (see No workload drain).
 - gateway's upstreams must be reachable from raspberry: blackberry's tailnet or LAN address, or a stack's own Caddy tsnet hostname.
 - If raspberry and blackberry end up on different broadcast domains, WoL silently stops working.

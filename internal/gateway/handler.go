@@ -56,9 +56,11 @@ func (h *Handler) handleWake(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) doWake(identity string) error {
+	// Packet first: SendEvent is a synchronous call to Grafana, which on the
+	// Pi Zero would delay the wake.
+	err := h.sender.Send(h.macAddress)
 	h.logger.SendEvent("wake_requested", "requested", &identity, nil)
-
-	if err := h.sender.Send(h.macAddress); err != nil {
+	if err != nil {
 		h.logger.SendEvent("wake_failed", "failed", &identity, nil)
 		return err
 	}

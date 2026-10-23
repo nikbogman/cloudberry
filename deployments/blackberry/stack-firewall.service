@@ -1,0 +1,24 @@
+# /etc/systemd/system/stack-firewall.service on blackberry, shipped by
+# `task firewall`. Gated stacks publish plain HTTP on blackberry's LAN IP;
+# this drops connections to those ports from anyone but raspberry's gateway.
+# Docker's published ports bypass ufw/INPUT, so the rule goes in DOCKER-USER,
+# matched on the pre-DNAT port (Docker's documented pattern).
+[Unit]
+Description=stack-firewall -- gated stack ports reachable only from raspberry
+After=docker.service
+Requires=docker.service
+# Restarts with Docker, so the rule is back whenever Docker rebuilt its chains.
+PartOf=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+# raspberry's LAN IP, and the published ports of every gated stack
+# (cmd/gateway/routes.json upstreams).
+Environment=ALLOW=192.168.0.168
+Environment=PORTS=2283
+ExecStart=/bin/sh -c 'for p in $PORTS; do r="DOCKER-USER -p tcp -m conntrack --ctorigdstport $p --ctdir ORIGINAL ! -s $ALLOW -j DROP"; iptables -C $r 2>/dev/null || iptables -I $r; done'
+ExecStop=/bin/sh -c 'for p in $PORTS; do iptables -D DOCKER-USER -p tcp -m conntrack --ctorigdstport $p --ctdir ORIGINAL ! -s $ALLOW -j DROP 2>/dev/null; done; true'
+
+[Install]
+WantedBy=multi-user.target docker.service

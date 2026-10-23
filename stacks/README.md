@@ -67,9 +67,14 @@ A stack listed in [`cmd/gateway/routes.json`](../cmd/gateway/routes.json) is rea
 through [gateway](../cmd/gateway/README.md) on raspberry, which wakes blackberry on
 request. It skips Caddy: gateway terminates TLS, so the stack serves plain HTTP
 on a port published on blackberry's static LAN IP (never `0.0.0.0`, and not the
-tailnet IP, which may not exist yet when Docker starts). Example:
+tailnet IP, which may not exist yet when Docker starts). A firewall rule on
+blackberry lets only raspberry reach that port; see
+[DESIGN.md](../DESIGN.md#security). Example:
 [`immich/`](immich/).
 
 1. Compose and `.env` as above, plus the published port bound to the LAN IP.
 2. Add a route to `routes.json` with `"upstream": "http://<lan-ip>:<port>"`.
-3. `task gateway` to ship the routes.
+3. Add the port to `PORTS` in
+   [`stack-firewall.service`](../deployments/blackberry/stack-firewall.service),
+   then `task firewall`: only raspberry may reach it.
+4. `task gateway` to ship the routes.

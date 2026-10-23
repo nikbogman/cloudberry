@@ -38,8 +38,9 @@ Service-specific variables are documented in
 ## Running a Deploy
 
 ```sh
-task                # Docker + HDD spindown + gateway + hostd
+task                # Docker + HDD spindown + firewall + gateway + hostd
 task gateway        # just gateway (and its routes.json), on raspberry
+task firewall       # just the gated-stack firewall, on blackberry
 task hdd            # just hd-idle (HDD spindown), on blackberry
 task hostd          # just hostd, on blackberry
 task docker         # just Docker on blackberry
