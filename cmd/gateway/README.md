@@ -21,7 +21,7 @@ Code: [`internal/gateway/`](../../internal/gateway), entrypoint [`cmd/gateway/`]
 | Route | Behavior |
 |---|---|
 | `POST /wake` on `$GATEWAY_PORT` (published on 443) | Requires the identity header or a `127.0.0.1` caller. Sends WoL to `BLACKBERRY_MAC_ADDRESS`, logs `wake_requested`/`_succeeded`/`_failed`, returns `{"wake": ...}`. |
-| Each stack route, on its own `port` | Reverse-proxies to `upstream`, waking blackberry first if the route has `wake`. Logs `autowake_*` and `autosuspend_*`. |
+| Each stack route, on its own `port` or under its `path` on 443 | Reverse-proxies to `upstream`, waking blackberry first if the route has `wake`. Logs `autowake_*` and `autosuspend_*`. |
 
 ## Routes file
 
@@ -31,7 +31,8 @@ Code: [`internal/gateway/`](../../internal/gateway), entrypoint [`cmd/gateway/`]
 |---|---|
 | `idle_minutes` | Quiet time before gateway suspends blackberry. |
 | `name` | Label for logs. |
-| `port` | Loopback listen port and the HTTPS port published on raspberry's hostname. Unique per route. Never 443: `/wake` owns it. |
+| `port` | Loopback listen port, and the HTTPS port published on raspberry's hostname unless `path` is set. Unique per route. Never 443: `/wake` owns it. |
+| `path` | Optional. Publishes the route at `https://raspberry.<tailnet>.ts.net<path>` on 443 instead of on `port` (`tailscale serve --set-path`). Looks like `/name`. Tailscale strips the prefix, so the stack sees `/`. Only for stacks that work behind a prefix (APIs, not web UIs). Can't be `public`. |
 | `upstream` | Absolute URL of the stack, reachable from raspberry. |
 | `public` | `true` publishes with `tailscale funnel` (port must be 8443 or 10000). `false` publishes with `tailscale serve`, and gateway requires the identity header. |
 | `wake` | `true` sends WoL and holds the request while blackberry is asleep. `false` returns 502 while it's asleep. |

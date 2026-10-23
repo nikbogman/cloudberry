@@ -1,6 +1,7 @@
 {
   "idle_minutes": 30,
   "routes": [
-    {"name": "immich", "port": 8443, "upstream": "http://192.168.0.196:2283", "public": false, "wake": true}
+    {"name": "immich", "port": 8443, "upstream": "http://192.168.0.196:2283", "public": false, "wake": true},
+    {"name": "popcorn", "port": 8444, "path": "/popcorn", "upstream": "http://192.168.0.196:3000", "public": false, "wake": true}
   ]
 }

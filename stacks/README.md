@@ -71,11 +71,15 @@ request. It skips Caddy: gateway terminates TLS, so the stack serves plain HTTP
 on a port published on blackberry's static LAN IP (never `0.0.0.0`, and not the
 tailnet IP, which may not exist yet when Docker starts). A firewall rule on
 blackberry lets only raspberry reach that port; see
-[DESIGN.md](../DESIGN.md#security). Example:
-[`immich/`](immich/).
+[DESIGN.md](../DESIGN.md#security). Examples:
+[`immich/`](immich/) (own port 8443), [`popcorn/`](#popcorn) (path `/popcorn`).
 
 1. Compose and `.env` as above, plus the published port bound to the LAN IP.
 2. Add a route to `routes.json` with `"upstream": "http://<lan-ip>:<port>"`.
+   It gets its own HTTPS port on raspberry (`"port": 8444`), or, for an API
+   that works behind a prefix, a path on 443 (`"path": "/<name>"`, with
+   `port` as the loopback port only). Web UIs like Immich need their own port.
+   See [DESIGN.md](../DESIGN.md#design-decisions).
 3. Add the port to `PORTS` in
    [`stack-firewall.service`](../deployments/blackberry/stack-firewall.service),
    then `task firewall`: only raspberry may reach it.
@@ -115,3 +119,38 @@ Valkey has no users here: each stack gets its own DB index instead. Taken:
 | Index | Stack |
 |---|---|
 | 0 | immich |
+
+## Popcorn
+
+[`popcorn/`](popcorn/) is the API for the Popcorn mobile app
+([nikbogman/watchlist](https://github.com/nikbogman/watchlist), `server/`). It
+is gated at `https://raspberry.<tailnet>.ts.net/popcorn`, so sharing a reel from
+the phone wakes blackberry. The app polls the job while it runs, which keeps
+gateway's idle timer from firing. Tailnet-only: the phone needs Tailscale on
+(Android's "Always-on VPN").
+
+Compose builds the image on blackberry from the repo's `main`, so there's no
+registry. Redeploying with `--build` picks up new commits.
+
+Once:
+
+1. `stacks/db/new-database.sh popcorn` (done). It writes `DATABASE_URL` to
+   `popcorn/.env`.
+2. Add `LOGIN_PASSWORD`, `TMDB_API_KEY`, `GEMINI_API_KEY` and `POPCORN_BIND_IP`
+   (blackberry's LAN IP) to `popcorn/.env`.
+3. `task firewall` (port 3000 is in `PORTS`), then `task gateway` (route `/popcorn`).
+4. Instagram login. The session is stored in the database, so run the login on
+   the dev machine through the [tunnel](#shared-database), never on blackberry:
+   ```sh
+   cd <watchlist checkout>/server
+   DATABASE_URL=<LOCAL_DATABASE_URL from popcorn/.env> uv run python -m app.reels.login
+   ```
+   Repeat when reel jobs fail with the login hint.
+5. In the app's EAS `preview` environment, set
+   `EXPO_PUBLIC_API_URL=https://raspberry.<tailnet>.ts.net/popcorn`.
+
+Deploy or update:
+
+```sh
+docker compose --context blackberry -f stacks/popcorn/docker-compose.yml up -d --build
+```
