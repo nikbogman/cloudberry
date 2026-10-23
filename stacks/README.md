@@ -29,10 +29,12 @@ No Taskfile task, script or CI knows a stack exists.
 1. `stacks/<name>/docker-compose.yml`: plain Compose, `restart: unless-stopped`
    on every service, persistent data under `/srv/stacks/<name>/` (create it by
    hand), and join the external `stacks` network (`external: true`).
-2. Secrets go in `stacks/<name>/.env`, gitignored. It must exist on the machine
+2. Needs a database or a cache? Use the shared [`db` stack](#shared-database)
+   rather than adding your own Postgres or Valkey service.
+3. Secrets go in `stacks/<name>/.env`, gitignored. It must exist on the machine
    that runs `docker compose`, not on blackberry: `env_file` is resolved
    locally before the environment is sent over the ssh context.
-3. To make it reachable, add a site block to [`caddy/Caddyfile`](caddy/Caddyfile):
+4. To make it reachable, add a site block to [`caddy/Caddyfile`](caddy/Caddyfile):
    ```caddyfile
    :443 {
        bind tailscale/<name>
@@ -42,7 +44,7 @@ No Taskfile task, script or CI knows a stack exists.
        reverse_proxy <name>:<port>
    }
    ```
-4. Redeploy Caddy: `docker compose --context blackberry -f stacks/caddy/docker-compose.yml up -d`.
+5. Redeploy Caddy: `docker compose --context blackberry -f stacks/caddy/docker-compose.yml up -d`.
 
 ## Caddy
 
@@ -78,3 +80,31 @@ blackberry lets only raspberry reach that port; see
    [`stack-firewall.service`](../deployments/blackberry/stack-firewall.service),
    then `task firewall`: only raspberry may reach it.
 4. `task gateway` to ship the routes.
+
+## Shared database
+
+[`db/`](db/) runs the only Postgres and Valkey on blackberry. Stacks join its
+`db` network (`external: true`) and connect to `postgres:5432` and
+`valkey:6379`; nothing is published. Postgres is the official 17 image plus
+pgvector. Start it before any stack that uses it.
+Data is under `/srv/stacks/db/` on the SSD. Rationale:
+[DESIGN.md](../DESIGN.md#design-decisions).
+
+Giving a stack its own database:
+
+```sh
+docker --context blackberry exec -it db-postgres-1 psql -U postgres
+```
+```sql
+CREATE ROLE <name> LOGIN PASSWORD '<password>';
+CREATE DATABASE <name> OWNER <name>;
+```
+
+Put the password in `stacks/<name>/.env`. Only Immich's role is a superuser,
+because Immich requires it.
+
+Valkey has no users here: each stack gets its own DB index instead. Taken:
+
+| Index | Stack |
+|---|---|
+| 0 | immich |
