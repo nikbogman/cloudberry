@@ -2,11 +2,11 @@
 
 [Task](https://taskfile.dev/) over plain `ssh`, defined in the repo root
 [`Taskfile.yml`](Taskfile.yml). One run converges raspberry and blackberry:
-Docker installed on blackberry, and waker and hostd deployed as systemd services
+Docker installed on blackberry, and gateway and hostd deployed as systemd services
 served on the tailnet.
 
 Per-service deploy details:
-[waker](cmd/waker/README.md),
+[gateway](cmd/gateway/README.md),
 [hostd](cmd/hostd/README.md). Vocabulary is in
 [`CONTEXT.md`](CONTEXT.md).
 
@@ -32,14 +32,15 @@ joined the tailnet, use a LAN address. Any `~/.ssh/config` alias works too,
 including one with a non-default port.
 
 Service-specific variables are documented in
-[waker](cmd/waker/README.md#environment) and
+[gateway](cmd/gateway/README.md#environment) and
 [hostd](cmd/hostd/README.md#environment).
 
 ## Running a Deploy
 
 ```sh
-task                # Docker + waker + hostd
-task waker          # just waker, on raspberry
+task                # Docker + HDD spindown + gateway + hostd
+task gateway        # just gateway (and its routes.json), on raspberry
+task hdd            # just hd-idle (HDD spindown), on blackberry
 task hostd          # just hostd, on blackberry
 task docker         # just Docker on blackberry
 task tailscale      # install + join the tailnet, both devices (not part of `task`)
@@ -59,7 +60,7 @@ deploy the new name:
 
 ```sh
 task cleanup DEVICE=RASPBERRY OLD=old-binary-name
-task waker
+task gateway
 ```
 
 `cleanup` stops and disables `OLD`, deletes its unit and binary, and reloads
@@ -72,12 +73,12 @@ Run against systemd-capable throwaway containers by pointing the ssh targets at
 them:
 
 ```sh
-docker run -d --name waker-test --privileged --cgroupns=host \
+docker run -d --name gateway-test --privileged --cgroupns=host \
   -v /sys/fs/cgroup:/sys/fs/cgroup:rw -p 2201:22 jrei/systemd-debian:12
 # enable openssh-server, install sudo, seed authorized_keys via `docker exec`
 
-# ~/.ssh/config: Host waker-test / HostName localhost / Port 2201 / User root
-RASPBERRY_HOST=waker-test RASPBERRY_SSH_USER=root task waker
+# ~/.ssh/config: Host gateway-test / HostName localhost / Port 2201 / User root
+RASPBERRY_HOST=gateway-test RASPBERRY_SSH_USER=root task gateway
 ```
 
 `tailscale serve` fails in a container that isn't on the tailnet; everything

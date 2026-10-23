@@ -1,0 +1,7 @@
+# /etc/default/hd-idle on blackberry, shipped by `task hdd`.
+# The WD10EZEX ignores its own standby timer (hdparm -S), so hd-idle watches
+# /proc/diskstats and sends ATA standby after -i seconds without I/O.
+# 1800 = 30 min. Shorter means more spin-ups, which wear the drive too.
+# `-i 0` first: never spin down anything else (the NVMe root).
+START_HD_IDLE=true
+HD_IDLE_OPTS="-i 0 -a /dev/disk/by-id/ata-WDC_WD10EZEX-08WN4A0_WD-WCC6Y1PP7HJA -i 1800 -c ata"

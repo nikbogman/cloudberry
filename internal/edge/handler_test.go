@@ -31,15 +31,15 @@ func mustParse(t *testing.T, raw string) *url.URL {
 	return u
 }
 
-// newTestHandler points waker and hostd at local echo backends.
+// newTestHandler points gateway and hostd at local echo backends.
 func newTestHandler(t *testing.T) http.Handler {
 	t.Helper()
-	waker := echoBackend(t, "waker")
+	gateway := echoBackend(t, "gateway")
 	hostd := echoBackend(t, "hostd")
 	return NewHandler(Config{
-		WakerURL: mustParse(t, waker.URL),
-		HostdURL: mustParse(t, hostd.URL),
-		UIAssets: fstest.MapFS{"index.html": {Data: []byte("<html>ui</html>")}},
+		GatewayURL: mustParse(t, gateway.URL),
+		HostdURL:   mustParse(t, hostd.URL),
+		UIAssets:   fstest.MapFS{"index.html": {Data: []byte("<html>ui</html>")}},
 	}, http.DefaultTransport)
 }
 
@@ -54,7 +54,7 @@ func serve(h http.Handler, method, path string) *httptest.ResponseRecorder {
 func TestAPIRoutesForwardWithThePrefixStrippedAndNoCallerIdentity(t *testing.T) {
 	h := newTestHandler(t)
 	cases := []struct{ method, path, want string }{
-		{http.MethodPost, "/api/waker/wake", "waker POST /wake identity="},
+		{http.MethodPost, "/api/gateway/wake", "gateway POST /wake identity="},
 		{http.MethodGet, "/api/hostd/health", "hostd GET /health identity="},
 		{http.MethodPost, "/api/hostd/suspend", "hostd POST /suspend identity="},
 	}
@@ -68,7 +68,7 @@ func TestAPIRoutesForwardWithThePrefixStrippedAndNoCallerIdentity(t *testing.T) 
 
 func TestOnlyTheKnownAPIRoutesAreForwarded(t *testing.T) {
 	h := newTestHandler(t)
-	for _, path := range []string{"/api/waker/other", "/api/hostd/other"} {
+	for _, path := range []string{"/api/gateway/other", "/api/hostd/other"} {
 		if rec := serve(h, http.MethodPost, path); rec.Code != http.StatusNotFound {
 			t.Errorf("POST %s: got %d, want 404", path, rec.Code)
 		}

@@ -1,9 +1,9 @@
 # Stacks
 
 User-facing workloads running on blackberry as plain Docker Compose: outside
-the Deploy, unknown to waker and hostd. Each one gets its own tsnet hostname via
-the `caddy` stack, reachable on the tailnet only. Rationale:
-[DESIGN.md](../DESIGN.md#design-decisions).
+the Deploy, unknown to hostd. Each one gets its own tsnet hostname via
+the `caddy` stack, reachable on the tailnet only, unless it's a
+[gated stack](#gated-stacks). Rationale: [DESIGN.md](../DESIGN.md#design-decisions).
 
 ## One-time setup (per dev machine, already done)
 
@@ -60,3 +60,16 @@ each stack is its own tailnet node rather than a path on a shared hostname.
   block; the plugin's `TS_AUTHKEY_<NODE>` fallback is deprecated.
 - Caddy's `.env` is at the repo root (`env_file: ../../.env`), not
   `stacks/caddy/.env`. Move it when convenient.
+
+## Gated stacks
+
+A stack listed in [`cmd/gateway/routes.json`](../cmd/gateway/routes.json) is reached
+through [gateway](../cmd/gateway/README.md) on raspberry, which wakes blackberry on
+request. It skips Caddy: gateway terminates TLS, so the stack serves plain HTTP
+on a port published on blackberry's static LAN IP (never `0.0.0.0`, and not the
+tailnet IP, which may not exist yet when Docker starts). Example:
+[`immich/`](immich/).
+
+1. Compose and `.env` as above, plus the published port bound to the LAN IP.
+2. Add a route to `routes.json` with `"upstream": "http://<lan-ip>:<port>"`.
+3. `task gateway` to ship the routes.

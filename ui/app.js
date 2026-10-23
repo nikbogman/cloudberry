@@ -13,7 +13,7 @@ const HEALTH_CHECK_TIMEOUT_MS = 5_000
  * function that stops polling.
  */
 export function mountUi(container, options) {
-  const { hostdBaseUrl, wakerBaseUrl, intervalMs = DEFAULT_POLL_INTERVAL_MS } = options
+  const { hostdBaseUrl, gatewayBaseUrl, intervalMs = DEFAULT_POLL_INTERVAL_MS } = options
 
   container.innerHTML = `
     <h1>Homelab Control</h1>
@@ -97,11 +97,11 @@ export function mountUi(container, options) {
   }
 
   wakeButton.addEventListener('click', () => {
-    void runAction(wakeButton, 'Wake', 'Waking…', () => fetch(`${wakerBaseUrl}/wake`, { method: 'POST' }))
+    void runAction(wakeButton, 'Wake', 'Waking…', () => fetch(`${gatewayBaseUrl}/wake`, { method: 'POST' }))
   })
 
   suspendButton.addEventListener('click', () => {
-    // Suspend lives on hostd (not waker) -- unlike Wake.
+    // Suspend lives on hostd (not gateway) -- unlike Wake.
     void runAction(suspendButton, 'Suspend', 'Suspending…', () =>
       fetch(`${hostdBaseUrl}/suspend`, { method: 'POST' }),
     )

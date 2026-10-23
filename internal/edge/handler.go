@@ -1,5 +1,5 @@
 // Package edge is the public entry point: it hosts the UI and forwards
-// to waker and hostd over the tailnet, so the browser only ever talks to
+// to gateway and hostd over the tailnet, so the browser only ever talks to
 // one origin.
 //
 // NO AUTHENTICATION: anyone with the URL can wake and suspend blackberry.
@@ -16,9 +16,9 @@ import (
 )
 
 type Config struct {
-	WakerURL *url.URL
-	HostdURL *url.URL
-	UIAssets fs.FS
+	GatewayURL *url.URL
+	HostdURL   *url.URL
+	UIAssets   fs.FS
 }
 
 // NewHandler proxies through transport, which in production dials over the
@@ -38,7 +38,7 @@ func NewHandler(cfg Config, transport http.RoundTripper) http.Handler {
 	}
 
 	mux := http.NewServeMux()
-	mux.Handle("POST /api/waker/wake", http.StripPrefix("/api/waker", proxyTo(cfg.WakerURL)))
+	mux.Handle("POST /api/gateway/wake", http.StripPrefix("/api/gateway", proxyTo(cfg.GatewayURL)))
 	hostd := http.StripPrefix("/api/hostd", proxyTo(cfg.HostdURL))
 	mux.Handle("GET /api/hostd/health", hostd)
 	mux.Handle("POST /api/hostd/suspend", hostd)

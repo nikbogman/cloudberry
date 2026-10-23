@@ -17,7 +17,7 @@ in [`index.html`](index.html):
 - Polls `/api/hostd/health` every 12s (configurable), renders
   `Checking…` / `Reachable` / `Unreachable`.
 - **Wake button** — enabled unless already reachable. `POST`s to
-  `/api/waker/wake`.
+  `/api/gateway/wake`.
 - **Suspend button** — enabled unless already unreachable. `POST`s to
   `/api/hostd/suspend`.
 - Failures surface in an error line; successes don't.
@@ -25,8 +25,8 @@ in [`index.html`](index.html):
 ## Configuration
 
 None. Everything is same-origin with Edge, so `index.html` passes the fixed
-`/api/hostd` and `/api/waker` base paths to `mountUi`, and Edge forwards them
-to [hostd](../cmd/hostd/README.md) and [waker](../cmd/waker/README.md).
+`/api/hostd` and `/api/gateway` base paths to `mountUi`, and Edge forwards them
+to [hostd](../cmd/hostd/README.md) and [gateway](../cmd/gateway/README.md).
 
 ## Development
 

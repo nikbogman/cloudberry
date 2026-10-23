@@ -18,7 +18,7 @@ flowchart LR
 
   subgraph lan[Home LAN]
     subgraph rb[raspberry · always on]
-      waker
+      gateway
     end
     subgraph bb[blackberry · suspended until needed]
       hostd
@@ -26,9 +26,9 @@ flowchart LR
     end
   end
 
-  edge -->|wake| waker
+  edge -->|wake| gateway
   edge -->|suspend, health| hostd
-  waker -.->|Wake-on-LAN| bb
+  gateway -.->|Wake-on-LAN| bb
 ```
 
 Machines are named for their hardware (both are berries; `cloudberry` is the
@@ -44,7 +44,7 @@ The repo is a monorepo holding everything in the diagram:
 | Part | Code | Runs on | Shipped as |
 |---|---|---|---|
 | **edge**: public entry point, serves the UI | [cmd/edge](cmd/edge/), [ui/](ui/) (embedded) | Railway | Docker image from [deployments/edge/Dockerfile](deployments/edge/Dockerfile), built by Railway |
-| **waker**: sends Wake-on-LAN | [cmd/waker](cmd/waker/) | raspberry | Go binary cross-compiled for armv6, run by systemd |
+| **gateway**: sends Wake-on-LAN; wakes blackberry on request and proxies stacks | [cmd/gateway](cmd/gateway/) | raspberry | Go binary cross-compiled for armv6, run by systemd |
 | **hostd**: suspend, health check | [cmd/hostd](cmd/hostd/) | blackberry | Go binary, run by systemd |
 | **stacks**: the apps, behind Caddy | [stacks/](stacks/) | blackberry | Docker Compose, started with `docker compose` (not `task`) |
 
@@ -60,4 +60,4 @@ yet; behind it, access control is tailnet membership.
 - [CONTEXT.md](CONTEXT.md): domain glossary, the vocabulary everything else uses
 - [DESIGN.md](DESIGN.md): design decisions, request paths, security, limitations
 - [DEPLOY.md](DEPLOY.md): deploying both machines with `task`
-- A README next to each component's code: [edge](cmd/edge/README.md), [waker](cmd/waker/README.md), [hostd](cmd/hostd/README.md), [ui](ui/README.md), [stacks](stacks/README.md)
+- A README next to each component's code: [edge](cmd/edge/README.md), [gateway](cmd/gateway/README.md), [hostd](cmd/hostd/README.md), [ui](ui/README.md), [stacks](stacks/README.md)

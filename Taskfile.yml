@@ -1,4 +1,4 @@
-# Converges raspberry (waker) and blackberry (hostd, Docker) over plain ssh.
+# Converges raspberry (gateway) and blackberry (hostd, Docker, HDD spindown) over plain ssh.
 # Every run re-ships both binaries and restarts both services -- no diffing.
 # See DEPLOY.md.
 version: '3'
@@ -11,10 +11,11 @@ vars:
 
 tasks:
   default:
-    desc: Converge both devices (Docker, waker, hostd)
+    desc: Converge both devices (Docker, HDD spindown, gateway, hostd)
     cmds:
       - task: docker
-      - task: waker
+      - task: hdd
+      - task: gateway
       - task: hostd
 
   tailscale:
@@ -37,20 +38,41 @@ tasks:
           DEVICE: BLACKBERRY
           CMD: (command -v docker >/dev/null || curl -fsSL https://get.docker.com | sh) && systemctl enable --now docker
 
-  waker:
-    desc: Build and deploy waker to raspberry
+  hdd:
+    desc: Spin blackberry's HDD down when idle (hd-idle, settings in deployments/blackberry/hd-idle)
     cmds:
+      - scp deployments/blackberry/hd-idle deployments/blackberry/hd-idle.sleep {{.BLACKBERRY}}:/tmp/
+      - task: _root
+        vars:
+          DEVICE: BLACKBERRY
+          CMD: >-
+            (command -v hd-idle >/dev/null || DEBIAN_FRONTEND=noninteractive apt-get install -y -qq hd-idle)
+            && install -m644 /tmp/hd-idle /etc/default/hd-idle
+            && install -m755 /tmp/hd-idle.sleep /usr/lib/systemd/system-sleep/hd-idle
+            && rm -f /tmp/hd-idle /tmp/hd-idle.sleep
+            && systemctl enable hd-idle && systemctl restart hd-idle
+
+  gateway:
+    desc: Build and deploy gateway (routes from cmd/gateway/routes.json) to raspberry
+    cmds:
+      - scp cmd/gateway/routes.json {{.RASPBERRY}}:/tmp/gateway-routes.json
+      - task: _root
+        vars:
+          DEVICE: RASPBERRY
+          CMD: install -D -m644 /tmp/gateway-routes.json /etc/gateway/routes.json && rm -f /tmp/gateway-routes.json
       - task: _service
         vars:
           DEVICE: RASPBERRY
-          BIN: waker
+          BIN: gateway
           # Pi Zero W is ARM1176 (armv6). A Pi Zero 2 W would need GOARCH=arm64.
           GOENV: GOARCH=arm GOARM=6
-          DESC: waker -- sends Wake-on-LAN to blackberry
-          PORT: ${WAKER_PORT:-5000}
+          DESC: gateway -- Wake-on-LAN for blackberry, and wake-on-request proxy to its stacks
+          # Serves /wake on 443. Stack routes publish their own ports at startup.
+          PORT: ${GATEWAY_PORT:-5000}
           ENV: |
-            Environment=WAKER_PORT=${WAKER_PORT:-5000}
+            Environment=GATEWAY_PORT=${GATEWAY_PORT:-5000}
             Environment=BLACKBERRY_MAC_ADDRESS=${BLACKBERRY_MAC_ADDRESS:?set BLACKBERRY_MAC_ADDRESS}
+            Environment=HOSTD_URL=${HOSTD_URL:?set HOSTD_URL}
 
   hostd:
     desc: Build and deploy hostd to blackberry
@@ -120,7 +142,7 @@ tasks:
             && install -m644 /tmp/{{.BIN}}.service /etc/systemd/system/{{.BIN}}.service
             && rm -f /tmp/{{.BIN}} /tmp/{{.BIN}}.service
             && systemctl daemon-reload && systemctl enable {{.BIN}} && systemctl restart {{.BIN}}
-            && tailscale serve --bg --https=443 localhost:{{.PORT}}
+            {{if .PORT}}&& tailscale serve --bg --https=443 localhost:{{.PORT}}{{end}}
 
   # Runs CMD as root on DEVICE. The device's <DEVICE>_SUDO_PASSWORD, if set,
   # goes to sudo on stdin (sudo-rs on blackberry needs it); sudo ignores

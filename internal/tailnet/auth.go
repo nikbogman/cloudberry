@@ -14,8 +14,9 @@ const (
 	IdentityHeader = "Tailscale-User-Login"
 	// LoopbackIdentity is assigned to a caller on 127.0.0.1 with no
 	// identity header -- a script or shell on the device itself. Events
-	// logged before 2026-09-12 carry the old value, "gateway".
-	LoopbackIdentity = "waker"
+	// logged from 2026-09-12 to 2026-10-23 carry "waker", the service's
+	// name in between; earlier ones carry "gateway" too.
+	LoopbackIdentity = "gateway"
 )
 
 type contextKey int

@@ -1,7 +1,7 @@
 # Edge
 
 The public entry point, hosted on Railway. Serves the [UI](../../ui/README.md) and forwards
-to [waker](../waker/README.md) and [hostd](../hostd/README.md) over the
+to [gateway](../gateway/README.md) and [hostd](../hostd/README.md) over the
 tailnet, so the browser only ever talks to one origin.
 
 **No authentication.** Anyone with the URL can wake and suspend blackberry. Deliberate and temporary — auth will be added later.
@@ -13,7 +13,7 @@ entrypoint [`cmd/edge/`](.).
 
 | Route | Forwards to |
 |---|---|
-| `POST /api/waker/wake` | waker `POST /wake` |
+| `POST /api/gateway/wake` | gateway `POST /wake` |
 | `GET /api/hostd/health` | hostd `GET /health` |
 | `POST /api/hostd/suspend` | hostd `POST /suspend` |
 | `/ui/*` | The UI's static files, `//go:embed`ded from `ui/`. |
@@ -28,7 +28,7 @@ Edge joins the tailnet as its own node (`edge`) via
 [`tsnet`](https://pkg.go.dev/tailscale.com/tsnet), only to dial out. It listens
 on Railway's public port, not on the tailnet.
 
-`TS_AUTHKEY` **must be user-owned (untagged)**: waker and hostd 401
+`TS_AUTHKEY` **must be user-owned (untagged)**: gateway and hostd 401
 without the Identity header, and `tailscale serve` only injects it for
 user-owned nodes. Every Edge request is logged under that user.
 
@@ -46,10 +46,10 @@ are required.
 
 | Variable | Purpose |
 |---|---|
-| **`WAKER_URL`** | waker origin, e.g. `https://<waker>.<tailnet>.ts.net`. |
+| **`GATEWAY_URL`** | gateway origin, e.g. `https://raspberry.<tailnet>.ts.net`. Was `WAKER_URL`. |
 | **`HOSTD_URL`** | hostd origin. |
 | **`TS_STATE_DIR`** | tsnet node state. The image defaults it to `/data/tsnet`. |
-| **`GRAFANA_CLOUD_LOKI_URL`**, **`_USER`**, **`_API_KEY`** | Same trio as [waker](../waker/README.md#environment). |
+| **`GRAFANA_CLOUD_LOKI_URL`**, **`_USER`**, **`_API_KEY`** | Same trio as [gateway](../gateway/README.md#environment). |
 | `TS_AUTHKEY` | Needed on first start (or after state is lost). |
 | `TS_DEBUG_MTU` | Tailnet MTU. The image sets `1200`: at tsnet's default 1280, replies from the homelab to Railway are lost and every tailnet request hangs. |
 | `PORT` | Listen port (default `8080`; Railway sets it). |

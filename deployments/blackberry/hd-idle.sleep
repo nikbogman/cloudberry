@@ -1,0 +1,6 @@
+#!/bin/sh
+# /usr/lib/systemd/system-sleep/hd-idle on blackberry, shipped by `task hdd`.
+# The drive powers up spinning on resume, but hd-idle still thinks it's in
+# standby and would never spin it down again. A restart resets that.
+[ "$1" = post ] && systemctl --no-block restart hd-idle
+exit 0
