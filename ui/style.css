@@ -1,49 +1,249 @@
 :root {
-  font-family: system-ui, sans-serif;
-  color-scheme: light dark;
+  color-scheme: light;
+  --bg: #ffffff;
+  --card: #ffffff;
+  --text: #1d1b22;
+  --muted: #6e6a78;
+  --border: #e4e0ea;
+  --accent: #7c3aed;
+  --accent-text: #ffffff;
+  --ok: #15803d;
+  --ok-tint: #dcfce7;
+  --bad: #b91c1c;
+  --bad-tint: #fee2e2;
+  --idle: #6e6a78;
+  --idle-tint: #ece9f1;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
   display: flex;
   justify-content: center;
-  padding: 3rem 1rem;
+  align-items: flex-start;
+  padding: max(2rem, env(safe-area-inset-top)) 1rem 2rem;
+}
+
+#app {
+  width: 100%;
+  max-width: 26rem;
+}
+
+svg.icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0 0.25rem 1.25rem;
+}
+
+header img {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+h1 {
+  font-size: 1.35rem;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  padding: 1.25rem;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px rgb(0 0 0 / 0.04);
+}
+
+.host {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.host-icon {
+  display: grid;
+  place-items: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 1rem;
+  background: var(--tint);
+  color: var(--tone);
+  transition: background 0.2s, color 0.2s;
+}
+
+.host-icon svg.icon {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.host-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.host-name {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1.05rem;
 }
 
 #reachability-status {
-  font-size: 1.25rem;
+  margin: 0.15rem 0 0;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--tone);
   font-weight: 600;
 }
 
-#reachability-status[data-state='checking'] {
-  color: gray;
+#reachability-status::before {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: currentColor;
 }
 
-#reachability-status[data-state='reachable'] {
-  color: seagreen;
+.card[data-state='checking'] {
+  --tone: var(--idle);
+  --tint: var(--idle-tint);
 }
 
-#reachability-status[data-state='unreachable'] {
-  color: firebrick;
+.card[data-state='reachable'] {
+  --tone: var(--ok);
+  --tint: var(--ok-tint);
 }
 
-.actions {
-  display: flex;
+.card[data-state='unreachable'] {
+  --tone: var(--bad);
+  --tint: var(--bad-tint);
+}
+
+.card[data-state='checking'] #reachability-status::before {
+  animation: pulse 1s ease-in-out infinite;
+}
+
+#last-checked {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  border-radius: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  margin-top: 0.75rem;
+  min-height: 3rem;
+  padding: 0 1rem;
+  font-weight: 600;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.1s, opacity 0.2s, background 0.2s;
+}
+
+button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 button:disabled {
-  opacity: 0.6;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
+#refresh-button {
+  min-height: 2.75rem;
+  width: 2.75rem;
+  padding: 0;
+  color: var(--muted);
+}
+
+#refresh-button[aria-busy='true'] svg.icon {
+  animation: spin 0.9s linear infinite;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+}
+
+#wake-button {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
 #action-error {
-  margin-top: 0.75rem;
-  color: firebrick;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 1rem 0 0;
+  padding: 0.75rem 0.85rem;
+  border-radius: 0.85rem;
+  background: var(--bad-tint);
+  color: var(--bad);
+  font-size: 0.9rem;
   font-weight: 600;
 }
 
 #action-error[hidden] {
   display: none;
+}
+
+footer {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
 }
