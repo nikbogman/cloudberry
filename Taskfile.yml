@@ -1,4 +1,4 @@
-# Converges raspberry (gateway) and blackberry (hostd, Docker, HDD spindown, stack firewall) over plain ssh.
+# Converges raspberry (gateway) and blackberry (hostd, Docker, HDD spindown, network, stack firewall) over plain ssh.
 # Every run re-ships both binaries and restarts both services -- no diffing.
 # See DEPLOY.md.
 version: '3'
@@ -11,10 +11,11 @@ vars:
 
 tasks:
   default:
-    desc: Converge both devices (Docker, HDD spindown, firewall, gateway, hostd)
+    desc: Converge both devices (Docker, HDD spindown, network, firewall, gateway, hostd)
     cmds:
       - task: docker
       - task: hdd
+      - task: network
       - task: firewall
       - task: gateway
       - task: hostd
@@ -38,6 +39,21 @@ tasks:
         vars:
           DEVICE: BLACKBERRY
           CMD: (command -v docker >/dev/null || curl -fsSL https://get.docker.com | sh) && systemctl enable --now docker
+
+  network:
+    desc: Install blackberry's netplan config (deployments/blackberry/netplan.yaml); rolls back by itself if blackberry drops off
+    cmds:
+      - scp deployments/blackberry/netplan.yaml deployments/blackberry/netplan-apply.sh {{.BLACKBERRY}}:/tmp/
+      - task: _root
+        vars:
+          DEVICE: BLACKBERRY
+          CMD: sh /tmp/netplan-apply.sh
+      # A fresh ssh session proves blackberry is still on the network; only then cancel the rollback.
+      - sleep 15
+      - task: _root
+        vars:
+          DEVICE: BLACKBERRY
+          CMD: systemctl stop netplan-rollback.timer
 
   firewall:
     desc: Allow gated stack ports on blackberry only from raspberry (deployments/blackberry/stack-firewall.service)

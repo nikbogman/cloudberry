@@ -1,0 +1,16 @@
+# /etc/netplan/00-installer-config.yaml on blackberry, shipped by `task network`.
+# ignore-carrier keeps the DHCP address when the link drops at suspend, so it
+# needn't be re-acquired on every wake (~4.7s measured); the lease renews in
+# the background.
+network:
+  version: 2
+  ethernets:
+    eno1:
+      match:
+        macaddress: a4:ae:12:85:ba:57
+      set-name: eno1
+      dhcp4: true
+      dhcp6: true
+      wakeonlan: true
+      ignore-carrier: true
+  wifis: {}
