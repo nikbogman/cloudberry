@@ -20,6 +20,9 @@ in [`index.html`](index.html):
   gateway's `/wake`.
 - **Suspend button** — enabled unless already unreachable. `POST`s to
   hostd's `/suspend`.
+- **Auto-wake / Auto-suspend switches** — read from gateway's `GET /auto`
+  on load, set with a form-encoded `POST /auto`. Disabled while gateway is
+  unreachable.
 - Failures surface in an error line; successes don't.
 
 The browser calls [gateway](../cmd/gateway/README.md) and

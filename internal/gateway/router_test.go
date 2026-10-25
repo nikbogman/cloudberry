@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -95,5 +96,37 @@ func TestUpstreamAddrDefaultsPort(t *testing.T) {
 		if got := upstreamAddr(u); got != want {
 			t.Errorf("%s: got %s, want %s", in, got, want)
 		}
+	}
+}
+
+func TestShortIdleRouteDoesNotCutLongOneShort(t *testing.T) {
+	g := NewRouter("http://unused", "00:11:22:33:44:55", &fakeBlackberry{}, noopLogger{})
+	g.touch(30 * time.Minute)
+	g.touch(5 * time.Minute)
+	if left := time.Until(time.Unix(0, g.idleAt.Load())); left < 29*time.Minute {
+		t.Fatalf("deadline pulled in to %s", left)
+	}
+	g.idleAt.Store(0)
+	g.touch(5 * time.Minute)
+	if left := time.Until(time.Unix(0, g.idleAt.Load())); left > 5*time.Minute {
+		t.Fatalf("deadline %s, want <= 5m", left)
+	}
+}
+
+func TestAutoSwitches(t *testing.T) {
+	g := NewRouter("http://unused", "00:11:22:33:44:55", &fakeBlackberry{}, noopLogger{})
+	req := httptest.NewRequest("POST", "/auto", strings.NewReader("suspend=false"))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rec := httptest.NewRecorder()
+	g.AutoHandler().ServeHTTP(rec, req)
+	if rec.Body.String() != `{"suspend":false,"wake":true}`+"\n" {
+		t.Fatalf("got %d %q", rec.Code, rec.Body.String())
+	}
+	// Off means no suspend call, even when idle after an auto-wake.
+	g.autoWoken.Store(true)
+	g.idleAt.Store(0)
+	g.suspendIfIdle(t.Context())
+	if !g.autoWoken.Load() {
+		t.Fatal("suspended with auto-suspend off")
 	}
 }

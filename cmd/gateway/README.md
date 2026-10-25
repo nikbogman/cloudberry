@@ -6,8 +6,11 @@ blackberry in two cases:
 - **The UI's Wake.** The browser calls `POST /wake` directly, over the tailnet.
 - **A request to a stack route flagged `wake`** in [`routes.json`](routes.json).
   gateway holds the request until the route's upstream accepts a TCP connection
-  on the LAN, then reverse-proxies it. After `idle_minutes` with no route traffic it calls
-  hostd `/suspend`, but only if it auto-woke blackberry.
+  on the LAN, then reverse-proxies it. Once every route has been quiet for its
+  `idle_minutes` it calls hostd `/suspend`, but only if it auto-woke blackberry.
+
+Both are switchable at runtime from the UI (`/auto`). The switches live in
+memory: a gateway restart turns both back on.
 
 It lives on raspberry because the magic packet is a LAN broadcast, which needs
 raspberry and blackberry on one L2 broadcast domain. Rationale:
@@ -21,6 +24,7 @@ Code: [`internal/gateway/`](../../internal/gateway), entrypoint [`cmd/gateway/`]
 | Route | Behavior |
 |---|---|
 | `POST /wake` on `$GATEWAY_PORT` (published on 443) | Requires the identity header or a `127.0.0.1` caller. Sends WoL to `BLACKBERRY_MAC_ADDRESS`, logs `wake_requested`/`_succeeded`/`_failed`, returns `{"wake": ...}`. |
+| `GET`/`POST /auto` on `$GATEWAY_PORT` (published on 443) | Requires the identity header. Reads, or sets from form fields `wake`/`suspend` (`true`/`false`), the auto-wake and auto-suspend switches; returns `{"wake": ..., "suspend": ...}`. Logs `auto_changed`. Off auto-wake makes `wake` routes 502 while asleep; off auto-suspend keeps a pending auto-wake for when it's back on. |
 | Each stack route, on its own `port` or under its `path` on 443 | Reverse-proxies to `upstream`, waking blackberry first if the route has `wake`. Logs `autowake_*` and `autosuspend_*`. |
 
 ## Routes file
@@ -29,7 +33,7 @@ Code: [`internal/gateway/`](../../internal/gateway), entrypoint [`cmd/gateway/`]
 
 | Field | Meaning |
 |---|---|
-| `idle_minutes` | Quiet time before gateway suspends blackberry. |
+| `idle_minutes` | Quiet time before gateway suspends blackberry. Top level: the default. Per route: an override, shorter for SSD-only stacks (popcorn), so the HDD only stays spun up for stacks that use it (immich). A route's use keeps blackberry up for at least its own time. |
 | `name` | Label for logs. |
 | `port` | Loopback listen port, and the HTTPS port published on raspberry's hostname unless `path` is set. Unique per route. Never 443: `/wake` owns it. |
 | `path` | Optional. Publishes the route at `https://raspberry.<tailnet>.ts.net<path>` on 443 instead of on `port` (`tailscale serve --set-path`). Looks like `/name`. Tailscale strips the prefix, so the stack sees `/`. Only for stacks that work behind a prefix (APIs, not web UIs). Can't be `public`. |

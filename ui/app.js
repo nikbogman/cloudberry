@@ -46,6 +46,10 @@ export function mountUi(container, options) {
         <button id="wake-button" type="button">${icon('power')}<span>Wake</span></button>
         <button id="suspend-button" type="button">${icon('moon')}<span>Suspend</span></button>
       </div>
+      <div class="auto">
+        <label><span>Auto-wake on request</span><input type="checkbox" role="switch" name="wake" disabled /></label>
+        <label><span>Auto-suspend when idle</span><input type="checkbox" role="switch" name="suspend" disabled /></label>
+      </div>
       <p id="action-error" role="alert" hidden>${icon('alert')}<span></span></p>
     </main>
     <footer>Works only from a device on the tailnet</footer>
@@ -58,6 +62,7 @@ export function mountUi(container, options) {
   const refreshButton = container.querySelector('#refresh-button')
   const errorElement = container.querySelector('#action-error')
   const errorText = errorElement.querySelector('span')
+  const autoSwitches = container.querySelectorAll('.auto input')
 
   let reachability = 'checking'
   let pollInFlight = false
@@ -138,11 +143,49 @@ export function mountUi(container, options) {
     )
   })
 
+  // gateway's switches: GET reads both, POST sets one. Form-encoded, so the
+  // browser sends no extra CORS preflight headers.
+  const applyAuto = (auto) => {
+    for (const input of autoSwitches) {
+      input.checked = auto[input.name]
+      input.disabled = false
+    }
+  }
+
+  const loadAuto = async () => {
+    try {
+      const response = await fetch(`${gatewayBaseUrl}/auto`)
+      if (response.ok) applyAuto(await response.json())
+    } catch {
+      // Switches stay disabled; gateway is unreachable.
+    }
+  }
+
+  for (const input of autoSwitches) {
+    input.addEventListener('change', async () => {
+      clearError()
+      input.disabled = true
+      try {
+        const response = await fetch(`${gatewayBaseUrl}/auto`, {
+          method: 'POST',
+          body: new URLSearchParams({ [input.name]: input.checked }),
+        })
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+        applyAuto(await response.json())
+      } catch (error) {
+        input.checked = !input.checked
+        input.disabled = false
+        showError(`Changing the switch failed: ${error.message}.`)
+      }
+    })
+  }
+
   refreshButton.addEventListener('click', () => {
     void poll()
   })
 
   void poll()
+  void loadAuto()
   const timerId = setInterval(poll, intervalMs)
 
   return () => clearInterval(timerId)

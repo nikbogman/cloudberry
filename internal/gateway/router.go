@@ -6,17 +6,19 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
 
+	"github.com/nikbogman/cloudberry/internal/httpresponse"
 	"github.com/nikbogman/cloudberry/internal/tailnet"
 )
 
 // Router fronts the stacks in the routes file: it wakes blackberry on request
 // for routes that ask for it, holds the request until blackberry answers, then
 // reverse-proxies. It also suspends blackberry again once it has been idle,
-// but only if the Router woke it.
+// but only if the Router woke it. Both are switchable at runtime (AutoHandler).
 type Router struct {
 	hostdURL     string
 	mac          string
@@ -28,8 +30,13 @@ type Router struct {
 	probeTimeout time.Duration
 
 	inflight  atomic.Int64
-	lastUse   atomic.Int64 // unix nanos of the last request start or finish
+	idleAt    atomic.Int64 // unix nanos: latest last-use + that route's idle time
 	autoWoken atomic.Bool  // only an auto-wake is ever auto-suspended
+
+	// ponytail: in memory, so a gateway restart turns both back on; persist
+	// to a file if that ever surprises.
+	autoWake    atomic.Bool
+	autoSuspend atomic.Bool
 
 	mu     sync.Mutex
 	waking *wakeAttempt
@@ -50,11 +57,23 @@ func NewRouter(hostdURL, mac string, sender Sender, logger EventLogger) *Router 
 		pollEvery:    250 * time.Millisecond,
 		probeTimeout: 300 * time.Millisecond,
 	}
-	g.touch()
+	g.idleAt.Store(time.Now().UnixNano())
+	g.autoWake.Store(true)
+	g.autoSuspend.Store(true)
 	return g
 }
 
-func (g *Router) touch() { g.lastUse.Store(time.Now().UnixNano()) }
+// touch pushes the idle deadline to now+idle, never pulls it in: a short-idle
+// route used after a long-idle one doesn't cut the long one's time short.
+func (g *Router) touch(idle time.Duration) {
+	until := time.Now().Add(idle).UnixNano()
+	for {
+		cur := g.idleAt.Load()
+		if cur >= until || g.idleAt.CompareAndSwap(cur, until) {
+			return
+		}
+	}
+}
 
 // RouteHandler holds a Wake route's request until blackberry is reachable.
 func (g *Router) RouteHandler(r Route) (http.Handler, error) {
@@ -71,11 +90,12 @@ func (g *Router) RouteHandler(r Route) (http.Handler, error) {
 		req.Header.Del(tailnet.IdentityHeader) // upstreams never trust it
 	}
 
+	idle := time.Duration(r.IdleMinutes) * time.Minute
 	var h http.Handler = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		g.inflight.Add(1)
-		defer func() { g.touch(); g.inflight.Add(-1) }()
-		g.touch()
-		if r.Wake {
+		defer func() { g.touch(idle); g.inflight.Add(-1) }()
+		g.touch(idle)
+		if r.Wake && g.autoWake.Load() {
 			if err := g.awake(req.Context(), target); err != nil {
 				w.Header().Set("Retry-After", "30")
 				http.Error(w, "blackberry is waking, retry shortly", http.StatusServiceUnavailable)
@@ -175,9 +195,9 @@ func (g *Router) wake(a *wakeAttempt, addr string) {
 	go g.logger.SendEvent("autowake_succeeded", "succeeded", nil, nil)
 }
 
-// RunIdleSuspend suspends blackberry once no route has had traffic for idle,
-// if the Router woke it. A manual Wake is never undone.
-func (g *Router) RunIdleSuspend(ctx context.Context, idle time.Duration) {
+// RunIdleSuspend suspends blackberry once every route has been idle for its
+// idle_minutes, if the Router woke it. A manual Wake is never undone.
+func (g *Router) RunIdleSuspend(ctx context.Context) {
 	t := time.NewTicker(time.Minute)
 	defer t.Stop()
 	for {
@@ -185,14 +205,14 @@ func (g *Router) RunIdleSuspend(ctx context.Context, idle time.Duration) {
 		case <-ctx.Done():
 			return
 		case <-t.C:
-			g.suspendIfIdle(ctx, idle)
+			g.suspendIfIdle(ctx)
 		}
 	}
 }
 
-func (g *Router) suspendIfIdle(ctx context.Context, idle time.Duration) {
-	if !g.autoWoken.Load() || g.inflight.Load() > 0 ||
-		time.Since(time.Unix(0, g.lastUse.Load())) < idle {
+func (g *Router) suspendIfIdle(ctx context.Context) {
+	if !g.autoSuspend.Load() || !g.autoWoken.Load() || g.inflight.Load() > 0 ||
+		time.Now().UnixNano() < g.idleAt.Load() {
 		return
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, g.hostdURL+"/suspend", nil)
@@ -211,4 +231,30 @@ func (g *Router) suspendIfIdle(ctx context.Context, idle time.Duration) {
 	}
 	g.autoWoken.Store(false)
 	g.logger.SendEvent("autosuspend_succeeded", "succeeded", nil, nil)
+}
+
+// AutoHandler reads (GET) and sets (POST, form fields wake/suspend =
+// true|false) the auto-wake and auto-suspend switches. Turning auto-suspend
+// off and on again keeps an auto-wake pending, so it still gets suspended.
+func (g *Router) AutoHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		if req.Method == http.MethodPost {
+			for name, sw := range map[string]*atomic.Bool{"wake": &g.autoWake, "suspend": &g.autoSuspend} {
+				v := req.FormValue(name)
+				if v == "" {
+					continue
+				}
+				on, err := strconv.ParseBool(v)
+				if err != nil {
+					http.Error(w, name+" must be true or false", http.StatusBadRequest)
+					return
+				}
+				sw.Store(on)
+			}
+			identity := tailnet.GetCallerIdentity(req)
+			go g.logger.SendEvent("auto_changed", "succeeded", &identity,
+				map[string]any{"wake": g.autoWake.Load(), "suspend": g.autoSuspend.Load()})
+		}
+		httpresponse.WriteJSON(w, http.StatusOK, map[string]bool{"wake": g.autoWake.Load(), "suspend": g.autoSuspend.Load()})
+	})
 }

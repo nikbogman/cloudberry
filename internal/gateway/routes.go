@@ -22,6 +22,10 @@ type Route struct {
 	Public bool `json:"public"`
 	// Wake routes wake blackberry on request; the rest 502 while it's asleep.
 	Wake bool `json:"wake"`
+	// IdleMinutes overrides the file's idle_minutes for this route: shorter
+	// for stacks that never touch the HDD, so a spin-up isn't kept running
+	// for nothing. Filled from the default by LoadRoutes.
+	IdleMinutes int `json:"idle_minutes,omitempty"`
 }
 
 // Routes is the routes file, cmd/gateway/routes.json.
@@ -47,7 +51,13 @@ func LoadRoutes(path string) (Routes, error) {
 	}
 	seen := map[int]bool{}
 	seenPath := map[string]bool{}
-	for _, r := range cfg.Routes {
+	for i, r := range cfg.Routes {
+		if r.IdleMinutes < 0 {
+			return cfg, fmt.Errorf("%s: route %q: idle_minutes must be positive", path, r.Name)
+		}
+		if r.IdleMinutes == 0 {
+			cfg.Routes[i].IdleMinutes = cfg.IdleMinutes
+		}
 		if r.Port == 443 {
 			return cfg, fmt.Errorf("%s: route %q: port 443 is the gateway's own tailscale serve, for /wake", path, r.Name)
 		}

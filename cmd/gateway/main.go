@@ -6,11 +6,11 @@ import (
 	"net"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/nikbogman/cloudberry/internal/cors"
 	"github.com/nikbogman/cloudberry/internal/eventlog"
 	"github.com/nikbogman/cloudberry/internal/gateway"
+	"github.com/nikbogman/cloudberry/internal/tailnet"
 )
 
 func main() {
@@ -28,11 +28,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	router := gateway.NewRouter(cfg.HostdURL, cfg.MACAddress, sender, logger)
+	mux := http.NewServeMux()
+	mux.Handle("/", handler)
+	mux.Handle("/auto", tailnet.RequireTailnetIdentity(router.AutoHandler()))
 	addr := net.JoinHostPort(cfg.BindHost, cfg.Port)
 	log.Printf("gateway listening on %s", addr)
-	go func() { log.Fatal(http.ListenAndServe(addr, cors.Allow(cfg.UIOrigin, handler))) }()
+	go func() { log.Fatal(http.ListenAndServe(addr, cors.Allow(cfg.UIOrigin, mux))) }()
 
-	router := gateway.NewRouter(cfg.HostdURL, cfg.MACAddress, sender, logger)
 	for _, r := range routes.Routes {
 		h, err := router.RouteHandler(r)
 		if err != nil {
@@ -47,5 +50,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	router.RunIdleSuspend(context.Background(), time.Duration(routes.IdleMinutes)*time.Minute)
+	router.RunIdleSuspend(context.Background())
 }
