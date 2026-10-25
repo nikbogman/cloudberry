@@ -1,13 +1,17 @@
-# Popcorn's API server (github.com/nikbogman/watchlist, server/), with the
-# Chromium its reel scraper drives. Built on blackberry straight from GitHub,
-# so there's no registry; `up -d --build` picks up new commits on main.
+# Popcorn's API server (github.com/nikbogman/popcorn, server/), with the
+# Chromium its reel scraper drives. The image is built by the popcorn repo's
+# GitHub Action on every push to main that touches server/, and is public on
+# GHCR; `pull_policy: always` makes every `up -d` fetch the newest one.
 # Gated: reached through gateway at raspberry's /popcorn, so no Caddy and no
 # `stacks` network.
 name: popcorn
 
 services:
   server:
-    build: https://github.com/nikbogman/watchlist.git#main:server
+    # ponytail: :latest, not a digest like stacks/db. It's our own app, pushed
+    # only from main; pin `@sha256:` or a `sha-<short>` tag if a rollback is needed.
+    image: ghcr.io/nikbogman/popcorn-server:latest
+    pull_policy: always
     # DATABASE_URL (from stacks/db/new-database.sh), LOGIN_PASSWORD,
     # TMDB_API_KEY, GEMINI_API_KEY, POPCORN_BIND_IP.
     env_file:

@@ -16,7 +16,7 @@ RemainAfterExit=yes
 # raspberry's LAN IP, and the published ports of every gated stack
 # (cmd/gateway/routes.json upstreams).
 Environment=ALLOW=192.168.0.168
-Environment=PORTS=2283 3000
+Environment="PORTS=2283 3000"
 ExecStart=/bin/sh -c 'for p in $PORTS; do r="DOCKER-USER -p tcp -m conntrack --ctorigdstport $p --ctdir ORIGINAL ! -s $ALLOW -j DROP"; iptables -C $r 2>/dev/null || iptables -I $r; done'
 ExecStop=/bin/sh -c 'for p in $PORTS; do iptables -D DOCKER-USER -p tcp -m conntrack --ctorigdstport $p --ctdir ORIGINAL ! -s $ALLOW -j DROP 2>/dev/null; done; true'
 

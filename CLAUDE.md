@@ -2,7 +2,7 @@
 
 - Check: `go vet ./... && go test ./...`
 - Deploy: `task --dry` first, then `task` or one target (`task --list`). Manual only; run it when the user asks. Secrets and addresses come from the root `.env` (template `.env.example`); see `DEPLOY.md`.
-- Stacks deploy with `docker compose --context blackberry`, never through `task`; see `stacks/README.md`.
+- Stacks deploy with `docker --context blackberry compose`, never through `task`; see `stacks/README.md`.
 - New Go service: `cmd/<name>/` + `internal/<name>/`, plus a task in `Taskfile.yml` that calls `_service`.
 
 ## graphify

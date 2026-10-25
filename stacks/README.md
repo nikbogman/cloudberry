@@ -18,7 +18,7 @@ From this repo, on a machine with the `blackberry` context:
 
 ```sh
 docker compose -f stacks/<name>/docker-compose.yml config                 # validate, touches nothing
-docker compose --context blackberry -f stacks/<name>/docker-compose.yml up -d
+docker --context blackberry compose -f stacks/<name>/docker-compose.yml up -d
 docker --context blackberry ps
 ```
 
@@ -44,7 +44,7 @@ No Taskfile task, script or CI knows a stack exists.
        reverse_proxy <name>:<port>
    }
    ```
-5. Redeploy Caddy: `docker compose --context blackberry -f stacks/caddy/docker-compose.yml up -d`.
+5. Redeploy Caddy: `docker --context blackberry compose -f stacks/caddy/docker-compose.yml up -d`.
 
 ## Caddy
 
@@ -123,26 +123,31 @@ Valkey has no users here: each stack gets its own DB index instead. Taken:
 ## Popcorn
 
 [`popcorn/`](popcorn/) is the API for the Popcorn mobile app
-([nikbogman/watchlist](https://github.com/nikbogman/watchlist), `server/`). It
+([nikbogman/popcorn](https://github.com/nikbogman/popcorn), `server/`). It
 is gated at `https://raspberry.<tailnet>.ts.net/popcorn`, so sharing a reel from
 the phone wakes blackberry. The app polls the job while it runs, which keeps
 gateway's idle timer from firing. Tailnet-only: the phone needs Tailscale on
 (Android's "Always-on VPN").
 
-Compose builds the image on blackberry from the repo's `main`, so there's no
-registry. Redeploying with `--build` picks up new commits.
+The image is `ghcr.io/nikbogman/popcorn-server:latest` (public), built by the
+popcorn repo's GitHub Action on pushes to `main`. The compose file sets
+`pull_policy: always`, so a plain `up -d` deploys the newest one. Wait for the
+Action to finish first. To roll back, set `image:` to a `sha-<short>` tag.
 
 Once:
 
 1. `stacks/db/new-database.sh popcorn` (done). It writes `DATABASE_URL` to
    `popcorn/.env`.
-2. Add `LOGIN_PASSWORD`, `TMDB_API_KEY`, `GEMINI_API_KEY` and `POPCORN_BIND_IP`
-   (blackberry's LAN IP) to `popcorn/.env`.
+2. Add `TMDB_API_KEY`, `GEMINI_API_KEY` and `POPCORN_BIND_IP` (blackberry's
+   LAN IP) to `popcorn/.env`. For `LOGIN_PASSWORD`, run
+   `uv run python -m app.password <cloudberry>/stacks/popcorn/.env` in the
+   popcorn checkout's `server/`. It writes a random one without printing it.
+   Optional: `BROWSER_IDLE_MINUTES` (default 5) before Chromium is closed.
 3. `task firewall` (port 3000 is in `PORTS`), then `task gateway` (route `/popcorn`).
 4. Instagram login. The session is stored in the database, so run the login on
    the dev machine through the [tunnel](#shared-database), never on blackberry:
    ```sh
-   cd <watchlist checkout>/server
+   cd <popcorn checkout>/server
    DATABASE_URL=<LOCAL_DATABASE_URL from popcorn/.env> uv run python -m app.reels.login
    ```
    Repeat when reel jobs fail with the login hint.
@@ -152,5 +157,5 @@ Once:
 Deploy or update:
 
 ```sh
-docker compose --context blackberry -f stacks/popcorn/docker-compose.yml up -d --build
+docker --context blackberry compose -f stacks/popcorn/docker-compose.yml up -d
 ```
