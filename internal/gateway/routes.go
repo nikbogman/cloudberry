@@ -5,15 +5,16 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"regexp"
 	"strings"
 )
 
-// Route is one stack exposed through the Router. Port is the loopback listen
-// port, and also the HTTPS port `tailscale serve`/`funnel` publishes it on,
-// unless Path is set.
+// Route is one stack exposed through the Router, at its own tsnet hostname
+// https://<Name>.<tailnet>.ts.net, unless Path is set.
 type Route struct {
 	Name string `json:"name"`
-	Port int    `json:"port"`
+	// Port is the loopback listen port; only path routes use it.
+	Port int `json:"port,omitempty"`
 	// Path publishes the route under this prefix on 443, beside /wake, instead
 	// of on its own port. `tailscale serve` strips the prefix before proxying.
 	Path     string `json:"path,omitempty"`
@@ -34,8 +35,7 @@ type Routes struct {
 	Routes      []Route `json:"routes"`
 }
 
-// Funnel only publishes on these ports.
-var funnelPorts = map[int]bool{8443: true, 10000: true}
+var hostLabel = regexp.MustCompile(`^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$`)
 
 func LoadRoutes(path string) (Routes, error) {
 	var cfg Routes
@@ -50,6 +50,7 @@ func LoadRoutes(path string) (Routes, error) {
 		return cfg, fmt.Errorf("%s: idle_minutes must be positive", path)
 	}
 	seen := map[int]bool{}
+	seenName := map[string]bool{}
 	seenPath := map[string]bool{}
 	for i, r := range cfg.Routes {
 		if r.IdleMinutes < 0 {
@@ -58,13 +59,22 @@ func LoadRoutes(path string) (Routes, error) {
 		if r.IdleMinutes == 0 {
 			cfg.Routes[i].IdleMinutes = cfg.IdleMinutes
 		}
-		if r.Port == 443 {
-			return cfg, fmt.Errorf("%s: route %q: port 443 is the gateway's own tailscale serve, for /wake", path, r.Name)
+		if !hostLabel.MatchString(r.Name) {
+			return cfg, fmt.Errorf("%s: route %q: name must be a lowercase DNS label (a-z, 0-9, -)", path, r.Name)
 		}
-		if seen[r.Port] {
-			return cfg, fmt.Errorf("%s: port %d used twice", path, r.Port)
+		if seenName[r.Name] {
+			return cfg, fmt.Errorf("%s: name %q used twice", path, r.Name)
 		}
-		seen[r.Port] = true
+		seenName[r.Name] = true
+		if r.Path != "" {
+			if r.Port == 443 {
+				return cfg, fmt.Errorf("%s: route %q: port 443 is the gateway's own tailscale serve, for /wake", path, r.Name)
+			}
+			if r.Port <= 0 || seen[r.Port] {
+				return cfg, fmt.Errorf("%s: route %q: path routes need a unique loopback port", path, r.Name)
+			}
+			seen[r.Port] = true
+		}
 		if u, err := url.Parse(r.Upstream); err != nil || u.Scheme == "" || u.Host == "" {
 			return cfg, fmt.Errorf("%s: route %q: upstream must be an absolute URL", path, r.Name)
 		}
@@ -80,9 +90,6 @@ func LoadRoutes(path string) (Routes, error) {
 				return cfg, fmt.Errorf("%s: path %s used twice", path, r.Path)
 			}
 			seenPath[r.Path] = true
-		}
-		if r.Public && !funnelPorts[r.Port] {
-			return cfg, fmt.Errorf("%s: route %q: Funnel only serves ports 8443, 10000 here", path, r.Name)
 		}
 	}
 	return cfg, nil

@@ -25,7 +25,7 @@ Code: [`internal/gateway/`](../../internal/gateway), entrypoint [`cmd/gateway/`]
 |---|---|
 | `POST /wake` on `$GATEWAY_PORT` (published on 443) | Requires the identity header or a `127.0.0.1` caller. Sends WoL to `BLACKBERRY_MAC_ADDRESS`, logs `wake_requested`/`_succeeded`/`_failed`, returns `{"wake": ...}`. |
 | `GET`/`POST /auto` on `$GATEWAY_PORT` (published on 443) | Requires the identity header. Reads, or sets from form fields `wake`/`suspend` (`true`/`false`), the auto-wake and auto-suspend switches; returns `{"wake": ..., "suspend": ...}`. Logs `auto_changed`. Off auto-wake makes `wake` routes 502 while asleep; off auto-suspend keeps a pending auto-wake for when it's back on. |
-| Each stack route, on its own `port` or under its `path` on 443 | Reverse-proxies to `upstream`, waking blackberry first if the route has `wake`. Logs `autowake_*` and `autosuspend_*`. |
+| Each stack route, at its own hostname or under its `path` on 443 | Reverse-proxies to `upstream`, waking blackberry first if the route has `wake`. Logs `autowake_*` and `autosuspend_*`. |
 
 ## Routes file
 
@@ -34,11 +34,11 @@ Code: [`internal/gateway/`](../../internal/gateway), entrypoint [`cmd/gateway/`]
 | Field | Meaning |
 |---|---|
 | `idle_minutes` | Quiet time before gateway suspends blackberry. Top level: the default. Per route: an override, shorter for SSD-only stacks (popcorn), so the HDD only stays spun up for stacks that use it (immich). A route's use keeps blackberry up for at least its own time. |
-| `name` | Label for logs. |
-| `port` | Loopback listen port, and the HTTPS port published on raspberry's hostname unless `path` is set. Unique per route. Never 443: `/wake` owns it. |
-| `path` | Optional. Publishes the route at `https://raspberry.<tailnet>.ts.net<path>` on 443 instead of on `port` (`tailscale serve --set-path`). Looks like `/name`. Tailscale strips the prefix, so the stack sees `/`. Only for stacks that work behind a prefix (APIs, not web UIs). Can't be `public`. |
+| `name` | Label for logs, and the route's own tailnet hostname: `https://<name>.<tailnet>.ts.net` on 443, from an in-process tsnet node. A lowercase DNS label, unique. |
+| `port` | Only for `path` routes: the loopback listen port `tailscale serve` forwards to. Unique, never 443. |
+| `path` | Optional. Publishes the route at `https://raspberry.<tailnet>.ts.net<path>` on 443 (`tailscale serve --set-path`) instead of at its own hostname. Looks like `/name`. Tailscale strips the prefix, so the stack sees `/`. Only for stacks that work behind a prefix (APIs, not web UIs). Can't be `public`. |
 | `upstream` | Absolute URL of the stack, reachable from raspberry. |
-| `public` | `true` publishes with `tailscale funnel` (port must be 8443 or 10000). `false` publishes with `tailscale serve`, and gateway requires the identity header. |
+| `public` | `true` publishes the route's hostname on Funnel, with no identity check. `false` accepts tailnet callers only; the route's tsnet node looks the caller up and sets the identity header. |
 | `wake` | `true` sends WoL and holds the request while blackberry is asleep. `false` returns 502 while it's asleep. |
 
 ## Environment
@@ -58,14 +58,16 @@ machine; `task gateway` passes them to the unit. Bold variables are required.
 | `GATEWAY_PORT` | `/wake` listen port (default `5000`). The deploy pins it, since `tailscale serve` must point at it. |
 | `GATEWAY_HOST` | `/wake` bind address (default `127.0.0.1`). Must be loopback or tailnet. The deploy never sets it. |
 | `GATEWAY_ROUTES` | Routes file path (default `/etc/gateway/routes.json`). The deploy never sets it. |
+| `GATEWAY_TSNET_DIR` | Where each hostname route keeps its tsnet node state (default `/var/lib/gateway/tsnet`). Losing it makes every route re-join as a new device. |
+| `TS_AUTHKEY` | Read by tsnet when a route's node first joins the tailnet; `task gateway` passes `TAILSCALE_AUTH_KEY`. Use a reusable key, since each route is its own node. Not needed after the first start. |
 
 ## Deployment
 
 `task gateway` ships the routes file, cross-compiles for the Pi Zero W, ships
 the binary and a systemd unit (the device never runs a Go toolchain), and runs
-`tailscale serve` for `$GATEWAY_PORT` on 443. gateway itself runs
-`tailscale serve`/`funnel` for each stack route at startup. Funnel must be
-enabled for raspberry's node in the tailnet policy. See
+`tailscale serve` for `$GATEWAY_PORT` on 443. At startup gateway starts a tsnet
+node per hostname route and runs `tailscale serve` for each path route. Funnel
+must be enabled in the tailnet policy for public routes. See
 [`DEPLOY.md`](../../DEPLOY.md).
 
 Replacing the old waker and gate units on raspberry, once:

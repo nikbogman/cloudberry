@@ -7,6 +7,22 @@ import (
 	"testing"
 )
 
+func TestLoadRoutesHostnameRules(t *testing.T) {
+	for routes, wantErr := range map[string]string{
+		`{"name":"a","upstream":"http://x:1"},{"name":"b","upstream":"http://x:2","public":true}`: "",
+		`{"name":"A_b","upstream":"http://x:1"}`:                                                  "DNS label",
+		`{"name":"a","upstream":"http://x:1"},{"name":"a","upstream":"http://x:2"}`:               "used twice",
+		`{"name":"a","path":"/a","upstream":"http://x:1"}`:                                        "loopback port",
+	} {
+		f := filepath.Join(t.TempDir(), "routes.json")
+		os.WriteFile(f, []byte(`{"idle_minutes":1,"routes":[`+routes+`]}`), 0o644)
+		_, err := LoadRoutes(f)
+		if wantErr == "" && err != nil || wantErr != "" && (err == nil || !strings.Contains(err.Error(), wantErr)) {
+			t.Errorf("%s: got %v, want %q", routes, err, wantErr)
+		}
+	}
+}
+
 func TestLoadRoutesPathRules(t *testing.T) {
 	for route, wantErr := range map[string]string{
 		`{"name":"a","port":8444,"path":"/a","upstream":"http://x:1"}`:               "",

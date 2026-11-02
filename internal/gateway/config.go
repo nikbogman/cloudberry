@@ -10,6 +10,7 @@ type EnvConfig struct {
 	HostdURL   string
 	RoutesFile string
 	UIOrigin   string
+	TsnetDir   string // per-route tsnet node state, one subdirectory per route
 }
 
 // ConfigFromEnv reads the gateway's runtime configuration. BLACKBERRY_MAC_ADDRESS
@@ -24,5 +25,6 @@ func ConfigFromEnv() EnvConfig {
 		HostdURL:   env.MustEnv("HOSTD_URL"),
 		RoutesFile: env.EnvOr("GATEWAY_ROUTES", "/etc/gateway/routes.json"),
 		UIOrigin:   env.EnvOr("UI_ORIGIN", ""),
+		TsnetDir:   env.EnvOr("GATEWAY_TSNET_DIR", "/var/lib/gateway/tsnet"),
 	}
 }

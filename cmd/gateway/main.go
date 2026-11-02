@@ -41,6 +41,11 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		if r.Path == "" {
+			log.Printf("gateway route %s on tsnet host %s -> %s", r.Name, r.Name, r.Upstream)
+			go func() { log.Fatal(gateway.ServeHostname(r, cfg.TsnetDir, h)) }()
+			continue
+		}
 		// Loopback only: tailscaled is the sole way in.
 		addr := net.JoinHostPort("127.0.0.1", strconv.Itoa(r.Port))
 		log.Printf("gateway route %s on %s -> %s", r.Name, addr, r.Upstream)

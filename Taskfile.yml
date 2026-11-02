@@ -97,9 +97,13 @@ tasks:
           # Pi Zero W is ARM1176 (armv6). A Pi Zero 2 W would need GOARCH=arm64.
           GOENV: GOARCH=arm GOARM=6
           DESC: gateway -- Wake-on-LAN for blackberry, and wake-on-request proxy to its stacks
-          # Serves /wake on 443. Stack routes publish their own ports at startup.
+          # Serves /wake on 443. Each stack route is its own tsnet node (<name>.<tailnet>.ts.net);
+          # TS_AUTHKEY is only read when a node joins for the first time.
           PORT: ${GATEWAY_PORT:-5000}
           ENV: |
+            Environment=TS_AUTHKEY=${TAILSCALE_AUTH_KEY:-}
+            StateDirectory=gateway/tsnet
+            Environment=GATEWAY_TSNET_DIR=/var/lib/gateway/tsnet
             Environment=GATEWAY_PORT=${GATEWAY_PORT:-5000}
             Environment=BLACKBERRY_MAC_ADDRESS=${BLACKBERRY_MAC_ADDRESS:?set BLACKBERRY_MAC_ADDRESS}
             Environment=HOSTD_URL=${HOSTD_URL:?set HOSTD_URL}
