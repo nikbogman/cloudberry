@@ -31,7 +31,7 @@ func main() {
 	router := gateway.NewRouter(cfg.HostdURL, cfg.MACAddress, sender, logger)
 	mux := http.NewServeMux()
 	mux.Handle("/", handler)
-	mux.Handle("/auto", tailnet.RequireTailnetIdentity(router.AutoHandler()))
+	mux.Handle("/settings", tailnet.RequireTailnetIdentity(router.SettingsHandler()))
 	addr := net.JoinHostPort(cfg.BindHost, cfg.Port)
 	log.Printf("gateway listening on %s", addr)
 	go func() { log.Fatal(http.ListenAndServe(addr, cors.Allow(cfg.UIOrigin, mux))) }()

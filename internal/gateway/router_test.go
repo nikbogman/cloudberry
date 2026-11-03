@@ -115,10 +115,10 @@ func TestShortIdleRouteDoesNotCutLongOneShort(t *testing.T) {
 
 func TestAutoSwitches(t *testing.T) {
 	g := NewRouter("http://unused", "00:11:22:33:44:55", &fakeBlackberry{}, noopLogger{})
-	req := httptest.NewRequest("POST", "/auto", strings.NewReader("suspend=false"))
+	req := httptest.NewRequest("POST", "/settings", strings.NewReader("suspend=false"))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	rec := httptest.NewRecorder()
-	g.AutoHandler().ServeHTTP(rec, req)
+	g.SettingsHandler().ServeHTTP(rec, req)
 	if rec.Body.String() != `{"suspend":false,"wake":true}`+"\n" {
 		t.Fatalf("got %d %q", rec.Code, rec.Body.String())
 	}

@@ -18,7 +18,7 @@ import (
 // Router fronts the stacks in the routes file: it wakes blackberry on request
 // for routes that ask for it, holds the request until blackberry answers, then
 // reverse-proxies. It also suspends blackberry again once it has been idle,
-// but only if the Router woke it. Both are switchable at runtime (AutoHandler).
+// but only if the Router woke it. Both are switchable at runtime (SettingsHandler).
 type Router struct {
 	hostdURL     string
 	mac          string
@@ -233,10 +233,10 @@ func (g *Router) suspendIfIdle(ctx context.Context) {
 	g.logger.SendEvent("autosuspend_succeeded", "succeeded", nil, nil)
 }
 
-// AutoHandler reads (GET) and sets (POST, form fields wake/suspend =
+// SettingsHandler reads (GET) and sets (POST, form fields wake/suspend =
 // true|false) the auto-wake and auto-suspend switches. Turning auto-suspend
 // off and on again keeps an auto-wake pending, so it still gets suspended.
-func (g *Router) AutoHandler() http.Handler {
+func (g *Router) SettingsHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		if req.Method == http.MethodPost {
 			for name, sw := range map[string]*atomic.Bool{"wake": &g.autoWake, "suspend": &g.autoSuspend} {
@@ -252,7 +252,7 @@ func (g *Router) AutoHandler() http.Handler {
 				sw.Store(on)
 			}
 			identity := tailnet.GetCallerIdentity(req)
-			go g.logger.SendEvent("auto_changed", "succeeded", &identity,
+			go g.logger.SendEvent("settings_changed", "succeeded", &identity,
 				map[string]any{"wake": g.autoWake.Load(), "suspend": g.autoSuspend.Load()})
 		}
 		httpresponse.WriteJSON(w, http.StatusOK, map[string]bool{"wake": g.autoWake.Load(), "suspend": g.autoSuspend.Load()})

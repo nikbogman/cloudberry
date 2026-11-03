@@ -154,7 +154,7 @@ export function mountUi(container, options) {
 
   const loadAuto = async () => {
     try {
-      const response = await fetch(`${gatewayBaseUrl}/auto`)
+      const response = await fetch(`${gatewayBaseUrl}/settings`)
       if (response.ok) applyAuto(await response.json())
     } catch {
       // Switches stay disabled; gateway is unreachable.
@@ -166,7 +166,7 @@ export function mountUi(container, options) {
       clearError()
       input.disabled = true
       try {
-        const response = await fetch(`${gatewayBaseUrl}/auto`, {
+        const response = await fetch(`${gatewayBaseUrl}/settings`, {
           method: 'POST',
           body: new URLSearchParams({ [input.name]: input.checked }),
         })
