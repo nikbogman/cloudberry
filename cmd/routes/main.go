@@ -1,4 +1,4 @@
-// routes prints gateway's routes file, built from the x-gateway extension in
+// routes prints gateway's routes file, built from the x-route extension in
 // each <stacks dir>/*/compose.yml, or with -ports the upstream ports of those
 // routes, for stack-firewall. Runs on the dev machine: `docker compose config`
 // needs each stack's .env, but not Docker or blackberry.

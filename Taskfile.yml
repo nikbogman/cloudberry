@@ -10,7 +10,7 @@ vars:
   RASPBERRY: ${RASPBERRY_SSH_USER:-pi}@${RASPBERRY_HOST:-raspberry}
   BLACKBERRY: ${BLACKBERRY_SSH_USER:-admin}@${BLACKBERRY_HOST:-blackberry}
   # Checkout of the stacks repo (github.com/nikbogman/deploys). Routes and firewall
-  # ports come from the x-gateway blocks in its */compose.yml (cmd/routes).
+  # ports come from the x-route blocks in its */compose.yml (cmd/routes).
   STACKS_DIR: ${STACKS_DIR:-../deploys}
 
 tasks:
@@ -90,7 +90,7 @@ tasks:
             && systemctl enable hd-idle && systemctl restart hd-idle
 
   gateway:
-    desc: Build and deploy gateway (routes from STACKS_DIR's x-gateway blocks) to raspberry
+    desc: Build and deploy gateway (routes from STACKS_DIR's x-route blocks) to raspberry
     cmds:
       - mkdir -p dist && go run ./cmd/routes {{.STACKS_DIR}} > dist/routes.json
       - scp dist/routes.json {{.RASPBERRY}}:/tmp/gateway-routes.json
