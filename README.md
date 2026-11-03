@@ -45,7 +45,7 @@ The repo is a monorepo holding everything in the diagram:
 | **UI**: Wake/Suspend page | [ui/](ui/) | Cloudflare Pages | Static files, uploaded by `task ui` |
 | **gateway**: sends Wake-on-LAN; wakes blackberry on request and proxies stacks | [cmd/gateway](cmd/gateway/) | raspberry | Go binary cross-compiled for armv6, run by systemd |
 | **hostd**: suspend, health check | [cmd/hostd](cmd/hostd/) | blackberry | Go binary, run by systemd |
-| **stacks**: the apps, behind Caddy | [stacks/](stacks/) | blackberry | Docker Compose, started with `docker compose` (not `task`) |
+| **stacks**: the apps, behind Caddy | [deploys](https://github.com/nikbogman/deploys) repo | blackberry | Docker Compose, started with `docker compose` (not `task`) |
 
 The two services are one Go module: each has its entrypoint in `cmd/<name>/`
 and its logic in `internal/<name>/`, and the rest of `internal/` is shared
@@ -60,4 +60,4 @@ Access control is tailnet membership.
 - [CONTEXT.md](CONTEXT.md): domain glossary, the vocabulary everything else uses
 - [DESIGN.md](DESIGN.md): design decisions, request paths, security, limitations
 - [DEPLOY.md](DEPLOY.md): deploying both machines and the UI with `task`
-- A README next to each component's code: [gateway](cmd/gateway/README.md), [hostd](cmd/hostd/README.md), [ui](ui/README.md), [stacks](stacks/README.md)
+- A README next to each component's code: [gateway](cmd/gateway/README.md), [hostd](cmd/hostd/README.md), [ui](ui/README.md), [stacks](https://github.com/nikbogman/deploys/blob/main/README.md)

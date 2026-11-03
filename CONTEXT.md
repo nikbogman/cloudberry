@@ -52,5 +52,5 @@ _Avoid_: playbook run, apply
 ### Workloads
 
 **Stack**:
-A user-facing workload at `stacks/<name>/`, deployed as plain Docker Compose directly to blackberry — outside this repo's Deploy, unknown to hostd; gateway knows only those in its routes file. See [`stacks/README.md`](stacks/README.md).
+A user-facing workload at `<name>/` in the [deploys](https://github.com/nikbogman/deploys) repo, deployed as plain Docker Compose directly to blackberry — outside this repo's Deploy, unknown to hostd; gateway knows only those in its routes file. See its [README](https://github.com/nikbogman/deploys/blob/main/README.md).
 _Avoid_: service (this repo's term for gateway/hostd; Platform and waker-service are old names for the set), workload (fine informally, but "stack" is the file/directory unit)
