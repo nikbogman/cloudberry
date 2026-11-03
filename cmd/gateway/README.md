@@ -4,7 +4,7 @@ Runs on raspberry, the always-on Pi Zero W. It sends Wake-on-LAN to
 blackberry in two cases:
 
 - **The UI's Wake.** The browser calls `POST /wake` directly, over the tailnet.
-- **A request to a stack route flagged `wake`** in [`routes.json`](routes.json).
+- **A request to a stack route flagged `wake`** in the [routes file](#routes-file).
   gateway holds the request until the route's upstream accepts a TCP connection
   on the LAN, then reverse-proxies it. Once every route has been quiet for its
   `idle_minutes` it calls hostd `/suspend`, but only if it auto-woke blackberry.
@@ -29,15 +29,21 @@ Code: [`internal/gateway/`](../../internal/gateway), entrypoint [`cmd/gateway/`]
 
 ## Routes file
 
-`routes.json` is shipped to `/etc/gateway/routes.json` by `task gateway`.
+Generated, not hand-written. `task gateway` runs [`cmd/routes`](../routes/main.go),
+which reads the top-level `x-gateway` block of every `$STACKS_DIR/*/compose.yml`
+(the [deploys](https://github.com/nikbogman/deploys) repo, default `../deploys`)
+through `docker compose config`, validates the result, and ships it to
+`/etc/gateway/routes.json`. A stack without `x-gateway` isn't routed.
+`go run ./cmd/routes ../deploys` prints it without deploying.
 
 | Field | Meaning |
 |---|---|
-| `idle_minutes` | Quiet time before gateway suspends blackberry. Top level: the default. Per route: an override, shorter for SSD-only stacks (popcorn), so the HDD only stays spun up for stacks that use it (immich). A route's use keeps blackberry up for at least its own time. |
-| `name` | Label for logs, and the route's own tailnet hostname: `https://<name>.<tailnet>.ts.net` on 443, from an in-process tsnet node. A lowercase DNS label, unique. |
+| `idle_minutes` | Quiet time before gateway suspends blackberry. Top level: the default, 30 (`cmd/routes -idle-minutes`). Per route: an override, shorter for SSD-only stacks (popcorn), so the HDD only stays spun up for stacks that use it (immich). A route's use keeps blackberry up for at least its own time. |
+| `name` | The Compose project's `name`. Label for logs, and the route's own tailnet hostname: `https://<name>.<tailnet>.ts.net` on 443, from an in-process tsnet node. A lowercase DNS label, unique. |
+| `service` | `x-gateway` only. The service whose first published port is the upstream; optional when the stack has one service. |
 | `port` | Only for `path` routes: the loopback listen port `tailscale serve` forwards to. Unique, never 443. |
 | `path` | Optional. Publishes the route at `https://raspberry.<tailnet>.ts.net<path>` on 443 (`tailscale serve --set-path`) instead of at its own hostname. Looks like `/name`. Tailscale strips the prefix, so the stack sees `/`. Only for stacks that work behind a prefix (APIs, not web UIs). Can't be `public`. |
-| `upstream` | Absolute URL of the stack, reachable from raspberry. |
+| `upstream` | Not set by hand: `http://<host_ip>:<published>` of `service`'s first port. That port must be bound to blackberry's LAN IP, never `0.0.0.0`. |
 | `public` | `true` publishes the route's hostname on Funnel, with no identity check. `false` accepts tailnet callers only; the route's tsnet node looks the caller up and sets the identity header. |
 | `wake` | `true` sends WoL and holds the request while blackberry is asleep. `false` returns 502 while it's asleep. |
 

@@ -9,6 +9,9 @@ dotenv: ['.env']
 vars:
   RASPBERRY: ${RASPBERRY_SSH_USER:-pi}@${RASPBERRY_HOST:-raspberry}
   BLACKBERRY: ${BLACKBERRY_SSH_USER:-admin}@${BLACKBERRY_HOST:-blackberry}
+  # Checkout of the stacks repo (github.com/nikbogman/deploys). Routes and firewall
+  # ports come from the x-gateway blocks in its */compose.yml (cmd/routes).
+  STACKS_DIR: ${STACKS_DIR:-../deploys}
 
 tasks:
   default:
@@ -57,9 +60,13 @@ tasks:
           CMD: systemctl stop netplan-rollback.timer
 
   firewall:
-    desc: Allow gated stack ports on blackberry only from raspberry (deployments/blackberry/stack-firewall.service)
+    desc: Allow gated stack ports on blackberry only from raspberry (deployments/blackberry/stack-firewall.service, ports from STACKS_DIR)
     cmds:
-      - scp deployments/blackberry/stack-firewall.service {{.BLACKBERRY}}:/tmp/
+      - mkdir -p dist
+      - >-
+        ports=$(go run ./cmd/routes -ports {{.STACKS_DIR}})
+        && sed "s/^Environment=\"PORTS=.*/Environment=\"PORTS=$ports\"/" deployments/blackberry/stack-firewall.service > dist/stack-firewall.service
+      - scp dist/stack-firewall.service {{.BLACKBERRY}}:/tmp/
       - task: _root
         vars:
           DEVICE: BLACKBERRY
@@ -83,9 +90,10 @@ tasks:
             && systemctl enable hd-idle && systemctl restart hd-idle
 
   gateway:
-    desc: Build and deploy gateway (routes from cmd/gateway/routes.json) to raspberry
+    desc: Build and deploy gateway (routes from STACKS_DIR's x-gateway blocks) to raspberry
     cmds:
-      - scp cmd/gateway/routes.json {{.RASPBERRY}}:/tmp/gateway-routes.json
+      - mkdir -p dist && go run ./cmd/routes {{.STACKS_DIR}} > dist/routes.json
+      - scp dist/routes.json {{.RASPBERRY}}:/tmp/gateway-routes.json
       - task: _root
         vars:
           DEVICE: RASPBERRY

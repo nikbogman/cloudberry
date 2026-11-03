@@ -14,7 +14,7 @@ PartOf=docker.service
 Type=oneshot
 RemainAfterExit=yes
 # raspberry's LAN IP, and the published ports of every gated stack
-# (cmd/gateway/routes.json upstreams).
+# (set by `task firewall` from the stacks repo; this value is a placeholder).
 Environment=ALLOW=192.168.0.168
 Environment="PORTS=2283 3000"
 ExecStart=/bin/sh -c 'for p in $PORTS; do r="DOCKER-USER -p tcp -m conntrack --ctorigdstport $p --ctdir ORIGINAL ! -s $ALLOW -j DROP"; iptables -C $r 2>/dev/null || iptables -I $r; done'

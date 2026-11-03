@@ -40,7 +40,7 @@ Service-specific variables are documented in
 
 ```sh
 task                # Docker + HDD spindown + network + firewall + gateway + hostd
-task gateway        # just gateway (and its routes.json), on raspberry
+task gateway        # just gateway, on raspberry (routes generated from STACKS_DIR)
 task firewall       # just the gated-stack firewall, on blackberry
 task network        # just blackberry's netplan config; auto-rolls back after 2 min if blackberry drops off
 task hdd            # just hd-idle (HDD spindown), on blackberry
