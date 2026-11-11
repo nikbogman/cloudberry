@@ -4,7 +4,6 @@
 
 # metal
 
-**Off until I need it.**<br>
 My self-hosting platform: a home server that sleeps until one of its apps is opened, deploys its apps on a git push, and keeps itself up to date.
 
 ![Go](https://img.shields.io/badge/Go-00ADD8?logo=go&logoColor=white)
