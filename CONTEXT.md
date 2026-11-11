@@ -27,7 +27,7 @@ _Avoid_: waker, gate, proxy, reverse proxy, wake service, WoL plugin
 blackberry's own daemon: exposes Suspend and a reachability health check, and deploys the Stacks by pulling the deploys repo (stack sync). Carries no workload traffic and never reads Docker's state: the repo alone decides what runs. Fronted by its own `tailscale serve` instance; called by the UI, and by gateway for auto-suspend and its routes file.
 
 **UI**:
-Static browser app on Cloudflare Pages showing blackberry's reachability and Wake/Suspend actions. The only user-facing surface. Works only from a tailnet device: the browser calls gateway and hostd directly. Before 2026-10-23 it was served by edge, a relay on Railway, now removed.
+Static browser app on Cloudflare Pages, branded **metal**: shows blackberry's state from gateway's `GET /status`, with Wake and Suspend. The only user-facing surface. Works only from a tailnet device: the browser calls gateway and hostd directly. Before 2026-10-23 it was served by edge, a relay on Railway, now removed.
 
 **Reachable**:
 Whether blackberry currently responds to hostd's health check. The UI polls this to decide which of Wake/Suspend is actionable.

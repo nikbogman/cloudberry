@@ -5,7 +5,9 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/nikbogman/cloudberry/internal/cors"
@@ -35,7 +37,12 @@ func main() {
 	grafanaCfg := eventlog.MustGrafanaConfig()
 	logger := eventlog.NewGrafanaCloudLogger(grafanaCfg.LokiURL, grafanaCfg.LokiUser, grafanaCfg.LokiAPIKey, "gateway")
 	sender := gateway.NewWakeOnLanSender()
+	router := gateway.NewRouter(cfg.HostdURL, cfg.MACAddress, sender, logger)
+	if err := router.LoadState(cfg.StateFile); err != nil {
+		log.Fatal(err)
+	}
 
+	cfg.Config.OnWake = router.WakeRequested
 	handler, err := gateway.NewHandler(cfg.Config, sender, logger)
 	if err != nil {
 		log.Fatal(err)
@@ -46,20 +53,18 @@ func main() {
 	// and how gateway reaches hostd.
 	node := gateway.Node(cfg.Hostname, cfg.TsnetDir)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-	if _, err := node.Up(ctx); err != nil {
+	tsStatus, err := node.Up(ctx)
+	if err != nil {
 		log.Fatalf("tsnet node %s: %v", cfg.Hostname, err)
 	}
 	cancel()
 	tailnetClient := node.HTTPClient()
-
-	router := gateway.NewRouter(cfg.HostdURL, cfg.MACAddress, sender, logger)
 	router.SetHTTPClient(tailnetClient)
-	if err := router.LoadState(cfg.StateFile); err != nil {
-		log.Fatal(err)
-	}
+
 	mux := http.NewServeMux()
 	mux.Handle("/", handler)
 	mux.Handle("/settings", tailnet.RequireTailnetIdentity(router.SettingsHandler()))
+	mux.Handle("GET /status", tailnet.RequireTailnetIdentity(router.StatusHandler()))
 
 	for _, r := range rs.Routes {
 		h, err := router.RouteHandler(r)
@@ -74,6 +79,18 @@ func main() {
 		// The stack sees the path without its prefix; /<path> redirects to /<path>/.
 		log.Printf("gateway route %s on %s%s -> %s", r.Name, cfg.Hostname, r.Path, r.Upstream)
 		mux.Handle(r.Path+"/", http.StripPrefix(r.Path, h))
+	}
+	// "raspberry.tail1234.ts.net." -> "tail1234.ts.net", for the routes' URLs.
+	if _, domain, ok := strings.Cut(strings.TrimSuffix(tsStatus.Self.DNSName, "."), "."); ok {
+		router.SetURLs(cfg.Hostname, domain)
+	}
+	// Every upstream is on blackberry, so the first one tells whether it's up.
+	if len(rs.Routes) > 0 {
+		u, err := url.Parse(rs.Routes[0].Upstream)
+		if err != nil {
+			log.Fatal(err)
+		}
+		go router.RunProbe(context.Background(), u.Host, 15*time.Second)
 	}
 
 	log.Printf("gateway serving https://%s on the tailnet", cfg.Hostname)

@@ -22,12 +22,16 @@ type EventLogger interface {
 type Config struct {
 	MACAddress string
 	BindHost   string
+	// OnWake, if set, is called with the caller's identity after the UI's
+	// Wake sent its packet (Router.WakeRequested, for GET /status).
+	OnWake func(identity string)
 }
 
 type Handler struct {
 	macAddress string
 	sender     Sender
 	logger     EventLogger
+	onWake     func(string)
 }
 
 func NewHandler(cfg Config, sender Sender, logger EventLogger) (http.Handler, error) {
@@ -39,7 +43,7 @@ func NewHandler(cfg Config, sender Sender, logger EventLogger) (http.Handler, er
 		return nil, err
 	}
 
-	h := &Handler{macAddress: cfg.MACAddress, sender: sender, logger: logger}
+	h := &Handler{macAddress: cfg.MACAddress, sender: sender, logger: logger, onWake: cfg.OnWake}
 
 	mux := http.NewServeMux()
 	mux.Handle("POST /wake", tailnet.RequireTailnetIdentityOrLoopback(http.HandlerFunc(h.handleWake)))
@@ -59,6 +63,9 @@ func (h *Handler) doWake(identity string) error {
 	// Packet first: SendEvent is a synchronous call to Grafana, which on the
 	// Pi Zero would delay the wake.
 	err := h.sender.Send(h.macAddress)
+	if err == nil && h.onWake != nil {
+		h.onWake(identity) // before Grafana, so the wake's timing starts at the packet
+	}
 	h.logger.SendEvent("wake_requested", "requested", &identity, nil)
 	if err != nil {
 		h.logger.SendEvent("wake_failed", "failed", &identity, nil)

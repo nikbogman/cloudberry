@@ -9,8 +9,14 @@ blackberry in two cases:
   on the LAN, then reverse-proxies it. Once every route has been quiet for its
   `idle_minutes` it calls hostd `/suspend`, but only if it auto-woke blackberry.
 
-Both are switchable at runtime from the UI (`/settings`). The switches, and
-whether gateway did the last wake, are saved to `$GATEWAY_STATE_FILE`, so the
+gateway also probes blackberry every 15s, dialing the first route's upstream
+(every 250ms while a wake it sent is pending), so it knows when blackberry
+woke or went to sleep whoever caused it, and how long a wake took. That's
+`GET /status`.
+
+Both are switchable at runtime from the UI (`/settings`). The switches,
+whether gateway did the last wake, and the status history are saved to
+`$GATEWAY_STATE_FILE`, so the
 restarts that updates cause keep them.
 
 It lives on raspberry because the magic packet is a LAN broadcast, which needs
@@ -26,6 +32,7 @@ Code: [`internal/gateway/`](../../internal/gateway), entrypoint [`cmd/gateway/`]
 |---|---|
 | `POST /wake` on `$GATEWAY_PORT` (published on 443) | Requires the identity header or a `127.0.0.1` caller. Sends WoL to `BLACKBERRY_MAC_ADDRESS`, logs `wake_requested`/`_succeeded`/`_failed`, returns `{"wake": ...}`. |
 | `GET`/`POST /settings` on `$GATEWAY_PORT` (published on 443) | Requires the identity header. Reads, or sets from form fields `wake`/`suspend` (`true`/`false`), the auto-wake and auto-suspend switches; returns `{"wake": ..., "suspend": ...}`. Logs `settings_changed`. Off auto-wake makes `wake` routes 502 while asleep; off auto-suspend keeps a pending auto-wake for when it's back on. |
+| `GET /status` | Requires the identity header. Everything the UI shows: `awake` (null until the first probe), `since`, `woken_by` (a route name or a login; empty if gateway didn't send the wake), `last_wake_seconds`, `sleeps_at` and `idle_window_seconds` (only when gateway did the waking and auto-suspend is on), `wake_pending`, the switches, each route's `url` and `last_request`, and the wakes and suspends of the last 48h (`events`). |
 | Each stack route, at its own hostname or under its `path` on 443 | Reverse-proxies to `upstream`, waking blackberry first if the route has `wake`. Logs `autowake_*` and `autosuspend_*`. |
 
 ## Routes file

@@ -1,8 +1,11 @@
 # UI
 
-The browser app, hosted on Cloudflare Pages: shows whether blackberry is
-[Reachable](../CONTEXT.md) and offers Wake/Suspend. The only user-facing surface
-in the system.
+**metal**, the browser app, hosted on Cloudflare Pages: shows whether
+blackberry is awake, what woke it and when it sleeps again, and offers
+Wake/Suspend. The only user-facing surface in the system. Logo: an ingot whose
+seam glows ember orange while blackberry is awake (the favicon follows); asleep
+is steel blue. Design:
+[Metal — logo & control page](https://claude.ai/artifact/Wcn8JFMgAAj2pDx186orky).
 
 Plain static files — HTML, one ES module, one stylesheet. No framework, no
 bundler, no build step.
@@ -14,16 +17,19 @@ Code: [`ui/`](.).
 All of it lives in [`mountUi`](app.js), called by the inline module script
 in [`index.html`](index.html):
 
-- Polls hostd's `/health` every 12s (configurable), renders
-  `Checking…` / `Reachable` / `Unreachable`.
-- **Wake button** — enabled unless already reachable. `POST`s to
-  gateway's `/wake`.
-- **Suspend button** — enabled unless already unreachable. `POST`s to
-  hostd's `/suspend`.
-- **Auto-wake / Auto-suspend switches** — read from gateway's `GET /settings`
-  on load, set with a form-encoded `POST /settings`. Disabled while gateway is
-  unreachable.
-- Failures surface in an error line; successes don't.
+- Polls gateway's [`GET /status`](../cmd/gateway/README.md#routes) every 12s
+  (every 2s for 90s after Wake or Suspend). Everything on the page comes from
+  it: awake or asleep and since when, what woke it, the auto-suspend
+  countdown, last wake duration, the stacks with their last request, the
+  switches, and today's wakes and suspends. "On today" is summed in the
+  browser, in its time zone ([`awakeToday`](app.js), tested in
+  [`app.test.mjs`](app.test.mjs): `node --test ui/`).
+- **One button**: Wake while asleep (`POST` gateway `/wake`), Suspend while
+  awake (`POST` hostd `/suspend`).
+- **Auto-wake / Auto-suspend switches**: a form-encoded `POST` to gateway's
+  `/settings`.
+- Failures surface in an error line; successes don't. gateway unreachable
+  reads as "Unknown".
 
 The browser calls [gateway](../cmd/gateway/README.md) and
 [hostd](../cmd/hostd/README.md) directly at their tailnet URLs, so it only works

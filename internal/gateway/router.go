@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/nikbogman/cloudberry/internal/routes"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -17,6 +16,7 @@ import (
 	"time"
 
 	"github.com/nikbogman/cloudberry/internal/httpresponse"
+	"github.com/nikbogman/cloudberry/internal/routes"
 	"github.com/nikbogman/cloudberry/internal/tailnet"
 )
 
@@ -34,9 +34,10 @@ type Router struct {
 	pollEvery    time.Duration
 	probeTimeout time.Duration
 
-	inflight  atomic.Int64
-	idleAt    atomic.Int64 // unix nanos: latest last-use + that route's idle time
-	autoWoken atomic.Bool  // only an auto-wake is ever auto-suspended
+	inflight   atomic.Int64
+	idleAt     atomic.Int64 // unix nanos: latest last-use + that route's idle time
+	idleWindow atomic.Int64 // the idle time that set idleAt, for the UI's countdown
+	autoWoken  atomic.Bool  // only an auto-wake is ever auto-suspended
 
 	autoWake    atomic.Bool
 	autoSuspend atomic.Bool
@@ -49,12 +50,20 @@ type Router struct {
 
 	mu     sync.Mutex
 	waking *wakeAttempt
+
+	// GET /status (status.go).
+	statusMu   sync.Mutex
+	host       hostState
+	pending    pendingWake
+	routeStats []*routeStat
+	kick       chan struct{}
 }
 
 type routerState struct {
-	AutoWoken   bool `json:"auto_woken"`
-	AutoWake    bool `json:"wake"`
-	AutoSuspend bool `json:"suspend"`
+	AutoWoken   bool      `json:"auto_woken"`
+	AutoWake    bool      `json:"wake"`
+	AutoSuspend bool      `json:"suspend"`
+	Host        hostState `json:"host"`
 }
 
 // LoadState restores the switches and autoWoken from path, and saves every
@@ -75,6 +84,9 @@ func (g *Router) LoadState(path string) error {
 	g.autoWoken.Store(st.AutoWoken)
 	g.autoWake.Store(st.AutoWake)
 	g.autoSuspend.Store(st.AutoSuspend)
+	g.statusMu.Lock()
+	g.host = st.Host
+	g.statusMu.Unlock()
 	return nil
 }
 
@@ -84,7 +96,10 @@ func (g *Router) save() {
 	}
 	g.saveMu.Lock()
 	defer g.saveMu.Unlock()
-	data, _ := json.Marshal(routerState{AutoWoken: g.autoWoken.Load(), AutoWake: g.autoWake.Load(), AutoSuspend: g.autoSuspend.Load()})
+	g.statusMu.Lock()
+	host := g.host
+	g.statusMu.Unlock()
+	data, _ := json.Marshal(routerState{AutoWoken: g.autoWoken.Load(), AutoWake: g.autoWake.Load(), AutoSuspend: g.autoSuspend.Load(), Host: host})
 	tmp := g.stateFile + ".tmp"
 	if err := os.WriteFile(tmp, data, 0o644); err == nil {
 		err = os.Rename(tmp, g.stateFile)
@@ -113,6 +128,7 @@ func NewRouter(hostdURL, mac string, sender Sender, logger EventLogger) *Router 
 		wakeTimeout:  90 * time.Second,
 		pollEvery:    250 * time.Millisecond,
 		probeTimeout: 300 * time.Millisecond,
+		kick:         make(chan struct{}, 1),
 	}
 	g.idleAt.Store(time.Now().UnixNano())
 	g.autoWake.Store(true)
@@ -130,7 +146,11 @@ func (g *Router) touch(idle time.Duration) {
 	until := time.Now().Add(idle).UnixNano()
 	for {
 		cur := g.idleAt.Load()
-		if cur >= until || g.idleAt.CompareAndSwap(cur, until) {
+		if cur >= until {
+			return
+		}
+		if g.idleAt.CompareAndSwap(cur, until) {
+			g.idleWindow.Store(int64(idle))
 			return
 		}
 	}
@@ -151,13 +171,19 @@ func (g *Router) RouteHandler(r routes.Route) (http.Handler, error) {
 		req.Header.Del(tailnet.IdentityHeader) // upstreams never trust it
 	}
 
+	stat := &routeStat{route: r}
+	g.statusMu.Lock()
+	g.routeStats = append(g.routeStats, stat)
+	g.statusMu.Unlock()
+
 	idle := time.Duration(r.IdleMinutes) * time.Minute
 	var h http.Handler = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		g.inflight.Add(1)
 		defer func() { g.touch(idle); g.inflight.Add(-1) }()
 		g.touch(idle)
+		stat.last.Store(time.Now().UnixNano())
 		if r.Wake && g.autoWake.Load() {
-			if err := g.awake(req.Context(), target); err != nil {
+			if err := g.awake(req.Context(), target, r.Name); err != nil {
 				w.Header().Set("Retry-After", "30")
 				http.Error(w, "blackberry is waking, retry shortly", http.StatusServiceUnavailable)
 				return
@@ -202,7 +228,7 @@ func (g *Router) up(ctx context.Context, addr string) bool {
 // awake returns once addr answers, sending WoL if it doesn't. Concurrent
 // callers share one attempt, so a burst sends one packet. Every upstream is
 // on blackberry, so the attempt polls whichever addr started it.
-func (g *Router) awake(ctx context.Context, addr string) error {
+func (g *Router) awake(ctx context.Context, addr, by string) error {
 	if g.up(ctx, addr) {
 		return nil
 	}
@@ -211,7 +237,7 @@ func (g *Router) awake(ctx context.Context, addr string) error {
 	if a == nil {
 		a = &wakeAttempt{done: make(chan struct{})}
 		g.waking = a
-		go g.wake(a, addr)
+		go g.wake(a, addr, by)
 	}
 	g.mu.Unlock()
 
@@ -228,7 +254,7 @@ func (g *Router) awake(ctx context.Context, addr string) error {
 //
 // Events ship in the background: SendEvent is a synchronous HTTPS call to
 // Grafana, which on the Pi Zero would delay the packet and the held requests.
-func (g *Router) wake(a *wakeAttempt, addr string) {
+func (g *Router) wake(a *wakeAttempt, addr, by string) {
 	defer func() {
 		g.mu.Lock()
 		g.waking = nil
@@ -243,6 +269,7 @@ func (g *Router) wake(a *wakeAttempt, addr string) {
 		go g.logger.SendEvent("autowake_failed", "failed", nil, nil)
 		return
 	}
+	g.WakeRequested(by)
 	for !g.up(ctx, addr) {
 		select {
 		case <-ctx.Done():
