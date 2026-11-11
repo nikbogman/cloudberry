@@ -2,7 +2,8 @@
 
 - Check: `go vet ./... && go test ./...`
 - Deploy: `task --dry` first, then `task` or one target (`task --list`). Manual only; run it when the user asks. Secrets and addresses come from the root `.env` (template `.env.example`); see `DEPLOY.md`.
-- Stacks deploy with `docker --context blackberry compose`, never through `task`; they live in the [deploys](https://github.com/nikbogman/deploys) repo.
+- Stacks live in the [deploys](https://github.com/nikbogman/deploys) repo and deploy on a push to its `main` (hostd pulls it); `./up.sh <stack>` there is the manual override. Their secrets are sops-encrypted `secrets.env` files.
+- gateway and hostd update themselves from GitHub releases: tag `vX.Y.Z` on `main` and push the tag to ship one. A `task` deploy from anything but a clean release tag pins that binary.
 - New Go service: `cmd/<name>/` + `internal/<name>/`, plus a task in `Taskfile.yml` that calls `_service`.
 
 ## graphify
