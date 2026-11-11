@@ -17,6 +17,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -50,7 +51,7 @@ func (u *Updater) Update(ctx context.Context) (tag string, updated bool, err err
 		client = &http.Client{Timeout: 2 * time.Minute}
 	}
 	tag, err = u.latestTag(ctx, client)
-	if err != nil || tag == u.Version {
+	if err != nil || !newer(tag, u.Version) {
 		return tag, false, err
 	}
 	sums, err := get(ctx, client, u.BaseURL+"/releases/download/"+tag+"/SHA256SUMS")
@@ -106,6 +107,21 @@ func (u *Updater) latestTag(ctx context.Context, client *http.Client) (string, e
 		return "", fmt.Errorf("latest release: status %d, location %q", resp.StatusCode, loc)
 	}
 	return tag, nil
+}
+
+// newer reports whether release tag a is a later version than b. Both match
+// releaseTag. Only ever forward: between a tag push and its release, latest
+// still names the previous one.
+func newer(a, b string) bool {
+	pa, pb := strings.Split(a[1:], "."), strings.Split(b[1:], ".")
+	for i := range pa {
+		x, _ := strconv.Atoi(pa[i])
+		y, _ := strconv.Atoi(pb[i])
+		if x != y {
+			return x > y
+		}
+	}
+	return false
 }
 
 func get(ctx context.Context, client *http.Client, url string) ([]byte, error) {

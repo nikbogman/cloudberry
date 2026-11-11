@@ -255,6 +255,9 @@ tasks:
         # always, not on-failure: gateway and hostd exit cleanly to pick up an update.
         Restart=always
         RestartSec=5
+        # direct: a failure that's restarted doesn't trigger OnFailure, so the
+        # rollback runs only once the start limit above gives up.
+        RestartMode=direct
         User=root
 
         [Install]

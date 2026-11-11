@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/nikbogman/cloudberry/internal/cors"
@@ -96,6 +97,8 @@ func main() {
 		Every:      cfg.Update.Every,
 		Client:     &http.Client{Transport: tailnetClient.Transport, Timeout: 10 * time.Second},
 	}).Run(context.Background())
+	// Exit 0 straight away: closing the node first would make the listener
+	// goroutines log.Fatal (exit 1), which systemd counts as a failure.
 	log.Print("restarting for an update")
-	node.Close()
+	os.Exit(0)
 }

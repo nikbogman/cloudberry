@@ -90,3 +90,17 @@ func TestUpdate(t *testing.T) {
 		}
 	})
 }
+
+func TestNeverDowngrades(t *testing.T) {
+	// Between a tag push and its release, /releases/latest still names the
+	// previous release: a build of the new tag must not "update" back to it.
+	u, bin := setup(t, release(t, "v0.1.1", "old-release", "old-release"), "v0.2.0")
+	if _, updated, err := u.Update(context.Background()); err != nil || updated || read(t, bin) != "old" {
+		t.Fatalf("updated=%v err=%v bin=%s", updated, err, read(t, bin))
+	}
+	for a, b := range map[string]string{"v0.10.0": "v0.9.9", "v1.0.0": "v0.99.99", "v0.2.1": "v0.2.0"} {
+		if !newer(a, b) || newer(b, a) || newer(a, a) {
+			t.Errorf("newer(%s, %s) wrong", a, b)
+		}
+	}
+}
