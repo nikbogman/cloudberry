@@ -2,8 +2,19 @@
 
 [Task](https://taskfile.dev/) over plain `ssh`, defined in the repo root
 [`Taskfile.yml`](Taskfile.yml). One run converges raspberry and blackberry:
-Docker installed on blackberry, and gateway and hostd deployed as systemd services
-served on the tailnet. `task ui` uploads the UI to Cloudflare Pages separately.
+Docker installed on blackberry, the stack sync set up, and gateway and hostd
+deployed as systemd services served on the tailnet. `task ui` uploads the UI
+to Cloudflare Pages separately.
+
+A Deploy is for setting a device up, and for what doesn't update itself:
+unit files, environment and secrets. After that:
+
+- **Stacks** deploy on a push to [deploys](https://github.com/nikbogman/deploys)'
+  `main`: hostd pulls it ([stack sync](cmd/hostd/README.md#stack-sync)), and
+  gateway picks up route changes from hostd.
+- **gateway and hostd** update themselves to the latest
+  [release](https://github.com/nikbogman/cloudberry/releases), if they're a
+  release build ([updates](cmd/gateway/README.md#updates)).
 
 Per-service deploy details:
 [gateway](cmd/gateway/README.md),
@@ -39,7 +50,8 @@ Service-specific variables are documented in
 ## Running a Deploy
 
 ```sh
-task                # Docker + HDD spindown + network + firewall + gateway + hostd
+task                # Docker + HDD spindown + network + stacks + firewall + gateway + hostd
+task stacks         # sops/age/keys/deploys clone on blackberry; encrypt stack secrets (see below)
 task gateway        # just gateway, on raspberry (routes generated from STACKS_DIR)
 task firewall       # just the gated-stack firewall, on blackberry
 task network        # just blackberry's netplan config; auto-rolls back after 2 min if blackberry drops off
@@ -53,7 +65,34 @@ task --list
 ```
 
 Every run re-ships and restarts each service it targets: there is no change
-detection. A restart is a second of downtime, which nothing here cares
+detection.
+
+### Stack sync setup (`task stacks`)
+
+Idempotent; rerun it after replacing either machine's age key.
+
+- On blackberry: installs git, age and a pinned sops; generates
+  `/etc/hostd/age.key` and a deploy key, `/etc/hostd/deploy_key`, if missing
+  (neither private key ever leaves it); clones deploys to `/srv/deploys`.
+- Registers the deploy key on deploys, read-only, if `gh` is installed and
+  logged in. Otherwise it prints the key and where to add it; then rerun.
+- On this machine: installs sops and age with `go install`, generates
+  `~/.config/sops/age/keys.txt` if missing, writes both public keys into
+  deploys' `.sops.yaml`, encrypts any stack's `.env` that has no
+  `secrets.env` yet, and re-encrypts every `secrets.env` for the current keys.
+  Commit and push what it changed in deploys.
+
+Back this machine's age key up in a password manager: with it and blackberry
+gone, the stack secrets are unreadable.
+
+### Releases
+
+Tag `vX.Y.Z` on `main` and push the tag. [CI](.github/workflows/ci.yml)
+vets, tests and builds `gateway-linux-arm`, `hostd-linux-amd64` and
+`SHA256SUMS` into a GitHub release; both devices pick it up within
+`UPDATE_MINUTES`. A `task gateway`/`task hostd` from a clean checkout of that
+tag deploys a binary that updates itself from then on; from anything else, a
+binary that stays as deployed. A restart is a second of downtime, which nothing here cares
 about. Nothing runs a Deploy automatically.
 
 ### Renaming a service

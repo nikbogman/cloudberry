@@ -1,6 +1,9 @@
 package gateway
 
-import "github.com/nikbogman/cloudberry/internal/env"
+import (
+	"github.com/nikbogman/cloudberry/internal/env"
+	"github.com/nikbogman/cloudberry/internal/selfupdate"
+)
 
 // EnvConfig is Config plus everything else the gateway reads from the
 // process environment.
@@ -11,6 +14,8 @@ type EnvConfig struct {
 	RoutesFile string
 	UIOrigin   string
 	TsnetDir   string // per-route tsnet node state, one subdirectory per route
+	StateFile  string // auto-wake/suspend switches and autoWoken, across restarts
+	Update     selfupdate.Config
 }
 
 // ConfigFromEnv reads the gateway's runtime configuration. BLACKBERRY_MAC_ADDRESS
@@ -26,5 +31,7 @@ func ConfigFromEnv() EnvConfig {
 		RoutesFile: env.EnvOr("GATEWAY_ROUTES", "/etc/gateway/routes.json"),
 		UIOrigin:   env.EnvOr("UI_ORIGIN", ""),
 		TsnetDir:   env.EnvOr("GATEWAY_TSNET_DIR", "/var/lib/gateway/tsnet"),
+		StateFile:  env.EnvOr("GATEWAY_STATE_FILE", "/var/lib/gateway/state.json"),
+		Update:     selfupdate.ConfigFromEnv(),
 	}
 }

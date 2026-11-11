@@ -24,7 +24,7 @@ The service on raspberry. Sends Wake on `POST /wake` (the UI's Wake button, call
 _Avoid_: waker, gate, proxy, reverse proxy, wake service, WoL plugin
 
 **hostd**:
-blackberry's own daemon: exposes Suspend and a reachability health check. Carries no workload traffic and knows nothing about Docker (yet). Fronted by its own `tailscale serve` instance; called by the UI and by gateway's auto-suspend.
+blackberry's own daemon: exposes Suspend and a reachability health check, and deploys the Stacks by pulling the deploys repo (stack sync). Carries no workload traffic and never reads Docker's state: the repo alone decides what runs. Fronted by its own `tailscale serve` instance; called by the UI, and by gateway for auto-suspend and its routes file.
 
 **UI**:
 Static browser app on Cloudflare Pages showing blackberry's reachability and Wake/Suspend actions. The only user-facing surface. Works only from a tailnet device: the browser calls gateway and hostd directly. Before 2026-10-23 it was served by edge, a relay on Railway, now removed.
@@ -46,11 +46,11 @@ _Avoid_: auth token, login header
 ### Provisioning
 
 **Deploy**:
-A `task` run (repo root `Taskfile.yml`) that converges raspberry and blackberry over ssh. Manual only — never automatic or scheduled.
+A `task` run (repo root `Taskfile.yml`) that converges raspberry and blackberry over ssh. Manual only — never automatic or scheduled. Sets devices up and ships what doesn't update itself (units, environment, secrets); Stacks, routes and the gateway and hostd binaries update by pull.
 _Avoid_: playbook run, apply
 
 ### Workloads
 
 **Stack**:
-A user-facing workload at `<name>/` in the [deploys](https://github.com/nikbogman/deploys) repo, deployed as plain Docker Compose directly to blackberry — outside this repo's Deploy, unknown to hostd; gateway knows only those in its routes file. See its [README](https://github.com/nikbogman/deploys/blob/main/README.md).
+A user-facing workload at `<name>/` in the [deploys](https://github.com/nikbogman/deploys) repo, run as plain Docker Compose on blackberry and deployed by hostd's stack sync on a push to `main` — outside this repo's Deploy. Its secrets are in `<name>/secrets.env`, sops-encrypted. gateway knows only those with an `x-route` block. See its [README](https://github.com/nikbogman/deploys/blob/main/README.md).
 _Avoid_: service (this repo's term for gateway/hostd; Platform and waker-service are old names for the set), workload (fine informally, but "stack" is the file/directory unit)

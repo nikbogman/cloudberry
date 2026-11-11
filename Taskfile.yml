@@ -1,4 +1,4 @@
-# Converges raspberry (gateway) and blackberry (hostd, Docker, HDD spindown, network, stack firewall) over plain ssh.
+# Converges raspberry (gateway) and blackberry (hostd, Docker, HDD spindown, network, stack firewall, stack sync setup) over plain ssh.
 # `task ui` deploys the UI to Cloudflare Pages; it isn't part of `task`.
 # Every run re-ships both binaries and restarts both services -- no diffing.
 # See DEPLOY.md.
@@ -12,14 +12,18 @@ vars:
   # Checkout of the stacks repo (github.com/nikbogman/deploys). Routes and firewall
   # ports come from the x-route blocks in its */compose.yml (cmd/routes).
   STACKS_DIR: ${STACKS_DIR:-../deploys}
+  DEPLOYS_REPO: nikbogman/deploys
+  SOPS_VERSION: v3.13.3
+  AGE_VERSION: v1.3.2
 
 tasks:
   default:
-    desc: Converge both devices (Docker, HDD spindown, network, firewall, gateway, hostd)
+    desc: Converge both devices (Docker, HDD spindown, network, stack sync setup, firewall, gateway, hostd)
     cmds:
       - task: docker
       - task: hdd
       - task: network
+      - task: stacks
       - task: firewall
       - task: gateway
       - task: hostd
@@ -75,6 +79,65 @@ tasks:
             && rm -f /tmp/stack-firewall.service
             && systemctl daemon-reload && systemctl enable stack-firewall && systemctl restart stack-firewall
 
+  stacks:
+    desc: Set blackberry up for hostd's stack sync (sops, age, keys, deploys clone) and encrypt every stack's secrets.env for this machine and blackberry
+    cmds:
+      # sops and age on this machine too, to edit secrets (`sops <stack>/secrets.env`).
+      - command -v sops >/dev/null || go install github.com/getsops/sops/v3/cmd/sops@{{.SOPS_VERSION}}
+      - command -v age-keygen >/dev/null || go install filippo.io/age/cmd/...@{{.AGE_VERSION}}
+      - mkdir -p dist && scp deployments/blackberry/stacks-setup.sh {{.BLACKBERRY}}:/tmp/
+      - |
+        set -eu
+        keys=$(printf '%s\n' "${BLACKBERRY_SUDO_PASSWORD:-}" | ssh {{.BLACKBERRY}} "sudo -S -p '' sh /tmp/stacks-setup.sh keys")
+        blackberry_age=$(echo "$keys" | sed -n 's/^age //p')
+        deploy_key=$(echo "$keys" | sed -n 's/^deploy //p')
+
+        # Read-only deploy key, so blackberry can pull the private deploys repo.
+        if command -v gh >/dev/null; then
+          echo "$deploy_key" > dist/deploy_key.pub
+          gh repo deploy-key list -R {{.DEPLOYS_REPO}} | grep -q hostd@blackberry ||
+            gh repo deploy-key add dist/deploy_key.pub -R {{.DEPLOYS_REPO}} -t hostd@blackberry
+        else
+          echo "No gh here. If it isn't there yet, add this as a read-only deploy key at"
+          echo "https://github.com/{{.DEPLOYS_REPO}}/settings/keys/new, then run task stacks again:"
+          echo "$deploy_key"
+        fi
+
+        # This machine's age key; sops finds it here by default.
+        local_keys=${SOPS_AGE_KEY_FILE:-$HOME/.config/sops/age/keys.txt}
+        [ -f "$local_keys" ] || { mkdir -p "$(dirname "$local_keys")"; age-keygen -o "$local_keys" 2>/dev/null; }
+        local_age=$(age-keygen -y "$local_keys")
+
+        # Recipients: these two plus any already listed (another dev machine).
+        # A retired key is removed by hand from .sops.yaml, then task stacks.
+        cd {{.STACKS_DIR}}
+        recipients=$( { [ -f .sops.yaml ] && grep -o 'age1[a-z0-9]*' .sops.yaml; echo "$local_age"; echo "$blackberry_age"; } | sort -u | paste -sd, -)
+        cat > .sops.yaml <<EOF
+        # Written by cloudberry's task stacks: who can decrypt <stack>/secrets.env.
+        creation_rules:
+          - path_regex: (^|/)secrets\.env$
+            age: $recipients
+        EOF
+
+        # First run: encrypt each stack's existing .env. After that, .env is
+        # only ever a decrypted copy of secrets.env.
+        for env in */.env; do
+          [ -f "$env" ] || continue
+          d=$(dirname "$env")
+          [ -f "$d/secrets.env" ] && continue
+          sops encrypt --input-type dotenv --output-type dotenv --filename-override "$d/secrets.env" "$env" > "$d/secrets.env.tmp"
+          mv "$d/secrets.env.tmp" "$d/secrets.env"
+          echo "encrypted $env to $d/secrets.env"
+        done
+        for f in */secrets.env; do
+          [ -f "$f" ] && sops updatekeys --yes "$f" >/dev/null 2>&1
+        done
+        echo "Commit and push .sops.yaml and */secrets.env in {{.STACKS_DIR}}."
+      - task: _root
+        vars:
+          DEVICE: BLACKBERRY
+          CMD: sh /tmp/stacks-setup.sh clone && rm -f /tmp/stacks-setup.sh
+
   hdd:
     desc: Spin blackberry's HDD down when idle (hd-idle, settings in deployments/blackberry/hd-idle)
     cmds:
@@ -126,11 +189,15 @@ tasks:
           BIN: hostd
           # dpkg and Go agree on amd64/arm64; anything else fails in go build.
           GOENV: GOARCH=$(ssh {{.BLACKBERRY}} dpkg --print-architecture)
-          DESC: hostd -- blackberry's own daemon (suspend, reachability health check)
+          DESC: hostd -- blackberry's own daemon (suspend, reachability health check, stack sync)
           PORT: ${HOSTD_PORT:-5000}
+          # The deploys clone and the age key come from `task stacks`.
           ENV: |
             Environment=HOSTD_PORT=${HOSTD_PORT:-5000}
             Environment=UI_ORIGIN=${UI_ORIGIN:?set UI_ORIGIN}
+            Environment=STACKS_DIR=/srv/deploys
+            Environment=SOPS_AGE_KEY_FILE=/etc/hostd/age.key
+            Environment=HOME=/root
 
   ui:
     desc: Deploy the UI to Cloudflare Pages (needs Node for npx wrangler; first run asks you to log in)
@@ -161,17 +228,23 @@ tasks:
   # Cross-compiles on the dev machine (no Go toolchain on either device),
   # ships the binary + unit, swaps the binary in with mv (overwriting a
   # running binary in place hits ETXTBSY), restarts, and serves it on the
-  # tailnet.
+  # tailnet. The version is `git describe`: a clean checkout of a release tag
+  # builds a binary that updates itself from GitHub releases; any other build
+  # stays as deployed. Three failed starts in a minute run <bin>-rollback,
+  # which puts back <bin>.prev, kept by the last self-update.
   _service:
     internal: true
     cmds:
-      - GOOS=linux {{.GOENV}} go build -o dist/{{.BIN}} ./cmd/{{.BIN}}
+      - GOOS=linux CGO_ENABLED=0 {{.GOENV}} go build -ldflags "-X main.version=$(git describe --tags --always --dirty)" -o dist/{{.BIN}} ./cmd/{{.BIN}}
       - |
         cat > dist/{{.BIN}}.service <<EOF
         [Unit]
         Description={{.DESC}}
         After=network-online.target
         Wants=network-online.target
+        StartLimitIntervalSec=60
+        StartLimitBurst=3
+        OnFailure={{.BIN}}-rollback.service
 
         [Service]
         Type=simple
@@ -179,22 +252,33 @@ tasks:
         Environment=GRAFANA_CLOUD_LOKI_USER=${GRAFANA_CLOUD_LOKI_USER:?set GRAFANA_CLOUD_LOKI_USER}
         Environment=GRAFANA_CLOUD_LOKI_API_KEY=${GRAFANA_CLOUD_LOKI_API_KEY:?set GRAFANA_CLOUD_LOKI_API_KEY}
         ExecStart=/usr/local/bin/{{.BIN}}
-        Restart=on-failure
+        # always, not on-failure: gateway and hostd exit cleanly to pick up an update.
+        Restart=always
         RestartSec=5
         User=root
 
         [Install]
         WantedBy=multi-user.target
         EOF
-      - scp dist/{{.BIN}} dist/{{.BIN}}.service {{get . .DEVICE}}:/tmp/
+      - |
+        cat > dist/{{.BIN}}-rollback.service <<'EOF'
+        [Unit]
+        Description=Put back the previous {{.BIN}} binary after the current one kept failing
+
+        [Service]
+        Type=oneshot
+        # .bad keeps the failed release from being installed again.
+        ExecStart=/bin/sh -c 'test -f /usr/local/bin/{{.BIN}}.prev || exit 0; mv -f /usr/local/bin/{{.BIN}} /usr/local/bin/{{.BIN}}.bad && mv -f /usr/local/bin/{{.BIN}}.prev /usr/local/bin/{{.BIN}} && systemctl reset-failed {{.BIN}} && systemctl start {{.BIN}}'
+        EOF
+      - scp dist/{{.BIN}} dist/{{.BIN}}.service dist/{{.BIN}}-rollback.service {{get . .DEVICE}}:/tmp/
       - task: _root
         vars:
           DEVICE: '{{.DEVICE}}'
           CMD: >-
             install -m755 /tmp/{{.BIN}} /usr/local/bin/{{.BIN}}.new
             && mv -f /usr/local/bin/{{.BIN}}.new /usr/local/bin/{{.BIN}}
-            && install -m644 /tmp/{{.BIN}}.service /etc/systemd/system/{{.BIN}}.service
-            && rm -f /tmp/{{.BIN}} /tmp/{{.BIN}}.service
+            && install -m644 /tmp/{{.BIN}}.service /tmp/{{.BIN}}-rollback.service /etc/systemd/system/
+            && rm -f /tmp/{{.BIN}} /tmp/{{.BIN}}.service /tmp/{{.BIN}}-rollback.service
             && systemctl daemon-reload && systemctl enable {{.BIN}} && systemctl restart {{.BIN}}
             {{if .PORT}}&& tailscale serve --bg --https=443 localhost:{{.PORT}}{{end}}
 

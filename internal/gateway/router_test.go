@@ -10,6 +10,8 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/nikbogman/cloudberry/internal/routes"
 )
 
 type noopLogger struct{}
@@ -50,7 +52,7 @@ func TestConcurrentRequestsShareOneWake(t *testing.T) {
 
 	g := NewRouter("http://unused", "00:11:22:33:44:55", bb, noopLogger{})
 	g.pollEvery = 10 * time.Millisecond
-	h, err := g.RouteHandler(Route{Name: "t", Upstream: upstream, Public: true, Wake: true})
+	h, err := g.RouteHandler(routes.Route{Name: "t", Upstream: upstream, Public: true, Wake: true})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,7 +80,7 @@ func TestConcurrentRequestsShareOneWake(t *testing.T) {
 
 func TestPrivateRouteNeedsIdentity(t *testing.T) {
 	g := NewRouter("http://unused", "00:11:22:33:44:55", &fakeBlackberry{}, noopLogger{})
-	h, _ := g.RouteHandler(Route{Name: "t", Upstream: "http://unused"})
+	h, _ := g.RouteHandler(routes.Route{Name: "t", Upstream: "http://unused"})
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, httptest.NewRequest("GET", "/", nil))
 	if rec.Code != http.StatusUnauthorized {
@@ -128,5 +130,16 @@ func TestAutoSwitches(t *testing.T) {
 	g.suspendIfIdle(t.Context())
 	if !g.autoWoken.Load() {
 		t.Fatal("suspended with auto-suspend off")
+	}
+}
+
+func TestStalePaths(t *testing.T) {
+	status := `{"TCP":{"443":{"HTTPS":true}},"Web":{"raspberry.example.ts.net:443":{"Handlers":{"/":{"Proxy":"http://localhost:5000"},"/api":{"Proxy":"http://localhost:8444"},"/old":{"Proxy":"http://localhost:8445"}}}}}`
+	got := stalePaths([]byte(status), map[string]bool{"/api": true})
+	if len(got) != 1 || got[0] != "/old" {
+		t.Fatalf("got %v, want [/old]", got)
+	}
+	if got := stalePaths([]byte(`{}`), nil); len(got) != 0 {
+		t.Fatalf("empty status: got %v", got)
 	}
 }

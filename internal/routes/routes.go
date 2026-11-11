@@ -1,4 +1,4 @@
-package gateway
+package routes
 
 import (
 	"encoding/json"
@@ -25,7 +25,7 @@ type Route struct {
 	Wake bool `json:"wake"`
 	// IdleMinutes overrides the file's idle_minutes for this route: shorter
 	// for stacks that never touch the HDD, so a spin-up isn't kept running
-	// for nothing. Filled from the default by LoadRoutes.
+	// for nothing. Filled from the default by Load.
 	IdleMinutes int `json:"idle_minutes,omitempty"`
 }
 
@@ -37,17 +37,17 @@ type Routes struct {
 
 var hostLabel = regexp.MustCompile(`^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$`)
 
-func LoadRoutes(path string) (Routes, error) {
+func Load(path string) (Routes, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return Routes{}, err
 	}
-	return ParseRoutes(data, path)
+	return Parse(data, path)
 }
 
-// ParseRoutes validates a routes file and fills each route's default
+// Parse validates a routes file and fills each route's default
 // idle_minutes. path only labels errors.
-func ParseRoutes(data []byte, path string) (Routes, error) {
+func Parse(data []byte, path string) (Routes, error) {
 	var cfg Routes
 	if err := json.Unmarshal(data, &cfg); err != nil {
 		return cfg, fmt.Errorf("%s: %w", path, err)

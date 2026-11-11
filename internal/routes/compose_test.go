@@ -1,4 +1,4 @@
-package gateway
+package routes
 
 import (
 	"strings"
@@ -15,7 +15,7 @@ func TestRouteFromCompose(t *testing.T) {
 		`{"name":"x","services":{"a":{"ports":[{"host_ip":"0.0.0.0","published":"1"}]}},"x-route":{}}`:                                "error: LAN IP",
 		`{"name":"one","services":{"a":{"ports":[{"host_ip":"10.0.0.2","published":"3000"}]}},"x-route":{"path":"/one","port":8444}}`: "one http://10.0.0.2:3000",
 	} {
-		r, ok, err := RouteFromCompose([]byte(in))
+		r, ok, err := FromCompose([]byte(in))
 		var got string
 		switch {
 		case err != nil:

@@ -9,8 +9,9 @@ blackberry in two cases:
   on the LAN, then reverse-proxies it. Once every route has been quiet for its
   `idle_minutes` it calls hostd `/suspend`, but only if it auto-woke blackberry.
 
-Both are switchable at runtime from the UI (`/settings`). The switches live in
-memory: a gateway restart turns both back on.
+Both are switchable at runtime from the UI (`/settings`). The switches, and
+whether gateway did the last wake, are saved to `$GATEWAY_STATE_FILE`, so the
+restarts that updates cause keep them.
 
 It lives on raspberry because the magic packet is a LAN broadcast, which needs
 raspberry and blackberry on one L2 broadcast domain. Rationale:
@@ -29,16 +30,26 @@ Code: [`internal/gateway/`](../../internal/gateway), entrypoint [`cmd/gateway/`]
 
 ## Routes file
 
-Generated, not hand-written. `task gateway` runs [`cmd/routes`](../routes/main.go),
-which reads the top-level `x-route` block of every `$STACKS_DIR/*/compose.yml`
-(the [deploys](https://github.com/nikbogman/deploys) repo, default `../deploys`)
-through `docker compose config`, validates the result, and ships it to
-`/etc/gateway/routes.json`. A stack without `x-route` isn't routed.
-`go run ./cmd/routes ../deploys` prints it without deploying.
+Generated, not hand-written, from the top-level `x-route` block of every
+`*/compose.yml` in the [deploys](https://github.com/nikbogman/deploys) repo,
+through `docker compose config` ([`internal/routes`](../../internal/routes)).
+A stack without `x-route` isn't routed. Two ways in, same result:
+
+- **Automatically.** hostd serves it at `GET /routes` from its clone of
+  deploys. gateway polls that every `$UPDATE_MINUTES`; hostd only answers while
+  blackberry is awake, which is also the only time stacks change. A different,
+  valid file is written to `/etc/gateway/routes.json` and gateway restarts on it
+  (`routes_updated`); an invalid one is ignored (`routes_rejected`).
+- **`task gateway`**, from a dev machine checkout (`$STACKS_DIR`, default
+  `../deploys`), via [`cmd/routes`](../routes/main.go).
+  `go run ./cmd/routes ../deploys` prints it without deploying.
+
+A path route removed from the file is unpublished from `tailscale serve` on
+the next start.
 
 | Field | Meaning |
 |---|---|
-| `idle_minutes` | Quiet time before gateway suspends blackberry. Top level: the default, 30 (`cmd/routes -idle-minutes`). Per route: an override, shorter for SSD-only stacks (popcorn), so the HDD only stays spun up for stacks that use it (immich). A route's use keeps blackberry up for at least its own time. |
+| `idle_minutes` | Quiet time before gateway suspends blackberry. Top level: the default, 30 (`cmd/routes -idle-minutes`). Per route: an override, shorter for SSD-only stacks, so the HDD only stays spun up for stacks that use it (immich). A route's use keeps blackberry up for at least its own time. |
 | `name` | The Compose project's `name`. Label for logs, and the route's own tailnet hostname: `https://<name>.<tailnet>.ts.net` on 443, from an in-process tsnet node. A lowercase DNS label, unique. |
 | `service` | `x-route` only. The service whose first published port is the upstream; optional when the stack has one service. |
 | `port` | Only for `path` routes: the loopback listen port `tailscale serve` forwards to. Unique, never 443. |
@@ -65,12 +76,33 @@ machine; `task gateway` passes them to the unit. Bold variables are required.
 | `GATEWAY_HOST` | `/wake` bind address (default `127.0.0.1`). Must be loopback or tailnet. The deploy never sets it. |
 | `GATEWAY_ROUTES` | Routes file path (default `/etc/gateway/routes.json`). The deploy never sets it. |
 | `GATEWAY_TSNET_DIR` | Where each hostname route keeps its tsnet node state (default `/var/lib/gateway/tsnet`). Losing it makes every route re-join as a new device. |
+| `GATEWAY_STATE_FILE` | Saved switches and auto-wake flag (default `/var/lib/gateway/state.json`). The deploy never sets it. |
+| `UPDATE_MINUTES` | How often to poll hostd's routes and GitHub's latest release (default `2`). |
+| `RELEASE_URL` | Where releases come from (default `https://github.com/nikbogman/cloudberry`). Empty turns binary updates off. |
 | `TS_AUTHKEY` | Read by tsnet when a route's node first joins the tailnet; `task gateway` passes `TAILSCALE_AUTH_KEY`. Use a reusable key, since each route is its own node. Not needed after the first start. |
+
+## Updates
+
+Every `$UPDATE_MINUTES`, besides the routes file above, gateway checks the
+latest [release](https://github.com/nikbogman/cloudberry/releases) (the
+`/releases/latest` redirect, not the rate-limited API). A newer one is
+downloaded, checked against `SHA256SUMS`, and swapped in by rename, keeping
+the old binary as `gateway.prev` (`binary_updated`). Either kind of update
+waits up to a minute for held requests and running wakes, then exits;
+systemd (`Restart=always`) starts the new one. Failures log `update_failed`,
+once per distinct error.
+
+Only release builds update themselves: their version is a `vX.Y.Z` tag. A
+binary built from anything else (`task gateway` on an untagged or dirty
+checkout) stays as deployed, which is how to pin one. If a new binary fails
+three starts in a minute, `gateway-rollback.service` moves it to `gateway.bad`
+and puts `gateway.prev` back; that release isn't installed again.
 
 ## Deployment
 
 `task gateway` ships the routes file, cross-compiles for the Pi Zero W, ships
-the binary and a systemd unit (the device never runs a Go toolchain), and runs
+the binary, a systemd unit and its rollback unit (the device never runs a Go
+toolchain), and runs
 `tailscale serve` for `$GATEWAY_PORT` on 443. At startup gateway starts a tsnet
 node per hostname route and runs `tailscale serve` for each path route. Funnel
 must be enabled in the tailnet policy for public routes. See

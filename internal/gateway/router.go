@@ -2,10 +2,15 @@ package gateway
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"github.com/nikbogman/cloudberry/internal/routes"
 	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -33,13 +38,65 @@ type Router struct {
 	idleAt    atomic.Int64 // unix nanos: latest last-use + that route's idle time
 	autoWoken atomic.Bool  // only an auto-wake is ever auto-suspended
 
-	// ponytail: in memory, so a gateway restart turns both back on; persist
-	// to a file if that ever surprises.
 	autoWake    atomic.Bool
 	autoSuspend atomic.Bool
 
+	// stateFile keeps autoWoken and the two switches across restarts, which
+	// self-updates make routine: without it, a restart after an auto-wake
+	// would leave blackberry up for good. Empty: in memory only.
+	stateFile string
+	saveMu    sync.Mutex
+
 	mu     sync.Mutex
 	waking *wakeAttempt
+}
+
+type routerState struct {
+	AutoWoken   bool `json:"auto_woken"`
+	AutoWake    bool `json:"wake"`
+	AutoSuspend bool `json:"suspend"`
+}
+
+// LoadState restores the switches and autoWoken from path, and saves every
+// later change there. A missing file keeps the defaults.
+func (g *Router) LoadState(path string) error {
+	g.stateFile = path
+	data, err := os.ReadFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	st := routerState{AutoWake: true, AutoSuspend: true}
+	if err := json.Unmarshal(data, &st); err != nil {
+		return fmt.Errorf("%s: %w", path, err)
+	}
+	g.autoWoken.Store(st.AutoWoken)
+	g.autoWake.Store(st.AutoWake)
+	g.autoSuspend.Store(st.AutoSuspend)
+	return nil
+}
+
+func (g *Router) save() {
+	if g.stateFile == "" {
+		return
+	}
+	g.saveMu.Lock()
+	defer g.saveMu.Unlock()
+	data, _ := json.Marshal(routerState{AutoWoken: g.autoWoken.Load(), AutoWake: g.autoWake.Load(), AutoSuspend: g.autoSuspend.Load()})
+	tmp := g.stateFile + ".tmp"
+	if err := os.WriteFile(tmp, data, 0o644); err == nil {
+		err = os.Rename(tmp, g.stateFile)
+	}
+}
+
+// Idle reports whether no request is held or proxied and no wake is running,
+// so a restart drops nothing.
+func (g *Router) Idle() bool {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	return g.inflight.Load() == 0 && g.waking == nil
 }
 
 type wakeAttempt struct {
@@ -76,7 +133,7 @@ func (g *Router) touch(idle time.Duration) {
 }
 
 // RouteHandler holds a Wake route's request until blackberry is reachable.
-func (g *Router) RouteHandler(r Route) (http.Handler, error) {
+func (g *Router) RouteHandler(r routes.Route) (http.Handler, error) {
 	u, err := url.Parse(r.Upstream)
 	if err != nil {
 		return nil, err
@@ -192,6 +249,7 @@ func (g *Router) wake(a *wakeAttempt, addr string) {
 		}
 	}
 	g.autoWoken.Store(true)
+	g.save()
 	go g.logger.SendEvent("autowake_succeeded", "succeeded", nil, nil)
 }
 
@@ -230,6 +288,7 @@ func (g *Router) suspendIfIdle(ctx context.Context) {
 		return
 	}
 	g.autoWoken.Store(false)
+	g.save()
 	g.logger.SendEvent("autosuspend_succeeded", "succeeded", nil, nil)
 }
 
@@ -251,6 +310,7 @@ func (g *Router) SettingsHandler() http.Handler {
 				}
 				sw.Store(on)
 			}
+			g.save()
 			identity := tailnet.GetCallerIdentity(req)
 			go g.logger.SendEvent("settings_changed", "succeeded", &identity,
 				map[string]any{"wake": g.autoWake.Load(), "suspend": g.autoSuspend.Load()})
