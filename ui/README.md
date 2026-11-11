@@ -3,7 +3,7 @@
 **metal**, the browser app, hosted on Cloudflare Pages: shows whether
 blackberry is awake, what woke it and when it sleeps again, and offers
 Wake/Suspend. The only user-facing surface in the system. Logo: an ingot whose
-seam glows ember orange while blackberry is awake (the favicon follows); asleep
+seam glows ember orange while blackberry is awake (the favicon is always the orange one); asleep
 is steel blue. Design:
 [Metal — logo & control page](https://claude.ai/artifact/Wcn8JFMgAAj2pDx186orky).
 

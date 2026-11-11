@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="ui/icons/metal-awake.svg" width="88" alt="">
+<img src="ui/icons/metal.svg" width="88" alt="">
 
 # metal
 

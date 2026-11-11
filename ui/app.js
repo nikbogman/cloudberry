@@ -120,7 +120,6 @@ export function mountUi(container, options) {
     <footer>Works only from a device on the tailnet</footer>
   `
   const $ = (selector) => container.querySelector(selector)
-  const favicon = document.querySelector('#favicon')
   const stateLabel = $('#state-label')
   const subtitle = $('#subtitle')
   const countdown = $('#countdown')
@@ -164,7 +163,6 @@ export function mountUi(container, options) {
     const waking = pending === 'wake' || (status?.wake_pending && !awake)
     const state = known ? (awake ? 'awake' : 'asleep') : 'unknown'
     container.dataset.state = state
-    if (favicon) favicon.href = `icons/metal-${awake ? 'awake' : 'asleep'}.svg`
 
     if (!known) {
       stateLabel.textContent = status === null && !pollInFlight ? 'Unknown' : 'Checking…'
