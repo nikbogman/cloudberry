@@ -15,9 +15,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/nikbogman/cloudberry/internal/httpresponse"
-	"github.com/nikbogman/cloudberry/internal/routes"
-	"github.com/nikbogman/cloudberry/internal/tailnet"
+	"github.com/nikbogman/metal/internal/httpresponse"
+	"github.com/nikbogman/metal/internal/routes"
+	"github.com/nikbogman/metal/internal/tailnet"
 )
 
 // Router fronts the stacks in the routes file: it wakes blackberry on request

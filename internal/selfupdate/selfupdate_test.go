@@ -104,3 +104,20 @@ func TestNeverDowngrades(t *testing.T) {
 		}
 	}
 }
+
+func TestFollowsRepoRename(t *testing.T) {
+	// A renamed GitHub repo answers the old /releases/latest with a redirect
+	// to the new repo's /releases/latest, which redirects to the tag.
+	newURL := release(t, "v1.1.0", "new", "new")
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, newURL+r.URL.Path, http.StatusMovedPermanently)
+	})
+	old := httptest.NewServer(mux)
+	t.Cleanup(old.Close)
+
+	u, bin := setup(t, old.URL, "v1.0.0")
+	if tag, updated, err := u.Update(context.Background()); err != nil || !updated || tag != "v1.1.0" || read(t, bin) != "new" {
+		t.Fatalf("tag=%s updated=%v err=%v", tag, updated, err)
+	}
+}

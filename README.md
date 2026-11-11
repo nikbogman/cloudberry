@@ -1,4 +1,4 @@
-# Cloudberry
+# metal
 
 The setup that lets me run my home server only when I need it, and reach its
 apps from anywhere.
@@ -31,8 +31,8 @@ flowchart LR
   gateway -->|proxies| stacks
 ```
 
-Machines are named for their hardware (both are berries; `cloudberry` is the
-whole thing), services for what they do:
+Machines are named for their hardware (both are berries), the whole thing is
+`metal` (it heats up when it's on), and services are named for what they do:
 
 | Machine | Hardware | Role |
 |---|---|---|

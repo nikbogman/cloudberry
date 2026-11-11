@@ -7,8 +7,8 @@ package gateway
 import (
 	"net/http"
 
-	"github.com/nikbogman/cloudberry/internal/httpresponse"
-	"github.com/nikbogman/cloudberry/internal/tailnet"
+	"github.com/nikbogman/metal/internal/httpresponse"
+	"github.com/nikbogman/metal/internal/tailnet"
 )
 
 type Sender interface {

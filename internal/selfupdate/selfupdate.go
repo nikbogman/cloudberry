@@ -91,7 +91,14 @@ func (u *Updater) Update(ctx context.Context) (tag string, updated bool, err err
 // the REST API, whose 60 requests an hour per IP two devices would share.
 func (u *Updater) latestTag(ctx context.Context, client *http.Client) (string, error) {
 	c := *client
-	c.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	// Follow redirects (a renamed repo redirects to its new name) up to the
+	// one that names the tag, and read that one's Location.
+	c.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		if strings.Contains(req.URL.Path, "/releases/tag/") || len(via) >= 5 {
+			return http.ErrUseLastResponse
+		}
+		return nil
+	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodHead, u.BaseURL+"/releases/latest", nil)
 	if err != nil {
 		return "", err

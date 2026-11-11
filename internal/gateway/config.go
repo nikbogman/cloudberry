@@ -1,8 +1,8 @@
 package gateway
 
 import (
-	"github.com/nikbogman/cloudberry/internal/env"
-	"github.com/nikbogman/cloudberry/internal/selfupdate"
+	"github.com/nikbogman/metal/internal/env"
+	"github.com/nikbogman/metal/internal/selfupdate"
 )
 
 // EnvConfig is Config plus everything else the gateway reads from the

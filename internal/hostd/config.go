@@ -1,8 +1,8 @@
 package hostd
 
 import (
-	"github.com/nikbogman/cloudberry/internal/env"
-	"github.com/nikbogman/cloudberry/internal/selfupdate"
+	"github.com/nikbogman/metal/internal/env"
+	"github.com/nikbogman/metal/internal/selfupdate"
 )
 
 // EnvConfig holds hostd runtime configuration read from the process

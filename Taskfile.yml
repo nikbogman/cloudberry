@@ -112,7 +112,7 @@ tasks:
         cd {{.STACKS_DIR}}
         recipients=$( { [ -f .sops.yaml ] && grep -o 'age1[a-z0-9]*' .sops.yaml; echo "$local_age"; echo "$blackberry_age"; } | sort -u | paste -sd, -)
         cat > .sops.yaml <<EOF
-        # Written by cloudberry's task stacks: who can decrypt <stack>/secrets.env.
+        # Written by metal's task stacks: who can decrypt <stack>/secrets.env.
         creation_rules:
           - path_regex: (^|/)secrets\.env$
             age: $recipients
@@ -207,7 +207,7 @@ tasks:
       - >-
         printf 'export default { gatewayBaseUrl: "%s", hostdBaseUrl: "%s" }\n'
         "${GATEWAY_URL:?set GATEWAY_URL}" "${HOSTD_URL:?set HOSTD_URL}" > dist/ui/config.js
-      - npx wrangler pages deploy dist/ui --project-name=${CLOUDFLARE_PAGES_PROJECT:-cloudberry} --branch=main
+      - npx wrangler pages deploy dist/ui --project-name=${CLOUDFLARE_PAGES_PROJECT:-metal} --branch=main
 
   cleanup:
     desc: 'Stop and remove a service left behind by a rename: task cleanup DEVICE=RASPBERRY|BLACKBERRY OLD=<old-binary-name>'

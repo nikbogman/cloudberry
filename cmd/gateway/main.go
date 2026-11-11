@@ -10,11 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nikbogman/cloudberry/internal/cors"
-	"github.com/nikbogman/cloudberry/internal/eventlog"
-	"github.com/nikbogman/cloudberry/internal/gateway"
-	"github.com/nikbogman/cloudberry/internal/routes"
-	"github.com/nikbogman/cloudberry/internal/tailnet"
+	"github.com/nikbogman/metal/internal/cors"
+	"github.com/nikbogman/metal/internal/eventlog"
+	"github.com/nikbogman/metal/internal/gateway"
+	"github.com/nikbogman/metal/internal/routes"
+	"github.com/nikbogman/metal/internal/tailnet"
 )
 
 // version is set at build time (-ldflags "-X main.version=..."): a release

@@ -7,8 +7,8 @@ import (
 
 	"tailscale.com/tsnet"
 
-	"github.com/nikbogman/cloudberry/internal/routes"
-	"github.com/nikbogman/cloudberry/internal/tailnet"
+	"github.com/nikbogman/metal/internal/routes"
+	"github.com/nikbogman/metal/internal/tailnet"
 )
 
 // Node is a tsnet node named name, with its state in stateDir/name. The first

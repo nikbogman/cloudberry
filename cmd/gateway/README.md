@@ -84,13 +84,13 @@ machine; `task gateway` passes them to the unit. Bold variables are required.
 | `GATEWAY_TSNET_DIR` | Where each hostname route keeps its tsnet node state (default `/var/lib/gateway/tsnet`). Losing it makes every route re-join as a new device. |
 | `GATEWAY_STATE_FILE` | Saved switches and auto-wake flag (default `/var/lib/gateway/state.json`). The deploy never sets it. |
 | `UPDATE_MINUTES` | How often to poll hostd's routes and GitHub's latest release (default `2`). |
-| `RELEASE_URL` | Where releases come from (default `https://github.com/nikbogman/cloudberry`). Empty turns binary updates off. |
+| `RELEASE_URL` | Where releases come from (default `https://github.com/nikbogman/metal`). Empty turns binary updates off. |
 | `TS_AUTHKEY` | Read by tsnet when a route's node first joins the tailnet; `task gateway` passes `TAILSCALE_AUTH_KEY`. Use a reusable key, since each route is its own node. Not needed after the first start. |
 
 ## Updates
 
 Every `$UPDATE_MINUTES`, besides the routes file above, gateway checks the
-latest [release](https://github.com/nikbogman/cloudberry/releases) (the
+latest [release](https://github.com/nikbogman/metal/releases) (the
 `/releases/latest` redirect, not the rate-limited API). A newer one is
 downloaded, checked against `SHA256SUMS`, and swapped in by rename, keeping
 the old binary as `gateway.prev` (`binary_updated`). Either kind of update

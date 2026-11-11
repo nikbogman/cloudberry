@@ -1,4 +1,4 @@
-module github.com/nikbogman/cloudberry
+module github.com/nikbogman/metal
 
 go 1.27.3
 

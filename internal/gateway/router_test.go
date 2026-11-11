@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nikbogman/cloudberry/internal/routes"
+	"github.com/nikbogman/metal/internal/routes"
 )
 
 type noopLogger struct{}

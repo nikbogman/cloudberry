@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/nikbogman/cloudberry/internal/routes"
+	"github.com/nikbogman/metal/internal/routes"
 )
 
 func TestRoutesChanged(t *testing.T) {

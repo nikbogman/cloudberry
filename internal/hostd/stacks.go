@@ -13,8 +13,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/nikbogman/cloudberry/internal/routes"
-	"github.com/nikbogman/cloudberry/internal/tailnet"
+	"github.com/nikbogman/metal/internal/routes"
+	"github.com/nikbogman/metal/internal/tailnet"
 )
 
 // DefaultIdleMinutes is the routes file's default idle time, as in cmd/routes.

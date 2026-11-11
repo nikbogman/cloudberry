@@ -6,8 +6,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/nikbogman/cloudberry/internal/httpresponse"
-	"github.com/nikbogman/cloudberry/internal/routes"
+	"github.com/nikbogman/metal/internal/httpresponse"
+	"github.com/nikbogman/metal/internal/routes"
 )
 
 // eventsKept is how far back GET /status reports wakes and suspends: the UI

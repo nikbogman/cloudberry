@@ -10,7 +10,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/nikbogman/cloudberry/internal/routes"
+	"github.com/nikbogman/metal/internal/routes"
 )
 
 func main() {

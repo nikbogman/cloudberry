@@ -13,7 +13,7 @@ unit files, environment and secrets. After that:
   `main`: hostd pulls it ([stack sync](cmd/hostd/README.md#stack-sync)), and
   gateway picks up route changes from hostd.
 - **gateway and hostd** update themselves to the latest
-  [release](https://github.com/nikbogman/cloudberry/releases), if they're a
+  [release](https://github.com/nikbogman/metal/releases), if they're a
   release build ([updates](cmd/gateway/README.md#updates)).
 
 Per-service deploy details:

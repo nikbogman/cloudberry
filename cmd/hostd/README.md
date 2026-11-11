@@ -82,7 +82,7 @@ machine; `task hostd` passes them to the unit. Bold variables are required.
 | `SOPS_AGE_KEY_FILE` | Read by sops: blackberry's age key (the deploy sets `/etc/hostd/age.key`). |
 | `FIREWALL_DROPIN` | stack-firewall's `PORTS` override (default `/etc/systemd/system/stack-firewall.service.d/ports.conf`). |
 | `UPDATE_MINUTES` | How often to sync and check for a release (default `2`). The clock stops in suspend, so the first check after a wake can be up to one interval late. |
-| `RELEASE_URL` | Where releases come from (default `https://github.com/nikbogman/cloudberry`). Empty turns binary updates off. |
+| `RELEASE_URL` | Where releases come from (default `https://github.com/nikbogman/metal`). Empty turns binary updates off. |
 | `HOSTD_HOST` | Bind address (default `127.0.0.1`). Must be loopback or tailnet. The deploy never sets it. |
 
 ## Deployment

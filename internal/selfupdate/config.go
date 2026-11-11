@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/nikbogman/cloudberry/internal/env"
+	"github.com/nikbogman/metal/internal/env"
 )
 
 // Config is shared by gateway and hostd: how often to check for updates,
@@ -25,7 +25,7 @@ func ConfigFromEnv() Config {
 	}
 	return Config{
 		Every:      time.Duration(minutes) * time.Minute,
-		ReleaseURL: env.EnvOr("RELEASE_URL", "https://github.com/nikbogman/cloudberry"),
+		ReleaseURL: env.EnvOr("RELEASE_URL", "https://github.com/nikbogman/metal"),
 	}
 }
 

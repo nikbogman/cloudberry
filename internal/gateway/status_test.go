@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nikbogman/cloudberry/internal/routes"
+	"github.com/nikbogman/metal/internal/routes"
 )
 
 func TestStatusTracksWakesAndSuspends(t *testing.T) {

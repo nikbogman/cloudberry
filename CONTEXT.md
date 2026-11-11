@@ -1,4 +1,4 @@
-# Cloudberry
+# metal
 
 Domain glossary for this monorepo: the services and UI that let the user wake, monitor, and suspend blackberry from anywhere; the Stacks they wake blackberry for; and the root [`Taskfile.yml`](Taskfile.yml) that converges every device.
 
@@ -16,8 +16,9 @@ The machine that sleeps/wakes and runs hostd and the Stacks.
 
 ### System
 
-**cloudberry**:
-Everything in this repo, taken together: both machines, the services, the UI, the Stacks and the Taskfile that deploys to both machines.
+**metal**:
+Everything in this repo, taken together, and the UI's name: both machines, the services, the UI, the Stacks and the Taskfile that deploys to both machines. Called cloudberry until 2026-11-11.
+_Avoid_: cloudberry
 
 **gateway**:
 The service on raspberry. Sends Wake on `POST /wake` (the UI's Wake button, called from the browser), and fronts the Stacks in its routes file: reverse-proxies each route on its own port or under its own path on 443, wakes blackberry on request for routes flagged `wake` (holding the request until blackberry is Reachable), and suspends it again once each route has been without traffic for its `idle_minutes`, if gateway did the waking. The UI can switch auto-wake and auto-suspend off. Routes are `public` (Funnel) or tailnet-only. Before 2026-10-23 this was two services, waker (`/wake`) and gate (the routes); before 2026-09-12 it was also called gateway.

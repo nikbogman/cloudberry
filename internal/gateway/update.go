@@ -11,8 +11,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/nikbogman/cloudberry/internal/routes"
-	"github.com/nikbogman/cloudberry/internal/selfupdate"
+	"github.com/nikbogman/metal/internal/routes"
+	"github.com/nikbogman/metal/internal/selfupdate"
 )
 
 // Updates keeps gateway current without a Deploy: every Every, it fetches

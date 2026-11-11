@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-const uiOrigin = "https://cloudberry.pages.dev"
+const uiOrigin = "https://metal.pages.dev"
 
 func serve(origin, method string) *httptest.ResponseRecorder {
 	h := Allow(uiOrigin, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
