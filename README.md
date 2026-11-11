@@ -21,13 +21,14 @@ flowchart LR
     end
     subgraph bb[blackberry · suspended until needed]
       hostd
-      caddy[Caddy] --> stacks[stacks]
+      stacks
     end
   end
 
   browser -->|wake| gateway
   browser -->|suspend, health| hostd
   gateway -.->|Wake-on-LAN| bb
+  gateway -->|proxies| stacks
 ```
 
 Machines are named for their hardware (both are berries; `cloudberry` is the
@@ -45,7 +46,7 @@ The repo is a monorepo holding everything in the diagram:
 | **UI**: Wake/Suspend page | [ui/](ui/) | Cloudflare Pages | Static files, uploaded by `task ui` |
 | **gateway**: sends Wake-on-LAN; wakes blackberry on request and proxies stacks | [cmd/gateway](cmd/gateway/) | raspberry | Go binary cross-compiled for armv6, run by systemd; updates itself from tagged releases |
 | **hostd**: suspend, health check, deploys the stacks | [cmd/hostd](cmd/hostd/) | blackberry | Go binary, run by systemd |
-| **stacks**: the apps, behind Caddy | [deploys](https://github.com/nikbogman/deploys) repo | blackberry | Docker Compose, deployed by hostd on a push to `main` |
+| **stacks**: the apps, behind gateway | [deploys](https://github.com/nikbogman/deploys) repo | blackberry | Docker Compose, deployed by hostd on a push to `main` |
 
 The two services are one Go module: each has its entrypoint in `cmd/<name>/`
 and its logic in `internal/<name>/`, and the rest of `internal/` is shared
