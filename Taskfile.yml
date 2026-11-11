@@ -29,12 +29,11 @@ tasks:
       - task: hostd
 
   tailscale:
-    desc: Install Tailscale and join the tailnet on both devices (needs TAILSCALE_AUTH_KEY on first join)
+    desc: Install Tailscale and join the tailnet on blackberry (needs TAILSCALE_AUTH_KEY on first join). raspberry runs none; gateway is its tsnet node
     cmds:
-      - for: [RASPBERRY, BLACKBERRY]
-        task: _root
+      - task: _root
         vars:
-          DEVICE: '{{.ITEM}}'
+          DEVICE: BLACKBERRY
           CMD: >-
             (command -v tailscale >/dev/null || curl -fsSL https://tailscale.com/install.sh | sh)
             && systemctl enable --now tailscaled
@@ -168,9 +167,10 @@ tasks:
           # Pi Zero W is ARM1176 (armv6). A Pi Zero 2 W would need GOARCH=arm64.
           GOENV: GOARCH=arm GOARM=6
           DESC: gateway -- Wake-on-LAN for blackberry, and wake-on-request proxy to its stacks
-          # Serves /wake on 443. Each stack route is its own tsnet node (<name>.<tailnet>.ts.net);
-          # TS_AUTHKEY is only read when a node joins for the first time.
-          PORT: ${GATEWAY_PORT:-5000}
+          # No tailscaled on raspberry: gateway is its own tsnet node, raspberry.<tailnet>.ts.net
+          # (/wake, /settings), plus one per hostname route (<name>.<tailnet>.ts.net).
+          # TS_AUTHKEY is only read when a node joins for the first time. GATEWAY_PORT is
+          # loopback only, for /wake from a shell on raspberry.
           ENV: |
             Environment=TS_AUTHKEY=${TAILSCALE_AUTH_KEY:-}
             StateDirectory=gateway/tsnet

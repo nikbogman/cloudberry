@@ -13,10 +13,8 @@ import (
 // https://<Name>.<tailnet>.ts.net, unless Path is set.
 type Route struct {
 	Name string `json:"name"`
-	// Port is the loopback listen port; only path routes use it.
-	Port int `json:"port,omitempty"`
 	// Path publishes the route under this prefix on 443, beside /wake, instead
-	// of on its own port. `tailscale serve` strips the prefix before proxying.
+	// of on its own port. gateway strips the prefix before proxying.
 	Path     string `json:"path,omitempty"`
 	Upstream string `json:"upstream"`
 	// Public routes go on Funnel; the rest are tailnet-only.
@@ -55,7 +53,6 @@ func Parse(data []byte, path string) (Routes, error) {
 	if cfg.IdleMinutes <= 0 {
 		return cfg, fmt.Errorf("%s: idle_minutes must be positive", path)
 	}
-	seen := map[int]bool{}
 	seenName := map[string]bool{}
 	seenPath := map[string]bool{}
 	for i, r := range cfg.Routes {
@@ -72,23 +69,14 @@ func Parse(data []byte, path string) (Routes, error) {
 			return cfg, fmt.Errorf("%s: name %q used twice", path, r.Name)
 		}
 		seenName[r.Name] = true
-		if r.Path != "" {
-			if r.Port == 443 {
-				return cfg, fmt.Errorf("%s: route %q: port 443 is the gateway's own tailscale serve, for /wake", path, r.Name)
-			}
-			if r.Port <= 0 || seen[r.Port] {
-				return cfg, fmt.Errorf("%s: route %q: path routes need a unique loopback port", path, r.Name)
-			}
-			seen[r.Port] = true
-		}
 		if u, err := url.Parse(r.Upstream); err != nil || u.Scheme == "" || u.Host == "" {
 			return cfg, fmt.Errorf("%s: route %q: upstream must be an absolute URL", path, r.Name)
 		}
 		if r.Path != "" {
-			if !strings.HasPrefix(r.Path, "/") || r.Path == "/" || strings.HasSuffix(r.Path, "/") {
-				return cfg, fmt.Errorf("%s: route %q: path must look like /name; / is /wake's", path, r.Name)
+			if !strings.HasPrefix(r.Path, "/") || r.Path == "/" || strings.HasSuffix(r.Path, "/") || r.Path == "/wake" || r.Path == "/settings" {
+				return cfg, fmt.Errorf("%s: route %q: path must look like /name, and not /wake or /settings", path, r.Name)
 			}
-			// Funnel is per port: turning it on for 443 would make /wake public too.
+			// Funnel is per node: turning it on for gateway's own would make /wake public too.
 			if r.Public {
 				return cfg, fmt.Errorf("%s: route %q: a path route can't be public", path, r.Name)
 			}

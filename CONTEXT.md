@@ -9,7 +9,7 @@ Domain glossary for this monorepo: the services and UI that let the user wake, m
 Machines go by their hardware names (see [README.md](README.md#name)) everywhere — docs, config, env vars. Services are named for what they do.
 
 **raspberry**:
-Always-on device (a Pi Zero) that runs gateway. On the LAN because the magic packet is a broadcast. In the workload path only for gateway's routes; it's on Wi-Fi, so other Stacks skip it.
+Always-on device (a Pi Zero) that runs gateway. Runs no tailscaled: gateway's own tsnet node is its tailnet presence, under the same name. On the LAN because the magic packet is a broadcast. In the workload path only for gateway's routes; it's on Wi-Fi, so other Stacks skip it.
 
 **blackberry**:
 The machine that sleeps/wakes and runs hostd and the Stacks.
@@ -40,7 +40,7 @@ Putting blackberry into suspend-to-RAM — the only sleep state supported. Full 
 _Avoid_: shutdown, sleep, power off
 
 **Identity header**:
-`Tailscale-User-Login`, injected by `tailscale serve` in front of gateway and hostd. The entire auth mechanism — tailnet membership is the authorization boundary, no separate allow-list. The UI's calls carry the login of the user on the browser's device. Exception: gateway's `/wake` also accepts a `127.0.0.1` caller in its place, for a shell on raspberry itself. Auto-wake doesn't use it: it sends WoL in-process.
+`Tailscale-User-Login`, injected by `tailscale serve` in front of hostd, and by gateway itself (a `WhoIs` lookup in its tsnet nodes) on raspberry. The entire auth mechanism — tailnet membership is the authorization boundary, no separate allow-list. The UI's calls carry the login of the user on the browser's device. Exception: gateway's `/wake` also accepts a `127.0.0.1` caller in its place, for a shell on raspberry itself. Auto-wake doesn't use it: it sends WoL in-process.
 _Avoid_: auth token, login header
 
 ### Provisioning

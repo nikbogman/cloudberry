@@ -28,7 +28,8 @@ in [`index.html`](index.html):
 The browser calls [gateway](../cmd/gateway/README.md) and
 [hostd](../cmd/hostd/README.md) directly at their tailnet URLs, so it only works
 from a device on the tailnet. Both backends allow the page's origin
-(`UI_ORIGIN`) via CORS; `tailscale serve` adds the identity header.
+(`UI_ORIGIN`) via CORS; `tailscale serve` (hostd) and gateway's tsnet node add
+the identity header.
 
 ## Configuration
 

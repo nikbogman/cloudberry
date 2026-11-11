@@ -1,6 +1,7 @@
 // Package tailnet holds tailnet identity-header auth and bind-safety
-// helpers. `tailscale serve` injects Tailscale-User-Login for any
-// tailnet-authenticated caller; these helpers only check it's present.
+// helpers. `tailscale serve` (hostd) and gateway's tsnet nodes inject
+// Tailscale-User-Login for any tailnet-authenticated caller; these helpers
+// only check it's present.
 package tailnet
 
 import (

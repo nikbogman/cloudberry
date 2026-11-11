@@ -132,14 +132,3 @@ func TestAutoSwitches(t *testing.T) {
 		t.Fatal("suspended with auto-suspend off")
 	}
 }
-
-func TestStalePaths(t *testing.T) {
-	status := `{"TCP":{"443":{"HTTPS":true}},"Web":{"raspberry.example.ts.net:443":{"Handlers":{"/":{"Proxy":"http://localhost:5000"},"/api":{"Proxy":"http://localhost:8444"},"/old":{"Proxy":"http://localhost:8445"}}}}}`
-	got := stalePaths([]byte(status), map[string]bool{"/api": true})
-	if len(got) != 1 || got[0] != "/old" {
-		t.Fatalf("got %v, want [/old]", got)
-	}
-	if got := stalePaths([]byte(`{}`), nil); len(got) != 0 {
-		t.Fatalf("empty status: got %v", got)
-	}
-}

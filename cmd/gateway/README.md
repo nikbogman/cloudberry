@@ -44,16 +44,14 @@ A stack without `x-route` isn't routed. Two ways in, same result:
   `../deploys`), via [`cmd/routes`](../routes/main.go).
   `go run ./cmd/routes ../deploys` prints it without deploying.
 
-A path route removed from the file is unpublished from `tailscale serve` on
-the next start.
+A path route removed from the file is gone on the next start.
 
 | Field | Meaning |
 |---|---|
 | `idle_minutes` | Quiet time before gateway suspends blackberry. Top level: the default, 30 (`cmd/routes -idle-minutes`). Per route: an override, shorter for SSD-only stacks, so the HDD only stays spun up for stacks that use it (immich). A route's use keeps blackberry up for at least its own time. |
 | `name` | The Compose project's `name`. Label for logs, and the route's own tailnet hostname: `https://<name>.<tailnet>.ts.net` on 443, from an in-process tsnet node. A lowercase DNS label, unique. |
 | `service` | `x-route` only. The service whose first published port is the upstream; optional when the stack has one service. |
-| `port` | Only for `path` routes: the loopback listen port `tailscale serve` forwards to. Unique, never 443. |
-| `path` | Optional. Publishes the route at `https://raspberry.<tailnet>.ts.net<path>` on 443 (`tailscale serve --set-path`) instead of at its own hostname. Looks like `/name`. Tailscale strips the prefix, so the stack sees `/`. Only for stacks that work behind a prefix (APIs, not web UIs). Can't be `public`. |
+| `path` | Optional. Serves the route at `https://raspberry.<tailnet>.ts.net<path>/`, on gateway's own node, instead of at its own hostname. Looks like `/name`; not `/wake` or `/settings`. gateway strips the prefix, so the stack sees `/`. Only for stacks that work behind a prefix (APIs, not web UIs). Can't be `public`. |
 | `upstream` | Not set by hand: `http://<host_ip>:<published>` of `service`'s first port. That port must be bound to blackberry's LAN IP, never `0.0.0.0`. |
 | `public` | `true` publishes the route's hostname on Funnel, with no identity check. `false` accepts tailnet callers only; the route's tsnet node looks the caller up and sets the identity header. |
 | `wake` | `true` sends WoL and holds the request while blackberry is asleep. `false` returns 502 while it's asleep. |
@@ -72,7 +70,8 @@ machine; `task gateway` passes them to the unit. Bold variables are required.
 | **`GRAFANA_CLOUD_LOKI_URL`** | Grafana Cloud's Loki push endpoint. |
 | **`GRAFANA_CLOUD_LOKI_USER`** | Loki basic-auth username (numeric instance ID). |
 | **`GRAFANA_CLOUD_LOKI_API_KEY`** | Grafana Cloud Access Policy token, scoped to `logs:write`. |
-| `GATEWAY_PORT` | `/wake` listen port (default `5000`). The deploy pins it, since `tailscale serve` must point at it. |
+| `GATEWAY_HOSTNAME` | gateway's own tsnet node (default `raspberry`): `https://<name>.<tailnet>.ts.net` serves `/wake`, `/settings` and path routes, and carries gateway's calls to hostd. No route may use the name. |
+| `GATEWAY_PORT` | Loopback listen port (default `5000`), for `/wake` from a shell on raspberry. |
 | `GATEWAY_HOST` | `/wake` bind address (default `127.0.0.1`). Must be loopback or tailnet. The deploy never sets it. |
 | `GATEWAY_ROUTES` | Routes file path (default `/etc/gateway/routes.json`). The deploy never sets it. |
 | `GATEWAY_TSNET_DIR` | Where each hostname route keeps its tsnet node state (default `/var/lib/gateway/tsnet`). Losing it makes every route re-join as a new device. |
@@ -100,12 +99,12 @@ and puts `gateway.prev` back; that release isn't installed again.
 
 ## Deployment
 
-`task gateway` ships the routes file, cross-compiles for the Pi Zero W, ships
-the binary, a systemd unit and its rollback unit (the device never runs a Go
-toolchain), and runs
-`tailscale serve` for `$GATEWAY_PORT` on 443. At startup gateway starts a tsnet
-node per hostname route and runs `tailscale serve` for each path route. Funnel
-must be enabled in the tailnet policy for public routes. See
+`task gateway` ships the routes file, cross-compiles for the Pi Zero W, and
+ships the binary, a systemd unit and its rollback unit (the device never runs a
+Go toolchain). raspberry runs no tailscaled: at startup gateway brings up its
+own tsnet node (`$GATEWAY_HOSTNAME`) and one per hostname route, all under
+`$GATEWAY_TSNET_DIR`. Funnel must be enabled in the tailnet policy for public
+routes. See
 [`DEPLOY.md`](../../DEPLOY.md).
 
 Replacing the old waker and gate units on raspberry, once:

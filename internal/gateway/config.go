@@ -13,7 +13,8 @@ type EnvConfig struct {
 	HostdURL   string
 	RoutesFile string
 	UIOrigin   string
-	TsnetDir   string // per-route tsnet node state, one subdirectory per route
+	TsnetDir   string // tsnet node state, one subdirectory per node
+	Hostname   string // gateway's own tsnet node: /wake, /settings, path routes
 	StateFile  string // auto-wake/suspend switches and autoWoken, across restarts
 	Update     selfupdate.Config
 }
@@ -31,6 +32,7 @@ func ConfigFromEnv() EnvConfig {
 		RoutesFile: env.EnvOr("GATEWAY_ROUTES", "/etc/gateway/routes.json"),
 		UIOrigin:   env.EnvOr("UI_ORIGIN", ""),
 		TsnetDir:   env.EnvOr("GATEWAY_TSNET_DIR", "/var/lib/gateway/tsnet"),
+		Hostname:   env.EnvOr("GATEWAY_HOSTNAME", "raspberry"),
 		StateFile:  env.EnvOr("GATEWAY_STATE_FILE", "/var/lib/gateway/state.json"),
 		Update:     selfupdate.ConfigFromEnv(),
 	}

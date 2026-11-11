@@ -12,7 +12,7 @@ func TestLoadRoutesHostnameRules(t *testing.T) {
 		`{"name":"a","upstream":"http://x:1"},{"name":"b","upstream":"http://x:2","public":true}`: "",
 		`{"name":"A_b","upstream":"http://x:1"}`:                                                  "DNS label",
 		`{"name":"a","upstream":"http://x:1"},{"name":"a","upstream":"http://x:2"}`:               "used twice",
-		`{"name":"a","path":"/a","upstream":"http://x:1"}`:                                        "loopback port",
+		`{"name":"a","path":"/a","upstream":"http://x:1"}`:                                        "",
 	} {
 		f := filepath.Join(t.TempDir(), "routes.json")
 		os.WriteFile(f, []byte(`{"idle_minutes":1,"routes":[`+routes+`]}`), 0o644)
@@ -25,11 +25,12 @@ func TestLoadRoutesHostnameRules(t *testing.T) {
 
 func TestLoadRoutesPathRules(t *testing.T) {
 	for route, wantErr := range map[string]string{
-		`{"name":"a","port":8444,"path":"/a","upstream":"http://x:1"}`:               "",
-		`{"name":"a","port":8444,"path":"/","upstream":"http://x:1"}`:                "path must",
-		`{"name":"a","port":8444,"path":"a","upstream":"http://x:1"}`:                "path must",
-		`{"name":"a","port":8444,"path":"/a/","upstream":"http://x:1"}`:              "path must",
-		`{"name":"a","port":8443,"path":"/a","upstream":"http://x:1","public":true}`: "can't be public",
+		`{"name":"a","path":"/a","upstream":"http://x:1"}`:               "",
+		`{"name":"a","path":"/","upstream":"http://x:1"}`:                "path must",
+		`{"name":"a","path":"a","upstream":"http://x:1"}`:                "path must",
+		`{"name":"a","path":"/a/","upstream":"http://x:1"}`:              "path must",
+		`{"name":"a","path":"/wake","upstream":"http://x:1"}`:            "path must",
+		`{"name":"a","path":"/a","upstream":"http://x:1","public":true}`: "can't be public",
 	} {
 		f := filepath.Join(t.TempDir(), "routes.json")
 		os.WriteFile(f, []byte(`{"idle_minutes":1,"routes":[`+route+`]}`), 0o644)
@@ -40,8 +41,8 @@ func TestLoadRoutesPathRules(t *testing.T) {
 	}
 	f := filepath.Join(t.TempDir(), "routes.json")
 	os.WriteFile(f, []byte(`{"idle_minutes":1,"routes":[
-		{"name":"a","port":8444,"path":"/a","upstream":"http://x:1"},
-		{"name":"b","port":8445,"path":"/a","upstream":"http://x:2"}]}`), 0o644)
+		{"name":"a","path":"/a","upstream":"http://x:1"},
+		{"name":"b","path":"/a","upstream":"http://x:2"}]}`), 0o644)
 	if _, err := Load(f); err == nil || !strings.Contains(err.Error(), "used twice") {
 		t.Errorf("duplicate path: got %v", err)
 	}

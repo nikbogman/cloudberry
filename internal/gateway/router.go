@@ -104,8 +104,8 @@ type wakeAttempt struct {
 	err  error
 }
 
-// NewRouter's hostdURL is hostd's tailnet URL, used only for /suspend;
-// raspberry's own tailscale identity is what hostd sees.
+// NewRouter's hostdURL is hostd's tailnet URL, for /suspend. SetHTTPClient
+// points the Router at gateway's own tsnet node, whose identity is what hostd sees.
 func NewRouter(hostdURL, mac string, sender Sender, logger EventLogger) *Router {
 	g := &Router{
 		hostdURL: hostdURL, mac: mac, sender: sender, logger: logger,
@@ -119,6 +119,10 @@ func NewRouter(hostdURL, mac string, sender Sender, logger EventLogger) *Router 
 	g.autoSuspend.Store(true)
 	return g
 }
+
+// SetHTTPClient sets the client for hostd calls: gateway's tsnet node's,
+// since the Pi runs no tailscaled to route 100.x addresses.
+func (g *Router) SetHTTPClient(c *http.Client) { g.client = c }
 
 // touch pushes the idle deadline to now+idle, never pulls it in: a short-idle
 // route used after a long-idle one doesn't cut the long one's time short.
@@ -161,8 +165,8 @@ func (g *Router) RouteHandler(r routes.Route) (http.Handler, error) {
 		}
 		proxy.ServeHTTP(w, req)
 	})
-	// Public routes sit on Funnel; the rest are only ever reached through
-	// `tailscale serve`, which injects the identity header.
+	// Public routes sit on Funnel; the rest are only ever reached through a
+	// tsnet node that injects the identity header (ServeNode).
 	if !r.Public {
 		h = tailnet.RequireTailnetIdentity(h)
 	}

@@ -59,7 +59,7 @@ task hdd            # just hd-idle (HDD spindown), on blackberry
 task hostd          # just hostd, on blackberry
 task ui             # the UI, to Cloudflare Pages (not part of `task`)
 task docker         # just Docker on blackberry
-task tailscale      # install + join the tailnet, both devices (not part of `task`)
+task tailscale      # install + join the tailnet, blackberry only (not part of `task`)
 task --dry          # print the commands without running them
 task --list
 ```
@@ -107,8 +107,8 @@ task gateway
 ```
 
 `cleanup` stops and disables `OLD`, deletes its unit and binary, and reloads
-systemd. If the old service listened on a different port, also drop its
-`tailscale serve` entry by hand.
+systemd. On blackberry, if the old service listened on a different port, also
+drop its `tailscale serve` entry by hand.
 
 ## Testing
 
