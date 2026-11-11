@@ -18,7 +18,7 @@ jobs:
           go-version-file: go.mod
       - run: go vet ./...
       - run: go test ./...
-      - run: node --test ui/
+      - run: node --test ui/app.test.mjs
       - name: Build release assets
         env:
           CGO_ENABLED: '0'

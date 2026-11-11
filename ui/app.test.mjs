@@ -1,4 +1,4 @@
-// node --test ui/ : the "On today" sum.
+// node --test ui/app.test.mjs: the "On today" sum.
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { awakeToday } from './app.js'

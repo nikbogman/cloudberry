@@ -23,7 +23,7 @@ in [`index.html`](index.html):
   countdown, last wake duration, the stacks with their last request, the
   switches, and today's wakes and suspends. "On today" is summed in the
   browser, in its time zone ([`awakeToday`](app.js), tested in
-  [`app.test.mjs`](app.test.mjs): `node --test ui/`).
+  [`app.test.mjs`](app.test.mjs): `node --test ui/app.test.mjs`).
 - **One button**: Wake while asleep (`POST` gateway `/wake`), Suspend while
   awake (`POST` hostd `/suspend`).
 - **Auto-wake / Auto-suspend switches**: a form-encoded `POST` to gateway's
