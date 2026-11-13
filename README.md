@@ -18,9 +18,6 @@ My self-hosting platform: a home server that sleeps until one of its apps is ope
 
 </div>
 
-> [!NOTE]
-> This is a personal project, built for my two machines and my tailnet. It isn't meant for anyone else to run: names, addresses and choices are shaped around my setup. It's written for me and the AI agents I work with; agent instructions are in [CLAUDE.md](CLAUDE.md).
-
 ## What it does
 
 - **Wake on request.** Open an app and the server wakes up: gateway, on an always-on Pi, holds the request, sends Wake-on-LAN, and proxies once the app answers, in about 7 seconds. When nothing has used it for a while, it goes back to sleep, but only if gateway woke it.
